@@ -1,0 +1,119 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Photo Galleries</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Photo Galleries Admin</h1>
+
+<table class="table">
+	<tr>
+		<th>Name</th>
+		<th>No of Photos</th>
+		<th>Date</th>
+		<th></th>
+		<th></th>
+		<th></th>
+		<th></th>
+	</tr>
+	{% for gal in photo_galleries %}
+	<tr>
+		<td><a href="{% url 'PandDDL:gallery' gal.pk %}">{{ gal.name }}</a></td>
+		<td>{{ gal.photos.all.count }}</td>
+		<td>{{ gal.date }}</td>
+		<td><a class="admin-a-link" data-toggle="modal" data-target="#set-cover-photo-{{ gal.pk }}">Set Cover Photo</a></td>
+		<div class="modal fade" id="set-cover-photo-{{ gal.pk }}" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<form id="add-photo" action="." method="POST">{% csrf_token %}
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">Set Gallery Cover Photo</h4>
+						</div>
+						<div class="modal-body">
+							<input type="hidden" name="set-cover-photo-gal-id" value="{{ gal.pk }}">
+							<label>
+								<input class="cover-photo-select" type="radio" name="cover-photo-choice" {% if not gal.coverphoto %}checked{% endif %} value="">
+								<p>Remove Cover Photo</p>
+							</label>
+							<div class="row">
+								{% for img in gal.photos.all %}
+								<div class="col-sm-4">
+									<label>
+										<input class="cover-photo-select" type="radio" name="cover-photo-choice" {% if img.pk == gal.coverphoto.pk %}checked{% endif %} value="{{ img.pk }}">
+										<img src="{{ img.photo.url }}" alt="{{ gal.name }}_{{ forloop.counter }}" style="height:100px;">
+									</label>
+								</div>
+								{% endfor %}
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary">Set Selected</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<td><a class="admin-a-link" data-toggle="modal" data-target="#add-photo-{{ gal.pk }}">Add Photo(s)</a></td>
+		<div class="modal fade" id="add-photo-{{ gal.pk }}" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<form id="add-photo" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">Add Photos</h4>
+						</div>
+						<div class="modal-body">
+							<input type="hidden" name="add-photo-gal-id" value="{{ gal.pk }}">
+							<p>Upload Photos:</p>
+							<p><input type="file" multiple name="upload-gal-photos"></p>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary">Add Photos</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-gallery-{{ gal.pk }}">Edit</a></td>
+		<div class="modal fade" id="edit-gallery-{{ gal.pk }}" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<form id="edit-gallery" action="." method="POST">{% csrf_token %}
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">Edit Photo Gallery</h4>
+						</div>
+						<div class="modal-body">
+							<input type="hidden" name="edit-gal-id" value="{{ gal.pk }}">
+							<p>Gallery Name:</p>
+							<p><input class="form-control" type="text" name="edit-gal-name" value="{{ gal.name }}"></p>
+							<p>Gallery Date:</p>
+							<p><input class="form-control" type="date" name="edit-gal-date" value="{{ gal.date|date:'Y-m-d' }}"></p>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary">Edit Gallery</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<td><a href="{% url 'PandDDL:adminPhotoGalleriesDelete' gal.pk %}">Delete</a></td>
+	</tr>
+	{% endfor %}
+</table>
+
+{% endblock %}

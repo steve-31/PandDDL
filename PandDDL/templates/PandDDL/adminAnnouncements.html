@@ -1,0 +1,116 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Announcements</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Admin Announcements<button type="button" class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#announcement-create">+ Add Announcement</button></h1>
+<form class="form-inline" method="POST" action=".">{% csrf_token %}
+	<p>Max number of announcements shown on homepage: <input class="form-control" type="number" name="max-announcements" value="{{ max_announcements }}">
+		<button class="btn btn-primary" type="submit">Submit</button>
+	</p>
+</form>
+<table class="table admin-announcement-table">
+	<tr>
+		<th>Heading</th>
+		<th>Text</th>
+		<th>Date</th>
+		<th>Show On Homepage</th>
+		<th></th>
+		<th></th>
+	</tr>
+	{% for announcement in announcements %}
+	<tr>
+		<td style="width: 20%;">{{ announcement.heading }}</td>
+		<td style="width: 35%;">{{ announcement.text }}</td>
+		<td style="width: 20%;">{{ announcement.date }}</td>
+		<td style="width: 15%;">{% if announcement.showonhome %}<a href="{% url 'PandDDL:adminAnnouncementHide' announcement.pk %}">No</a> | <strong>Yes</strong>{% else %}<strong>No</strong> | <a href="{% url 'PandDDL:adminAnnouncementShow' announcement.pk %}">Yes</a>{% endif %}</td>
+		<td style="width: 5%;"><a class="admin-a-link" data-toggle="modal" data-target="#edit-announcement-{{ forloop.counter }}">Edit</a>
+			<div class="modal fade" id="edit-announcement-{{ forloop.counter }}" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<form id="edit-announcement-form-{{ forloop.counter }}" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Edit Announcement</h4>
+							</div>
+							<div class="modal-body">
+								<input type="hidden" name="edit-announcement-id" value="{{ announcement.pk }}">
+								<p>Subject:</p>
+								<p><input class="form-control" type="text" name="edit-announcement-heading" value="{{ announcement.heading }}"</p>
+								<p>Content:</p>
+								<p><textarea class="form-control" rows="5" name="edit-announcement-text" form="edit-announcement-form-{{ forloop.counter }}">{{ announcement.text }}</textarea></p>
+								<p>Link to Gallery</p>
+								<p><select class="form-control" name="edit-announcement-gallery">
+									<option value="None" selected>None</option>
+									{% for gallery in galleries %}
+									<option value="{{ gallery.pk }}" {% if gallery.pk == announcement.gallery.pk %}selected{% endif %}>{{ gallery.name }} - {{ gallery.date }}</option>
+									{% endfor %}
+								</select></p>
+								<p>Photo:</p>
+								<p><input type="file" name="edit-announcement-photo" accept="image/*"></p>
+								{% if announcement.picture %}
+								<image class="edit-announcement-image" src="{{ announcement.picture.url }}" alt="{{ announcement.heading }}">
+								{% endif %}
+							</div>
+							<div class="modal-footer">
+								<button type="submit" class="btn btn-primary">Edit Announcement</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</td>
+		<td style="width: 5%;"><a href="{% url 'PandDDL:adminAnnouncementDelete' announcement.pk %}">Delete</a></td>
+	</tr>
+	{% endfor %}
+</table>
+
+
+
+<div class="modal fade" id="announcement-create" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="announcement-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Make Announcement</h4>
+				</div>
+				<div class="modal-body">
+					<p>Subject:</p>
+					<p><input class="form-control" type="text" name="announcement-heading"></p>
+					<p>Content:</p>
+					<p><textarea class="form-control" rows="5" name="announcement-text" form="announcement-form"></textarea></p>
+					<p>Link to Gallery</p>
+					<p><select class="form-control" name="announcement-gallery">
+						<option value="None" selected>None</option>
+						{% for gallery in galleries %}
+						<option value="{{ gallery.pk }}">{{ gallery.name }} - {{ gallery.date }}</option>
+						{% endfor %}
+					</select></p>
+					<p>Photo:</p>
+					<p><input type="file" name="announcement-photo" accept="image/*"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

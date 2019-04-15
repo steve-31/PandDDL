@@ -1,0 +1,68 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<h1>Archive</h1>
+{% if mens_archive_leagues|length != 0 %}
+<table class="table">
+	<thead>
+		<tr>
+			<td>Season</td>
+			<td>Competition</td>
+			<td>Winner</td>
+			<td>Runner Up</td>
+		</tr>
+	</thead>
+	<tbody>
+		{% for league in mens_archive_leagues %}
+		{% if mens_div_winners|length != 0 %}
+		<tr>
+			<td rowspan="3"><a href="{% url 'PandDDL:league' league.gender league.season league.year %}">{{ league.season }} {{ league.displayyear }}</a></td>
+			
+			<td>
+				{% for div in mens_div_winners %}
+					{% if div.division.leaguegrp == league %}<a href="{% url 'PandDDL:division' div.division.leaguegrp.gender div.division.leaguegrp.season div.division.leaguegrp.year div.division.name %}">Division {{ div.division.name }}</a><br>{% endif %}
+				{% endfor %}
+			</td>
+			<td>
+				{% for div in mens_div_winners %}
+					{% if div.division.leaguegrp == league %}{{ div.winner }}<br>{% endif %}
+				{% endfor %}
+			</td>
+			<td>
+				{% for div in mens_div_winners %}
+					{% if div.division.leaguegrp == league %}{{ div.runnerup }}<br>{% endif %}
+				{% endfor %}
+			</td>
+		</tr>
+		{% endif %}
+		{% if mens_cup_winners|length != 0 %}
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		{% endif %}
+		{% if player_comps|length != 0 %}
+		<tr>
+			<td>
+				{% for comp in player_comps %}
+					{{ comp.keydate.name }}<br>
+				{% endfor %}
+			</td>
+			<td>
+				{% for comp in player_comps %}
+					{{ comp.winner1.firstname }} {{ comp.winner1.surname }}{% if comp.comptype != "singles" %}<br>{{ comp.winner2.firstname }} {{ comp.winner2.surname }}{% if comp.comptype == "trebles" %}{{ comp.winner3.firstname }} {{ comp.winner3.surname }}{% endif %}{% endif %}</td>
+				{% endfor %}
+			</td>
+			<td>
+				{% for comp in player_comps %}
+					{{ comp.runnerup1.firstname }} {{ comp.runnerup1.surname }}{% if comp.comptype != "singles" %}<br>{{ comp.runnerup2.firstname }} {{ comp.runnerup2.surname }}{% if comp.comptype == "trebles" %}{{ comp.runnerup3.firstname }} {{ comp.runnerup3.surname }}{% endif %}{% endif %}</td>
+				{% endfor %}
+			</td>
+			{% endif %}
+		{% endfor %}
+		</tr>
+	</tbody>
+</table>
+{% endif %}
+{% endblock %}

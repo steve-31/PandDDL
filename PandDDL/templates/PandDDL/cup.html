@@ -1,0 +1,24 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>{{ cup.name }} {{ lge.displayyear }}</h1>
+<div class="row">
+{% for round in rounds %}
+	<div class="col-sm-2 round-fixtures">
+		<h3>{{ round.name }}</h3>
+		
+		{% for fixture in fixtures %}
+		{% if fixture.round == round %}
+		<p>{{ fixture.hometeam.name }}</p>
+		<p>{{ fixture.homescore }} - {{ fixture.awayscore }}</p>
+		<p>{{ fixture.awayteam.name }}</p>
+		{% endif %}
+		{% endfor %}
+	</div>
+
+{% endfor %}
+</div>
+
+
+{% endblock %}

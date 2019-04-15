@@ -1,0 +1,87 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<h1>AGM Minutes</h1>
+
+{% if proposal_success %}
+<div class="alert alert-success alert-dismissible"">
+	<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	<strong>Success!</strong> Your proposal has been submitted
+</div>
+{% endif %}
+
+<table class="table">
+	<tr>
+		<th>AGM Date</th>
+		<th>Location</th>
+		<th>Minutes</th>
+		<th>Propsals</th>
+	</tr>
+	{% for min in all_minutes %}
+	<tr>
+		<td>{{ min.date }}</td>
+		<td>{{ min.location }}</td>
+		<td class="agm-minutes-text">{% if min.minutes %}<a class="admin-a-link" url="{% url 'PandDDL:fileDownload' min.minutes.path %}">Download Minutes</a>{% else %}No Meeting Minutes{% endif %}</td>
+		<td>{% if request.user.is_staff %}<a class="admin-a-link" data-toggle="modal" data-target="#view-proposals">View Proposals</a>{% elif not min.minutes %}<a class="admin-a-link" data-toggle="modal" data-target="#make-proposals">Make a Proposal</a>{% endif %}</td>
+	</tr>
+	<div class="modal fade" id="view-proposals" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="agm-minutes-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Current Proposals</h4>
+					</div>
+					<div class="modal-body">
+						{% if min.proposals.all.count == 0 %}
+						No Proposals Entered Yet 
+						{% endif %}
+						{% for prop in min.proposals.all %}
+						<p>{{ prop.proposal }}</p>
+						<p>{{ prop.entered_by }}</p>
+						{% endfor %}
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="make-proposals" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="agm-minutes-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Make a Proposal</h4>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" name="agmid" value="{{ min.pk }}">
+						<p>Proposal:</p>
+						<textarea class="form-control" name="proposal-text"></textarea>
+						<p>Proposer:</p>
+						<input class="form-control" type="text" name="proposer-name">
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-primary">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+</table>
+
+<h1>Files</h1>
+<table class="table">
+	{% for file in files %}
+	<tr>
+		<td>{{ file.description }}</td>
+		<td><a class="admin-a-link" url="{% url 'PandDDL:fileDownload' file.file.path %}">Download File</a></td>
+		<td>Uploaded: {{ file.date_uploaded }}</td>
+	</tr>
+	{% endfor %}
+</table>
+
+
+
+
+{% endblock %}

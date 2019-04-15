@@ -1,0 +1,144 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Division</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Division Admin<button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#new-div">Create new Division</button></h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<table class="table">
+			<tr>
+				<th>Division</th>
+				<th>Best of Legs</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for div in mens_divs %}
+			<tr>
+				<td><a href="{% url 'PandDDL:division' div.leaguegrp.gender div.leaguegrp.season div.leaguegrp.year div.name %}">Division {{ div.name }}</a></td>
+				<td>{{ div.bestoflegs }}</td>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-div-{{ div.pk }}">Edit</a></td>
+				<div class="modal fade" id="edit-div-{{ div.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="edit-div-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit {{ div.leaguegrp.gender }} {{ div.leaguegrp.season }} League {{ div.leaguegrp.displayyear }} Division {{ div.name }}</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-div-id" value="{{ div.pk }}">
+									<p>Division: 
+										<input class="form-control" type="text" name="edit-div-name" value="{{ div.name }}">
+									</p>
+									<p>Best of Legs:
+										<input class="form-control" type="number" name="edit-div-legs" value="{{ div.bestoflegs }}">
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Edit Division</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a href="{% url 'PandDDL:adminDivisionDelete' div.pk %}">Delete</a></td>
+			{% endfor %}
+		</table>
+	</div>
+	
+	<div id="ladiesLeague" class="tab-pane fade in">
+		<table class="table">
+			<tr>
+				<th>Division</th>
+				<th>Best of Legs</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for div in ladies_divs %}
+			<tr>
+				<td><a href="{% url 'PandDDL:division' div.leaguegrp.gender div.leaguegrp.season div.leaguegrp.year div.name %}">Division {{ div.name }}</a></td>
+				<td>{{ div.bestoflegs }}</td>
+				<td><a style="cursor:pointer;" data-toggle="modal" data-target="#edit-div-{{ div.pk }}">Edit</a></td>
+				<div class="modal fade" id="edit-div-{{ div.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="edit-div-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit {{ div.leaguegrp.gender }} {{ div.leaguegrp.season }} League {{ div.leaguegrp.displayyear }} Division {{ div.name }}</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-div-id" value="{{ div.pk }}">
+									<p>Division: 
+										<input class="form-control" type="text" name="edit-div-name" value="{{ div.name }}">
+									</p>
+									<p>Best of Legs:
+										<input class="form-control" type="number" name="edit-div-legs" value="{{ div.bestoflegs }}">
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Edit Division</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a href="{% url 'PandDDL:adminDivisionDelete' div.pk %}">Delete</a></td>
+			{% endfor %}
+		</table>
+	</div>
+</div>
+
+
+<div class="modal fade" id="new-div" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="new-div-form" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Create Division</h4>
+				</div>
+				<div class="modal-body">
+					<p>League:
+						<select class="form-control" name="new-div-league">
+							{% for lge in active_leagues %}
+							<option value="{{ lge.pk }}">{{ lge.gender }} {{ lge.season }} League {{ lge.displayyear }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Division: 
+						<input class="form-control" type="text" name="new-div-name">
+					</p>
+					<p>Best of Legs:
+						<input class="form-control" type="number" name="new-div-legs">
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Create Division</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}

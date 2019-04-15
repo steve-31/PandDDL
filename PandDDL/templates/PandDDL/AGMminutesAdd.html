@@ -1,0 +1,13 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>Add AGM Minutes</h1>
+<form id="agm-minutes-form" action="." method="POST">{% csrf_token %}
+	<h4>AGM Date:</h4>
+	<input class="form-control" type="date" name="agm-date">
+	<h4>Minutes:</h4>
+	<input type="file" name="AGMminutesfile" enctype="multipart/form-data">
+	<button class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

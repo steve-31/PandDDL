@@ -1,0 +1,330 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Player Competitions</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Player Competition Admin
+<button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#player-comp-create">Create Player Competition</button>
+</h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<table class="table">
+			<tr>
+				<th>Competition</th>
+				<th>Type</th>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Location</th>
+				<th>Winners</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for comp in active_comps %}
+			<tr>
+				<td>{{ comp.keydate.name }}</td>
+				<td>{{ comp.comptype }}</td>
+				<td>{{ comp.keydate.date }}</td>
+				<td>{{ comp.keydate.time }}</td>
+				<td>{{ comp.keydate.location }}</td>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#player-comp-results-{{ comp.pk }}">Set Winners</a></td>
+				<div class="modal fade" id="player-comp-results-{{ comp.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="player-comp-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Enter {{ comp.keydate.name }} Results</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="comp-id" value="{{ comp.pk }}">
+									<p>Competition Winner{% if comp.comptype != "Singles" %}s{% endif %}:
+										<select class="form-control" name="comp-winner1">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% if comp.comptype != "Singles" %}
+										<select class="form-control" name="comp-winner2">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+										{% if comp.comptype == "Triples" %}
+										<select class="form-control" name="comp-winner3">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+									</p>
+									<p>Competition Runner Up{% if comp.comptype != "Singles" %}s{% endif %}:
+										<select class="form-control" name="comp-runnerup1">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% if comp.comptype != "Singles" %}
+										<select class="form-control" name="comp-runnerup2">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+										{% if comp.comptype == "Triples" %}
+										<select class="form-control" name="comp-runnerup3">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Enter Results</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-comp-{{ comp.pk }}">Edit</a></td>
+				<div class="modal fade" id="edit-comp-{{ comp.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="player-comp-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit Player Competition</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-comp-id" value="{{ comp.id }}">
+									<p>Competition Name: <input class="form-control" type="text" name="edit-comp-name" value="{{ comp.keydate.name }}"></p>
+									<p>Competition Type: 
+										<select class="form-control" name="edit-comp-type">
+											<option value="Singles" {% if comp.comptype == "Singles" %}selected{% endif %}>Singles</option>
+											<option value="Doubles" {% if comp.comptype == "Doubles" %}selected{% endif %}>Doubles</option>
+											<option value="Triples" {% if comp.comptype == "Triples" %}selected{% endif %}>Triples</option>
+										</select>
+									</p>
+									<p>Competition Date: <input class="form-control" type="date" name="edit-comp-date" value="{{ comp.keydate.date | date:'Y-m-d' }}"></p>
+									<p>Competition Time: <input class="form-control" type="time" name="edit-comp-time" value="{{ comp.keydate.time | time:'H:i' }}"></p>
+									<p>Competition Location: <input class="form-control" type="text" name="edit-comp-location" value="{{ comp.keydate.location }}"></p>
+									<p>Associated League:
+										<select class="form-control" name="edit-comp-league">
+											<option disabled>Select League</option>
+											{% for league in active_leagues %}
+											<option value="{{ league.pk }}" {% if league.pk == comp.keydate.league.pk %}selected{% endif %}>{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+											{% endfor %}
+										</select>
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Edit Competition</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a href="{% url 'PandDDL:adminPlayerCompDelete' comp.pk %}">Delete</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+	
+	<div id="ladiesLeague" class="tab-pane fade in">
+		<table class="table">
+			<tr>
+				<th>Competition</th>
+				<th>Type</th>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Location</th>
+				<th>Winners</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for comp in active_comps %}
+			<tr>
+				<td>{{ comp.keydate.name }}</td>
+				<td>{{ comp.comptype }}</td>
+				<td>{{ comp.keydate.date }}</td>
+				<td>{{ comp.keydate.time }}</td>
+				<td>{{ comp.keydate.location }}</td>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#player-comp-results-{{ comp.pk }}">Set Winners</a></td>
+				<div class="modal fade" id="player-comp-results-{{ comp.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="player-comp-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Enter {{ comp.keydate.name }} Results</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="comp-id" value="{{ comp.pk }}">
+									<p>Competition Winner{% if comp.comptype != "Singles" %}s{% endif %}:
+										<select class="form-control" name="comp-winner1">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% if comp.comptype != "Singles" %}
+										<select class="form-control" name="comp-winner2">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+										{% if comp.comptype == "Triples" %}
+										<select class="form-control" name="comp-winner3">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+									</p>
+									<p>Competition Runner Up{% if comp.comptype != "Singles" %}s{% endif %}:
+										<select class="form-control" name="comp-runnerup1">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% if comp.comptype != "Singles" %}
+										<select class="form-control" name="comp-runnerup2">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+										{% if comp.comptype == "Triples" %}
+										<select class="form-control" name="comp-runnerup3">
+											<option selected disabled>Select Player</option>
+											{% for player in all_players %}
+											<option value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option>
+											{% endfor %}
+										</select>
+										{% endif %}
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Enter Results</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-comp-{{ comp.pk }}">Edit</a></td>
+				<div class="modal fade" id="edit-comp-{{ comp.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="player-comp-form" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit Player Competition</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-comp-id" value="{{ comp.id }}">
+									<p>Competition Name: <input class="form-control" type="text" name="edit-comp-name" value="{{ comp.keydate.name }}"></p>
+									<p>Competition Type: 
+										<select class="form-control" name="edit-comp-type">
+											<option value="Singles" {% if comp.comptype == "Singles" %}selected{% endif %}>Singles</option>
+											<option value="Doubles" {% if comp.comptype == "Doubles" %}selected{% endif %}>Doubles</option>
+											<option value="Triples" {% if comp.comptype == "Triples" %}selected{% endif %}>Triples</option>
+										</select>
+									</p>
+									<p>Competition Date: <input class="form-control" type="date" name="edit-comp-date" value="{{ comp.keydate.date | date:'Y-m-d' }}"></p>
+									<p>Competition Time: <input class="form-control" type="time" name="edit-comp-time" value="{{ comp.keydate.time | time:'H:i' }}"></p>
+									<p>Competition Location: <input class="form-control" type="text" name="edit-comp-location" value="{{ comp.keydate.location }}"></p>
+									<p>Associated League:
+										<select class="form-control" name="edit-comp-league">
+											<option disabled>Select League</option>
+											{% for league in active_leagues %}
+											<option value="{{ league.pk }}" {% if league.pk == comp.keydate.league.pk %}selected{% endif %}>{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+											{% endfor %}
+										</select>
+									</p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Edit Competition</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<td><a href="{% url 'PandDDL:adminPlayerCompDelete' comp.pk %}">Delete</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+
+
+<div class="modal fade" id="player-comp-create" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="player-comp-form" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Player Competition</h4>
+				</div>
+				<div class="modal-body">
+					<p>Competition Name: <input class="form-control" type="text" name="player-comp-name"></p>
+					<p>Competition Type: 
+						<select class="form-control" name="player-comp-type">
+							<option value="Singles">Singles</option>
+							<option value="Doubles">Doubles</option>
+							<option value="Triples">Triples</option>
+						</select>
+					</p>
+					<p>Competition Date: <input class="form-control" type="date" name="player-comp-date"></p>
+					<p>Competition Time: <input class="form-control" type="time" name="player-comp-time"></p>
+					<p>Competition Location: <input class="form-control" type="text" name="player-comp-location"></p>
+					<p>Associated League:
+						<select class="form-control" name="player-comp-league">
+							<option selected disabled>Select League</option>
+							{% for league in active_leagues %}
+							<option value="{{ league.pk }}">{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+							{% endfor %}
+						</select>
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Create Competition</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

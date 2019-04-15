@@ -1,0 +1,7 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<h1>AGM minutes - {{ minutes.date }}</h1>
+<p>{{ minutes.minutes|linebreaks }}
+
+{% endblock %}

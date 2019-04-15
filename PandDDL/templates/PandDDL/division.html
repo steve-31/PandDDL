@@ -1,0 +1,247 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<h1>Division {{ div.name }}</h1>
+<div class="row">
+	<div class="col-sm-9">
+		
+		
+		<h2>Table</h2>
+		
+		<table class="table">
+			<tr>
+				<th></th>
+				<th>Team</th>
+				<th>Pld</th>
+				<th>W</th>
+				<th>L</th>
+				<th>F</th>
+				<th>A</th>
+				<th>Pts</th>
+				<th>Form</th>
+			</tr>
+			{% for team in div_table %}
+			<tr>
+				<td>{{ forloop.counter }}</td>
+				<td><a href="{% url 'PandDDL:team' team.teamid %}">{{ team.teamName }}</a></td>
+				<td>{{ team.Cplayed }}</td>
+				<td>{{ team.Cwon }}</td>
+				<td>{{ team.Clost }}</td>
+				<td>{{ team.Clegs_for }}</td>
+				<td>{{ team.Clegs_ags }}</td>
+				<td>{{ team.Cpoints }}{% if team.teamName in points_deductions_teams %} *{% endif %}</td>
+				<td>{% for game in results %}{% if game.team.name == team.teamName %}
+					{% if game.win == 1 %}
+						<div data-toggle="tooltip" data-html="true" data-placement="top" title="<strong>{{ game.fixture.date }}</strong><br>{{ game.fixture.hometeam.name }} {{ game.fixture.homescore }} - {{ game.fixture.awayscore }} {{ game.fixture.awayteam.name }}" class="team-form-win table-team-form">W</div>
+					{% else %}
+						<div data-toggle="tooltip" data-html="true" data-placement="top" title="<strong>{{ game.fixture.date }}</strong><br>{{ game.fixture.hometeam.name }} {{ game.fixture.homescore }} - {{ game.fixture.awayscore }} {{ game.fixture.awayteam.name }}" class="team-form-lose table-team-form">L</div>
+					{% endif %}
+					{% endif %}{% endfor %}
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		{% for d in points_deductions %}
+		<p>* {{ d.team.name }} deducted {{ d.points }} points on {{ d.date }} for {{ d.reason }}</p>
+		{% endfor %}
+	</div>
+	
+</div>
+
+<div class="row">
+	<div class="col-sm-6">
+		<h2>Top 10 Singles</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>Pld</th>
+				<th>W</th>
+				<th>L</th>
+				<th>F</th>
+				<th>A</th>
+			</tr>
+			{% for player in top_singles_table %}
+			<tr>
+				<td>{{ player.player__firstname }} {{ player.player__surname }}</td>
+				<td>{{ player.player__team__name }}</td>
+				<td>{{ player.Cplayed }}</td>
+				<td>{{ player.Cwon }}</td>
+				<td>{{ player.Clost }}</td>
+				<td>{{ player.Clegs_for }}</td>
+				<td>{{ player.Clegs_ags }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+	
+	<div class="col-sm-6">
+		<h2>Top 10 Doubles</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>Pld</th>
+				<th>W</th>
+				<th>L</th>
+				<th>F</th>
+				<th>A</th>
+			</tr>
+			{% for player in top_doubles_table %}
+			<tr>
+				<td>{{ player.player__firstname }} {{ player.player__surname }}</td>
+				<td>{{ player.player__team__name }}</td>
+				<td>{{ player.Cplayed }}</td>
+				<td>{{ player.Cwon }}</td>
+				<td>{{ player.Clost }}</td>
+				<td>{{ player.Clegs_for }}</td>
+				<td>{{ player.Clegs_ags }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+</div>
+
+{% if div.leaguegrp.gender == "Ladies" %}
+<div class="row">
+	<div class="col-sm-6">
+		<h2>Top 10 Triples</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>Pld</th>
+				<th>W</th>
+				<th>L</th>
+				<th>F</th>
+				<th>A</th>
+			</tr>
+			{% for player in top_triples_table %}
+			<tr>
+				<td>{{ player.player__firstname }} {{ player.player__surname }}</td>
+				<td>{{ player.player__team__name }}</td>
+				<td>{{ player.Cplayed }}</td>
+				<td>{{ player.Cwon }}</td>
+				<td>{{ player.Clost }}</td>
+				<td>{{ player.Clegs_for }}</td>
+				<td>{{ player.Clegs_ags }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+</div>
+{% endif %}
+
+<div class="row">
+	<div class="col-sm-6">
+		{% if div.leaguegrp.gender == "Men's" %}
+		<h2>Top 180's</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>No.</th>
+			</tr>
+			{% for p in maximum_table %}
+			<tr>
+				<td>{{ p.player__firstname }} {{ p.player__surname }}</td>
+				<td>{{ p.player__team__name }}</td>
+				<td>{{ p.total }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+		{% else %}
+		<h2>Top 100+ Scores</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>Score</th>
+			</tr>
+			{% for player in scores_table %}
+			<tr>
+				<td>{{ player.player.firstname }} {{ player.player.surname }}</td>
+				<td>{{ player.player.team.name }}</td>
+				<td>{{ player.score }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+		{% endif %}
+	</div>
+	<div class="col-sm-6">
+		<h2>Highest Checkouts</h2>
+		<table class="table">
+			<tr>
+				<th>Player</th>
+				<th>Team</th>
+				<th>Checkout</th>
+			</tr>
+			{% for player in finishes_table %}
+			<tr>
+				<td>{{ player.player.firstname }} {{ player.player.surname }}</td>
+				<td>{{ player.player.team.name }}</td>
+				<td>{{ player.finish }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+</div>
+	
+<h2>Division {{ div.name }} Fixtures <a href="{% url 'PandDDL:printFixtures' lge.gender lge.season lge.year div.name %}" target="_blank"><button class="btn btn-primary admin-function-button">Print All Fixtures</button></a></h2>
+<div class="row">
+	<div class="col-sm-6">
+		{% for date in first_half_fixtures %}
+		<h4>{{ date.date }}</h4>
+		<table class="table">
+			{% for fixture in fixtures %}{% if fixture.date == date.date %}
+			<tr>
+				<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.homescore }}{% elif fixture.date <= today %}0{% endif %}</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.awayscore }}{% elif fixture.date <= today %}0{% endif %}</a></td>
+				<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+			</tr>
+			{% endif %}
+			{% endfor %}
+			{% for bye in teams_with_bye %}{% if bye.date == date.date %}
+			<tr>
+				<td style="width:35%;">{{ bye.team.name }}</td>
+				<td><span style="display:block;text-align:center;"></span></td>
+				<td><span style="display:block;text-align:center;">-</span></td>
+				<td><span style="display:block;text-align:center;"></span></td>
+				<td style="width:35%;"><span style="display:block;text-align:right;">Bye</span></td>
+			</tr>
+			{% endif %}
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</div>
+	<div class="col-sm-6">
+		{% for date in second_half_fixtures %}
+		<h4>{{ date.date }}</h4>
+		<table class="table">
+			{% for fixture in fixtures %}{% if fixture.date == date.date %}
+			<tr>
+				<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.homescore }}{% elif fixture.date <= today %}0{% endif %}</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+				<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.awayscore }}{% elif fixture.date <= today %}0{% endif %}</a></td>
+				<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+			</tr>
+			{% endif %}
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip(); 
+});
+</script>
+
+{% endblock %}

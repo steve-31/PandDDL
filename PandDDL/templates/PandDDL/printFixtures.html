@@ -1,0 +1,76 @@
+{% load static %}
+<head>
+	<title>P&amp;DDL</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/print.css' %}" type="text/css" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/style.css' %}" type="text/css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+	<button class="btn btn-primary page-print-button" onclick="window.print();">Print Fixture List</button>
+	<p class="page-title"><strong>Peterborough &amp; District Darts League</strong></p>
+	<p class="page-title"><strong>{{ lge.gender }} {{ lge.season }} League {{ lge.displayyear }}</strong></p>
+	<p class="page-title"><strong>Division {{ div.name }}</strong></p>
+	<div class="row">
+		<div class="col-sm-4">
+			{% for date in first_half_fixtures %}
+			<!-- <h6>{{ date.date }}</h6> -->
+			<table class="table">
+				{% for fixture in fixtures %}{% if fixture.date == date.date %}
+				<tr>
+					<td style="width:25%;">{{ fixture.date }}</td>
+					<td style="width:35%;">{{ fixture.hometeam.name }}</td>
+					<td><span style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.homescore }}{% elif fixture.date <= today %}0{% endif %}</span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.awayscore }}{% elif fixture.date <= today %}0{% endif %}</span></td>
+					<td style="width:35%;"><span style="display:block;text-align:right;">{{ fixture.awayteam.name }}</span></td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+				{% for fixture in teams_with_bye %}{% if fixture.date == date.date %}
+				<tr>
+					<td style="width:25%;">{{ fixture.date }}</td>
+					<td style="width:35%;">{{ fixture.hometeam.name }}</td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td style="width:35%;"><span style="display:block;text-align:right;">Bye</span></td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+			</table>
+			{% endfor %}
+		</div>
+		<div class="col-sm-4">
+			{% for date in second_half_fixtures %}
+			<!-- <h6>{{ date.date }}</h6> -->
+			<table class="table">
+				{% for fixture in fixtures %}{% if fixture.date == date.date %}
+				<tr>
+					<td style="width:22%;">{{ fixture.date }}</td>
+					<td style="width:35%;">{{ fixture.hometeam.name }}</td>
+					<td><span style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.homescore }}{% elif fixture.date <= today %}0{% endif %}</span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.awayscore }}{% elif fixture.date <= today %}0{% endif %}</span></td>
+					<td style="width:35%;"><span style="display:block;text-align:right;">{{ fixture.awayteam.name }}</span></td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+			</table>
+			{% endfor %}
+		</div>
+		<div class="col-sm-4">
+			<p><strong>Key Dates</strong></p>
+			<table class="table key-dates-table">
+				{% for date in key_dates %}
+				<tr>
+					<td>{{ date.date }}</td>
+					<td>{{ date.time }}</td>
+					<td><strong>{{ date.name }}</strong><br>@ {{ date.location }}</td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+</body>

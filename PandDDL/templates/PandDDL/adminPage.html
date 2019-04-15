@@ -1,0 +1,113 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item active" aria-current="page">Admin Home</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Admin Tools</h1>
+
+<div class="row">
+	<div class="col-sm-6">
+		<h3>Results Not Entered</h3>
+		<ul class="nav nav-tabs">
+		  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions ({{ mens_results_not_entered|length }})</a></li>
+		  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions ({{ ladies_results_not_entered|length }})</a></li>
+		</ul>
+		
+		<div class="tab-content">
+			<div id="mensLeague" class="tab-pane fade in active">
+				{% if mens_results_not_entered|length == 0 %}
+				<p>All results entered</p>
+				{% else %}
+				<table class="table">
+					{% for fixture in mens_results_not_entered %}
+					<tr>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;">{{ fixture.date }}</a></td>
+						<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+						<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+					</tr>
+					{% endfor %}
+				</table>
+				{% endif %}
+			</div>
+			<div id="ladiesLeague" class="tab-pane fade in">
+				{% if ladies_results_not_entered|length == 0 %}
+				<p>All results entered</p>
+				{% else %}
+				<table class="table">
+					{% for fixture in ladies_results_not_entered %}
+					<tr>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;">{{ fixture.date }}</a></td>
+						<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+						<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+					</tr>
+					{% endfor %}
+				</table>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-6">
+		<h3>Results Not Verified</h3>
+		<ul class="nav nav-tabs">
+		  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions ({{ mens_results_not_verified|length }})</a></li>
+		  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions ({{ ladies_results_not_verified|length }})</a></li>
+		</ul>
+		
+		<div class="tab-content">
+			<div id="mensLeague" class="tab-pane fade in active">
+				{% if mens_results_not_verified|length == 0 %}
+				<p>All results verified</p>
+				{% else %}
+				<table class="table">
+					{% for fixture in mens_results_not_verified %}
+					<tr>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;">{{ fixture.date }}</a></td>
+						<td style="width:30%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.homescore }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.awayscore }}</a></td>
+						<td style="width:30%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+					</tr>
+					{% endfor %}
+				</table>
+				{% endif %}
+			</div>
+			<div id="ladiesLeague" class="tab-pane fade in">
+				{% if ladies_results_not_verified|length == 0 %}
+				<p>All results verified</p>
+				{% else %}
+				<table class="table">
+					{% for fixture in ladies_results_not_verified %}
+					<tr>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;">{{ fixture.date }}</a></td>
+						<td style="width:30%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.homescore }}</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+						<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.awayscore }}</a></td>
+						<td style="width:30%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+					</tr>
+					{% endfor %}
+				</table>
+				{% endif %}
+			</div>
+	</div>
+</div>
+
+
+{% endblock %}

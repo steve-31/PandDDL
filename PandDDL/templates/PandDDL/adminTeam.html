@@ -1,0 +1,346 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Team</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Team Admin
+<button class="admin-function-button btn btn-primary" data-toggle="modal" data-target="#points-deduction-create">Add Points Deduction</button>
+<button class="admin-function-button btn btn-primary" data-toggle="modal" data-target="#add-new-team">Add Team</button>
+</h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<ul class="nav nav-tabs">
+			{% for div in mens_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in mens_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<table class="table">
+					<tr>
+						<th>Team</th>
+						<th>Points Deductions</th>
+						<th>League Fee Paid</th>
+						<th>Reset Password</th>
+						<th></th>
+						<th></th>
+					</tr>
+					{% for team in active_teams %}
+					{% if team.division.pk == div.pk %}
+					<tr>
+						<td>{{ team.name }}</td>
+						<td>{% if team.pk in points_deductions_teams %}<a class="admin-a-link" data-toggle="modal" data-target="#edit-team-deductions-{{ team.pk }}">Edit Points Deductions</a>
+							<div class="modal fade" id="edit-team-deductions-{{ team.pk }}" role="dialog">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<form id="edit-deduction-form" action="." method="POST">{% csrf_token %}
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal">&times;</button>
+												<h4 class="modal-title">{{ team.name }} Points Deductions</h4>
+											</div>
+											<div class="modal-body">
+												<table class="table">
+													<tr>
+														<th>Points</th>
+														<th>Reason</th>
+														<th>Date</th>
+														<th></th>
+													{% for d in points_deductions %}{% if d.team.pk == team.pk %}
+													<tr>
+														<td>{{ d.points }}</td>
+														<td>{{ d.reason }}</td>
+														<td>{{ d.date }}</td>
+														<td><a href="{% url 'PandDDL:adminTeamDeductionDelete' d.pk %}">Delete</a></td>
+													</tr>
+													{% endif %}{% endfor %}
+												</table>
+											</div>
+											<div class="modal-footer">
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						{% else %}None{% endif %}</td>
+						<td>{% if team.paidleaguefee %}Paid{% else %}<a href="{% url 'PandDDL:adminTeamLeagueFee' team.pk %}">Pay</a>{% endif %}</td>
+						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.admin.pk }}')">Reset</span></td>
+						<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-team-{{ team.pk }}">Edit</a>
+						<div class="modal fade" id="edit-team-{{ team.pk }}" role="dialog">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<form id="edit-team-form-{{ team.pk }}" action="." method="POST">{% csrf_token %}
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal">&times;</button>
+											<h4 class="modal-title">Edit Team - {{ team.name }}</h4>
+										</div>
+										<div class="modal-body">
+											<input type="hidden" name="edit-team-id" value="{{ team.pk }}">
+											<p>Team Name:
+												<input class="form-control" type="text" name="edit-team-name" value="{{ team.name }}">
+											</p>
+											<p>Team's Division:
+												<select class="form-control" name="edit-team-div">
+													<option disabled>Select Division</option>
+													{% for div in active_divs %}
+													<option value="{{ div.pk }}" {% if div.pk == team.division.pk %}selected{% endif %}>{{ div.leaguegrp.gender }} {{ div.leaguegrp.season }} League {{ div.leaguegrp.displayyear }} Division {{ div.name }}</option>
+													{% endfor %}
+												</select>
+											<p>Team Address:
+												<textarea class="form-control" rows="4" cols="65" name="edit-team-address" form="edit-team-form-{{ team.pk }}">{{ team.address }}</textarea>
+											</p>
+											<p>Pub Phone Number:
+												<input class="form-control" type="tel" name="edit-team-pub-phone">
+											</p>
+											<p>Captain Phone Number:
+												<input class="form-control" type="tel" name="edit-team-captain-phone">
+											</p>
+										</div>
+										<div class="modal-footer">
+											<button type="submit" class="btn btn-primary">Edit Team</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						</td>
+						<td><a href="{% url 'PandDDL:adminTeamDelete' team.pk %}">Delete</a></td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</table>
+			</div>
+			{% endfor %}	
+		</div>
+		
+		
+	</div>
+	
+	<div id="ladiesLeague" class="tab-pane fade in">
+		<ul class="nav nav-tabs">
+			{% for div in ladies_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in ladies_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<table class="table">
+					<tr>
+						<th>Team</th>
+						<th>Points Deductions</th>
+						<th>Reset Password</th>
+						<th>Edit</th>
+						<th>Delete</th>
+					</tr>
+					{% for team in active_teams %}
+					{% if team.division.pk == div.pk %}
+					<tr>
+						<td>{{ team.name }}</td>
+						<td>{% if team.pk in points_deductions_teams %}<a class="admin-a-link" data-toggle="modal" data-target="#edit-team-deductions-{{ team.pk }}">Edit Points Deductions</a>
+							<div class="modal fade" id="edit-team-deductions-{{ team.pk }}" role="dialog">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<form id="edit-deduction-form" action="." method="POST">{% csrf_token %}
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal">&times;</button>
+												<h4 class="modal-title">{{ team.name }} Points Deductions</h4>
+											</div>
+											<div class="modal-body">
+												<table class="table">
+													<tr>
+														<th>Points</th>
+														<th>Reason</th>
+														<th>Date</th>
+														<th></th>
+													{% for d in points_deductions %}{% if d.team.pk == team.pk %}
+													<tr>
+														<td>{{ d.points }}</td>
+														<td>{{ d.reason }}</td>
+														<td>{{ d.date }}</td>
+														<td><a href="{% url 'PandDDL:adminTeamDeductionDelete' d.pk %}">Delete</a></td>
+													</tr>
+													{% endif %}{% endfor %}
+												</table>
+											</div>
+											<div class="modal-footer">
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						{% else %}None{% endif %}</td>
+						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.admin.pk }}')">Reset</span></td>
+						<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-team-{{ team.pk }}">Edit</a>
+						<div class="modal fade" id="edit-team-{{ team.pk }}" role="dialog">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<form id="edit-team-form-{{ team.pk }}" action="." method="POST">{% csrf_token %}
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal">&times;</button>
+											<h4 class="modal-title">Edit Team - {{ team.name }}</h4>
+										</div>
+										<div class="modal-body">
+											<input type="hidden" name="edit-team-id" value="{{ team.pk }}">
+											<p>Team Name:
+												<input class="form-control" type="text" name="edit-team-name" value="{{ team.name }}">
+											</p>
+											<p>Team's Division:
+												<select class="form-control" name="edit-team-div">
+													<option disabled>Select Division</option>
+													{% for div in active_divs %}
+													<option value="{{ div.pk }}" {% if div.pk == team.division.pk %}selected{% endif %}>{{ div.leaguegrp.gender }} {{ div.leaguegrp.season }} League {{ div.leaguegrp.displayyear }} Division {{ div.name }}</option>
+													{% endfor %}
+												</select>
+											<p>Team Address:
+												<textarea class="form-control" rows="4" cols="65" name="edit-team-address" form="edit-team-form-{{ team.pk }}">{{ team.address }}</textarea>
+											</p>
+										</div>
+										<div class="modal-footer">
+											<button type="submit" class="btn btn-primary">Edit Team</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						</td>
+						<td><a href="{% url 'PandDDL:adminTeamDelete' team.pk %}">Delete</a></td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</table>
+			</div>
+			{% endfor %}	
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="add-new-team" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="add-team-form" name="addTeamForm" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Add New Team</h4>
+				</div>
+				<div class="modal-body">
+					<p>Team Name:
+						<input class="form-control" type="text" name="new-team-name">
+					</p>
+					<p>Team Address:
+						<textarea class="form-control" rows="4" cols="65" name="new-team-address" form="add-team-form"></textarea>
+					</p>
+					<p>Pub Phone Number:
+						<input class="form-control" type="tel" name="new-team-pub-phone">
+					</p>
+					<p>Captain Phone Number:
+						<input class="form-control" type="tel" name="new-team-captain-phone">
+					</p>
+					<p>Division:
+						<select class="form-control" name="new-team-div">
+							<option selected disabled>Select Division</option>
+							{% for div in active_divs %}
+							<option value="{{ div.pk }}">{{ div.leaguegrp.gender }} {{ div.leaguegrp.season }} League {{ div.leaguegrp.displayyear }} Division {{ div.name }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Admin User:<br>
+						<input type="radio" name="userType" value="existing"> Existing User<br>
+						<input type="radio" name="userType" value="new"> New User<br>
+						<input class="form-control add-user" type="text" name="new-user-name-new" id="set-new-admin-user" style="display:none;">
+						<select class="form-control add-user" name="new-user-name-existing" id="set-existing-user" style="display:none;">
+							{% for user in all_users %}
+							<option value="{{ user.pk }}">{{ user.username }}</option>
+							{% endfor %}
+						</select>
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Create Team</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="points-deduction-create" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="points-deduct-form" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Points Deduction</h4>
+				</div>
+				<div class="modal-body">
+					<p>Team:</p>
+					<p>
+						<select class="form-control" name="points-deduction-team">
+							<option selected disabled>Select Team</option>
+							{% for team in active_teams %}
+							<option value="{{ team.pk }}">{{ team.name }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Points Deducted: <input class="form-control" type="number" name="points-deducted"></p>
+					<p>Reason: <input class="form-control" type="text" name="points-deduction-reason"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Deduct Points</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+function resetPasswordAlert(uname, uid) {
+	if (confirm('Are you sure? Password for user ' + uname + ' will be reset to Pandddl180. Please inform the user of this change.')) {
+		window.location.replace("password_change/" + uid)
+	}
+}
+
+var rad = document.addTeamForm.userType;
+var prev = null;
+for (var i = 0; i < rad.length; i++) {
+    rad[i].addEventListener('change', function() {
+    	(prev) ? console.log(prev.value): null;
+        if (this !== prev) {
+        	if (this.value == "existing") {
+    	   		document.getElementById('set-new-admin-user').style.display = 'none';
+    	   		document.getElementById('set-existing-user').style.display = 'block';
+    	   	} else {
+    	   		document.getElementById('set-existing-user').style.display = 'none';
+    	   		document.getElementById('set-new-admin-user').style.display = 'block';
+    	   	}
+        }
+    });
+}
+</script>
+
+{% endblock %}

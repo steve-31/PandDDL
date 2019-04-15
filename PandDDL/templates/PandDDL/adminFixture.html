@@ -1,0 +1,218 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Fixture</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Fixture Admin
+<button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#upload-fixtures">Bulk Upload Fixtures</button>
+</h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<ul class="nav nav-tabs">
+			{% for div in mens_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in mens_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<table class="table">
+					<tr>
+						<th>Date</th>
+						<th colspan=3>Fixture</th>
+						<th>Status</th>
+						<th colspan=2><button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#add-single-fixture-{{ div.pk }}">Add Division {{ div.name }} Fixture</button></th>
+						<div class="modal fade" id="add-single-fixture-{{ div.pk }}" role="dialog">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<form id="upload-fixtures-form" action="." method="POST">{% csrf_token %}
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal">&times;</button>
+											<h4 class="modal-title">Add Division {{ div.name }} Fixture</h4>
+										</div>
+										<div class="modal-body">
+											<input type="hidden" name="fixture-div" value="{{ div.pk }}">
+											<p>Home Team:</p>
+											<p>
+												<select class="form-control" name="fixture-home-team">
+													<option selected disabled>Select Team</option>
+													{% for team in mens_teams %}
+													{% if team.division.pk == div.pk %}
+													<option value="{{ team.pk }}">{{ team.name }}</option>
+													{% endif %}
+													{% endfor %}
+												</select>
+											</p>
+											<p>Away Team:</p>
+											<p>
+												<select class="form-control" name="fixture-away-team">
+													<option selected disabled>Select Team</option>
+													{% for team in mens_teams %}
+													{% if team.division.pk == div.pk %}
+													<option value="{{ team.pk }}">{{ team.name }}</option>
+													{% endif %}
+													{% endfor %}
+												</select>
+											</p>
+											<p>Date:</p>
+											<p><input class="form-control" type="date" name="fixture-date"></p>
+										</div>
+										<div class="modal-footer">
+											<button type="submit" class="btn btn-primary">Create Fixture</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</tr>
+					{% for fix in mens_fixtures %}
+					{% if fix.division.pk == div.pk %}
+					<tr>
+						<td>{{ fix.date }}</td>
+						<td><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.hometeam.name }}</a></td>
+						<td style="text-align:center;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{% if fix.resultentered %}{{ fix.homescore }}{% endif %} - {% if fix.resultentered %}{{ fix.awayscore }}{% endif %}</a></td>
+						<td style="text-align:right;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.awayteam.name }}</a></td>
+						<td>{% if fix.resultverified %}Verified{% elif fix.resultentered %}Entered{% else %}Not Entered{% endif %}</td>
+						<td><a href="{% url 'PandDDL:adminFixtureEdit' fix.pk %}">Edit</a></td>
+						<td><a href="{% url 'PandDDL:adminFixtureDelete' fix.pk %}">Delete</a></td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</table>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	
+	<div id="ladiesLeague" class="tab-pane fade in">
+		<ul class="nav nav-tabs">
+			{% for div in ladies_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in ladies_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<table class="table">
+					<tr>
+						<th>Date</th>
+						<th colspan=3>Fixture</th>
+						<th>Status</th>
+						<th colspan=2><button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#add-single-fixture-{{ div.pk }}">Add Division {{ div.name }} Fixture</button></th>
+						<div class="modal fade" id="add-single-fixture-{{ div.pk }}" role="dialog">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<form id="upload-fixtures-form" action="." method="POST">{% csrf_token %}
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal">&times;</button>
+											<h4 class="modal-title">Add Division {{ div.name }} Fixture</h4>
+										</div>
+										<div class="modal-body">
+											<input type="hidden" name="fixture-div" value="{{ div.pk }}">
+											<p>Home Team:</p>
+											<p>
+												<select class="form-control" name="fixture-home-team">
+													<option selected disabled>Select Team</option>
+													{% for team in ladies_teams %}
+													{% if team.division.pk == div.pk %}
+													<option value="{{ team.pk }}">{{ team.name }}</option>
+													{% endif %}
+													{% endfor %}
+												</select>
+											</p>
+											<p>Away Team:</p>
+											<p>
+												<select class="form-control" name="fixture-away-team">
+													<option selected disabled>Select Team</option>
+													{% for team in ladies_teams %}
+													{% if team.division.pk == div.pk %}
+													<option value="{{ team.pk }}">{{ team.name }}</option>
+													{% endif %}
+													{% endfor %}
+												</select>
+											</p>
+											<p>Date:</p>
+											<p><input class="form-control" type="date" name="fixture-date"></p>
+										</div>
+										<div class="modal-footer">
+											<button type="submit" class="btn btn-primary">Create Fixture</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</tr>
+					{% for fix in ladies_fixtures %}
+					{% if fix.division.pk == div.pk %}
+					<tr>
+						<td>{{ fix.date }}</td>
+						<td><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.hometeam.name }}</a></td>
+						<td style="text-align:center;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{% if fix.resultentered %}{{ fix.homescore }}{% endif %} - {% if fix.resultentered %}{{ fix.awayscore }}{% endif %}</a></td>
+						<td style="text-align:right;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.awayteam.name }}</a></td>
+						<td>{% if fix.resultverified %}Verified{% elif fix.resultentered %}Entered{% else %}Not Entered{% endif %}</td>
+						<td><a href="{% url 'PandDDL:adminFixtureEdit' fix.pk %}">Edit</a></td>
+						<td><a href="{% url 'PandDDL:adminFixtureDelete' fix.pk %}">Delete</a></td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</table>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+
+
+
+
+<div class="modal fade" id="upload-fixtures" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="upload-fixtures-form" action="{% url 'PandDDL:fixtureUpload' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Upload Fixtures File</h4>
+				</div>
+				<div class="modal-body">
+					<p>League:</p>
+					<p>
+						<select class="form-control" name="fixture-file-league">
+							<option selected disabled>Select League</option>
+							{% for league in active_leagues %}
+							<option value="{{ league.pk }}">{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Upload Fixtures File: <input type="file" name="fixtures-file"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Upload Fixtures</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

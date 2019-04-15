@@ -1,0 +1,24 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>Photo Galleries</h1>
+
+<div class="row">
+	{% for gallery in galleries %}
+	<div class="col-sm-3">
+		<a href="{% url 'PandDDL:gallery' gallery.pk %}"><div class="photo-gallery">
+			<div class="photo-wrapper">
+				<img class="gallery-cover-photo" src="{% if gallery.coverphoto.photo.url == '' or gallery.coverphoto.photo.url == null %}{% static 'PandDDL/media/photos/default.jpg' %}{% else %}{{ gallery.coverphoto.photo.url }}{% endif %}">
+				<div class="gallery-text">
+					<p class="gallery-name"><strong>{{ gallery.name }}</strong></p>
+					<p class="gallery-date">{{ gallery.date }}</p>
+				</div>
+			</div>
+		</div></a>
+	</div>
+	{% endfor %}
+</div>
+
+
+{% endblock %}

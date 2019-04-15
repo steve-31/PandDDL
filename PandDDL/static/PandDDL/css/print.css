@@ -1,0 +1,37 @@
+a[href]:after {
+	content: none !important;
+}
+ 
+#header {
+	display: none;
+}
+
+.table:not(.key-dates-table):not(.team-fixtures) > tbody > tr > td {
+	font-size: x-small;
+	padding: 2px !important;
+}
+
+.page-title {
+	text-align: center;
+	margin:0;
+}
+
+.key-dates-table tr td {
+	font-size: x-small;
+}
+
+.page-print-button {
+	top: 10px;
+	left: 20px;
+	position: absolute;
+}
+
+@media print {
+	.page-print-button {
+		display: none !important;
+	}
+}
+
+@page{
+	margin: 20px;
+}

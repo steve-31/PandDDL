@@ -1,0 +1,276 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Player</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Player Admin
+	<button class="admin-function-button btn btn-primary" data-toggle="modal" data-target="#add-new-player">Add Player</button>
+</h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<ul class="nav nav-tabs">
+			{% for div in mens_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in mens_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<form class="form-inline" id="team-select-form" method="POST" action="{% url 'PandDDL:adminPlayerSelectTeam' %}">{% csrf_token %}
+					<select class="form-control team-select-element team-select-dropdown" name="team-select-{{ forloop.counter }}" id="team-select-{{ forloop.counter }}">
+						{% for team in active_teams %}
+						{% if team.division.pk == div.pk %}
+						<option value="{{ team.pk }}">{{ team.name }}</option>
+						{% endif %}
+						{% endfor %}
+					</select>
+					<button class="form-control btn btn-primary team-select-element" onclick="select_team(event, {{ forloop.counter }})">Select</button>
+				</form>
+				
+				<div id="player-table-{{ forloop.counter }}">
+				
+				</div>
+			</div>
+			{% endfor %}
+
+		</div>
+	</div>
+	
+	<div id="ladiesLeague" class="tab-pane fade in">
+		<ul class="nav nav-tabs">
+			{% for div in ladies_divs %}
+			<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#division{{ div.pk }}">Division {{ div.name }}</a></li>
+			{% endfor %}
+		</ul>
+		
+		<div class="tab-content">
+			{% for div in ladies_divs %}
+			<div id="division{{ div.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+				<ul class="nav nav-tabs">
+					{% for team in active_teams %}
+					{% if team.division.pk == div.pk %}
+					<li{% if forloop.counter0 == 0 %} class="active"{% endif %}><a data-toggle="tab" href="#team{{ team.pk }}">{{ team.name }}</a></li>
+					{% endif %}
+					{% endfor %}
+				</ul>
+				
+				<div class="tab-content">
+					{% for team in active_teams %}
+					{% if team.division.pk == div.pk %}
+					<div id="team{{ team.pk }}" class="tab-pane fade in{% if forloop.counter0 == 0 %} active{% endif %}">
+						<table class="table">
+							<tr>
+								<th>Player</th>
+								<th>Set Captain</th>
+								<th>Edit</th>
+								<th>Delete</th>
+							</tr>
+							{% for player in active_players %}
+							{% if player.team.pk == team.pk %}
+							<tr>
+								<td>{{ player.firstname }} {{ player.surname }} {% if player.iscaptain %}(C){% endif %}</td>
+								<td>{% if not player.iscaptain %}<a href="{% url 'PandDDL:adminPlayerSetCaptain' player.pk %}">Set</a>{% else %}Set{% endif %}
+								<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-player-{{ player.pk }}">Edit</a></td>
+									<div class="modal fade" id="edit-player-{{ player.pk }}" role="dialog">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<form id="edit-player-form" action="." method="POST">{% csrf_token %}
+													<div class="modal-header">
+														<button type="button" class="close" data-dismiss="modal">&times;</button>
+														<h4 class="modal-title">Edit Player</h4>
+													</div>
+													<div class="modal-body">
+														<input type="hidden" name="edit-player-id" value="{{ player.pk }}">
+														<p>Forename:</p>
+														<p><input class="form-control" type="text" name="edit-player-firstname" value="{{ player.firstname }}"></p>
+														<p>Surname:</p>
+														<p><input class="form-control" type="text" name="edit-player-surname" value="{{ player.surname }}"></p>
+														<p>Team:</p>
+														<p>
+															<select class="form-control" name="edit-player-team">
+																<option disabled>Select Team</option>
+																{% for team in active_teams %}
+																<option value="{{ team.pk }}" {% if team.pk == player.team.pk %}selected{% endif %}>{{ team.name }}</option>
+																{% endfor %}
+															</select>
+														</p>
+													</div>
+													<div class="modal-footer">
+														<button type="submit" class="btn btn-primary">Edit Player</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+								<td>{% if not player.iscaptain %}<a href="{% url 'PandDDL:adminPlayerDelete' player.pk %}">Delete</a>{% else %}Delete{% endif %}</td>
+							</tr>
+							{% endif %}
+							{% endfor %}
+						</table>
+					</div>
+					{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="add-new-player" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="new-player-form" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Player Registration</h4>
+				</div>
+				<div class="modal-body">
+					<p>Forename:</p>
+					<p><input class="form-control" type="text" name="new-player-firstname"></p>
+					<p>Surname:</p>
+					<p><input class="form-control" type="text" name="new-player-surname"></p>
+					<p>Date Added:</p>
+					<p><input class="form-control" type="date" name="new-player-date-added" value="{{ today | date:'Y-m-d' }}"></p>
+					<p>Team:</p>
+					<p>
+						<select class="form-control" name="new-player-team">
+							<option selected disabled>Select Team</option>
+							{% for team in active_teams %}
+							<option value="{{ team.pk }}">{{ team.name }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Team Captain:</p>
+					<p><input type="checkbox" name="new-player-iscaptain" value="True"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Register Player</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+function select_team(event, number) {
+	event.preventDefault();
+	var team = $("#team-select-"+number).val();
+	console.log("#team-select-"+number);
+	$.ajax({
+		url: "{% url 'PandDDL:adminPlayerSelectTeam' %}",
+		type: "POST",
+		data: { "team-select" : team, csrfmiddlewaretoken: '{{ csrf_token }}'},
+		success: function(json) {
+			var activeteams = [];
+			{% for team in active_teams %}
+			var team = {
+					"name": "{{ team.name }}",
+					"pk": "{{ team.pk }}"
+			};
+			activeteams.push(team);
+			{% endfor %}
+			var playerlist = "";
+			for (x in json.players) {
+				var teamlist = "";
+				for (y in activeteams) {
+					var selected = "";
+					if (activeteams[y].pk == json.players[x].team) {
+						selected = "selected";
+					}
+					teamlist += "<option value=\""+ activeteams[y].pk +"\" "+ selected +">"+ activeteams[y].name +"</option>";
+				}
+				var capcol = "";
+				var capc = "";
+				var capdel = "";
+				if (json.players[x].iscaptain !== true) {
+					var capcol = "<a href=\"admin/player/captain/"+ json.players[x].pk +"\">Set</a>";
+					var capdel = "<a href=\"admin/player/delete/"+ json.players[x].pk +"\">Delete</a>";
+				} else {
+					var capcol = "Set";
+					var capc = "(C)";
+					var capdel = "Delete";
+				}
+				
+				playerlist = playerlist + "<tr>" +
+					"<td>"+ json.players[x].firstname +" "+ json.players[x].surname +" "+ capc +"</td>" +
+					"<td>"+ json.players[x].dateadded +"</td>" +
+					"<td>" +capcol + "</td>" +
+					"<td><a class=\"admin-a-link\" data-toggle=\"modal\" data-target=\"#edit-player-"+ json.players[x].pk +"\">Edit</a></td>" +
+						"<div class=\"modal fade\" id=\"edit-player-"+ json.players[x].pk +"\" role=\"dialog\">" +
+							"<div class=\"modal-dialog\">" +
+								"<div class=\"modal-content\">" +
+									"<form id=\"edit-player-form\" action=\".\" method=\"POST\">{% csrf_token %}" +
+										"<div class=\"modal-header\">" +
+											"<button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button>" +
+											"<h4 class=\"modal-title\">Edit Player</h4>" +
+										"</div>" +
+										"<div class=\"modal-body\">" +
+											"<input type=\"hidden\" name=\"edit-player-id\" value=\""+ json.players[x].pk +"\">" +
+											"<p>Forename:</p>" +
+											"<p><input class=\"form-control\" type=\"text\" name=\"edit-player-firstname\" value=\""+ json.players[x].firstname +"\"></p>" +
+											"<p>Surname:</p>" +
+											"<p><input class=\"form-control\" type=\"text\" name=\"edit-player-surname\" value=\""+ json.players[x].surname +"\"></p>" +
+											"<p>Date Added:</p>" +
+											"<p><input class=\"form-control\" type=\"date\" name=\"edit-player-date-added\" value=\""+ json.players[x].dateadded +"\"></p>" +	
+											"<p>Team:</p>" +
+											"<p>" +
+												"<select class=\"form-control\" name=\"edit-player-team\">" +
+													"<option disabled>Select Team</option>" +
+													teamlist +
+												"</select>" +
+											"</p>" +
+										"</div>" +
+										"<div class=\"modal-footer\">" +
+											"<button type=\"submit\" class=\"btn btn-primary\">Edit Player</button>" +
+										"</div>" +
+									"</form>" +
+								"</div>" +
+							"</div>" +
+						"</div>" +
+					"<td>"+ capdel +"</td>" +
+				"</tr>";
+			}
+			document.getElementById("player-table-"+number).innerHTML = "<h3>"+ json.team.name + "</h3>" +
+					"<table class=\"table\">" +
+						"<tr>" +
+							"<th>Player</th>" +
+							"<th>Date Added</th>" +
+							"<th>Set Captain</th>" +
+							"<th>Edit</th>" +
+							"<th>Delete</th>" +
+						"</tr>" +
+						playerlist +
+					"</table>" +
+				"</div>";
+		}
+	})
+}
+</script>
+{% endblock %}

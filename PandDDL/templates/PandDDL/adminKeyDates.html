@@ -1,0 +1,126 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item active" aria-current="page">Key Dates</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAGMminutes' %}">AGM Minutes & Files</a></li>
+	</ol>
+</nav>
+
+<h1>Key Date Admin<button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#key-date-create">Add Key Date</button></h1>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions</a></li>
+  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions</a></li>
+</ul>
+
+<div class="tab-content">
+	<div id="mensLeague" class="tab-pane fade in active">
+		<table class="table">
+			<tr>
+				<th>Description</th>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Location</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for kd in mens_key_dates %}
+			<tr>
+				<td>{{ kd.name }}</td>
+				<td>{{ kd.date }}</td>
+				<td>{{ kd.time }}</td>
+				<td>{{ kd.location }}</td>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#key-date-edit-{{ forloop.counter }}">Edit</a></td>
+				<div class="modal fade" id="key-date-edit-{{ forloop.counter }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="edit-key-date-form-{{ forloop.counter }}" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit Key Date</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-key-date-id" value="{{ kd.pk }}">
+									<p>League:</p>
+									<p>
+										<select class="form-control" name="edit-key-date-league">
+											<option disabled>Select League</option>
+											{% for league in active_leagues %}
+											<option value="{{ league.pk }}" {% if league.pk == kd.league.pk %}selected{% endif %}>{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+											{% endfor %}
+										</select>
+									</p>
+									<p>Event Name:</p>
+									<p><input class="form-control" type="text" name="edit-key-date-name" value="{{ kd.name }}"></p>
+									<p>Event Location:</p>
+									<p><input class="form-control" type="text" name="edit-key-date-location" value="{{ kd.location }}"></p>
+									<p>Event Date:</p>
+									<p><input class="form-control" type="date" name="edit-key-date-date" value="{{ kd.date | date:'Y-m-d' }}"></p>
+									<p>Event Time:</p>
+									<p><input class="form-control" type="time" name="edit-key-date-time" value="{{ kd.time | time:'H:i' }}"></p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Submit</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				
+				<td><a href="{% url 'PandDDL:adminKeyDateDelete' kd.pk %}">Delete</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<div id="ladiesLeague" class="tab-pane fade in">
+	
+	</div>
+</div>
+
+<div class="modal fade" id="key-date-create" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="key-date-form" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Add Key Date</h4>
+				</div>
+				<div class="modal-body">
+					<p>League:</p>
+					<p>
+						<select class="form-control" name="key-date-league">
+							<option selected disabled>Select League</option>
+							{% for league in active_leagues %}
+							<option value="{{ league.pk }}">{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+							{% endfor %}
+						</select>
+					</p>
+					<p>Event Name:</p>
+					<p><input class="form-control" type="text" name="key-date-name"></p>
+					<p>Event Location:</p>
+					<p><input class="form-control" type="text" name="key-date-location"></p>
+					<p>Event Date:</p>
+					<p><input class="form-control" type="date" name="key-date-date"></p>
+					<p>Event Time:</p>
+					<p><input class="form-control" type="time" name="key-date-time"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

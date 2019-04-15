@@ -1,0 +1,85 @@
+{% load static %}
+
+<head>
+	<title>P&amp;DDL</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/style.css' %}" type="text/css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body class="sticky-footer stretched">
+	<div id="wrapper" class="clearfix">
+	
+		<header id="header">
+
+			<div id="header-wrap">
+
+				<div class="container clearfix">
+
+					<div id="primary-menu-trigger"><i class="icon-reorder"></i></div>
+
+					<div id="logo">
+						<a href="{% url 'PandDDL:home' %}" data-href="#section-home">P&amp;DDL</a>
+					</div>
+
+					<nav id="primary-menu">
+
+						<ul class="one-page-menu">
+							<li><a href="{% url 'PandDDL:league' active_mens.gender active_mens.season active_mens.year %}"><div>Men's</div></a>
+								<ul>
+									{% for div in active_divisions %}{% if div.leaguegrp == active_mens %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_mens.gender active_mens.season active_mens.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
+								</ul>
+							</li>
+							<li><a href="{% url 'PandDDL:league' active_ladies.gender active_ladies.season active_ladies.year %}"><div>Ladies</div></a>
+								<ul>
+									{% for div in active_divisions %}{% if div.leaguegrp == active_ladies %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_ladies.gender active_ladies.season active_ladies.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
+								</ul>
+							</li>
+							<li><a href="{% url 'PandDDL:archive' %}"><div>Archive</div></a></li>
+							{% if request.user.is_authenticated %}
+								{% if request.user.is_staff %}
+									<li><a href="{% url 'PandDDL:adminPage' %}"><div>{{ request.user.username }}</div></a>
+										<ul>
+											<li class="sub-menu-item"><a href="{% url 'PandDDL:changePassword' request.user.pk %}"><div>Change Password</div></a></li>
+											<li class="sub-menu-item"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
+										</ul>
+									</li>
+								{% else %}
+									<li><a href="{% url 'PandDDL:team' logged_in_team.division.leaguegrp.gender logged_in_team.division.leaguegrp.season logged_in_team.division.leaguegrp.year logged_in_team.division.name logged_in_team.name %}"><div>{{ logged_in_team.name }}</div></a>
+										<ul>
+											<li class="sub-menu-item"><a href="{% url 'PandDDL:changePassword' logged_in_team.admin.pk %}"><div>Change Password</div></a></li>
+											<li class="sub-menu-item"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
+										</ul>
+									</li>
+								{% endif %}
+							{% else %}
+								<li><a href="{% url 'PandDDL:login' %}"><div>Login</div></a></li>
+							{% endif %}
+						</ul>
+
+					</nav>
+
+				</div>
+
+			</div>
+
+		</header>
+		
+		
+		<section id="content">
+
+{% block content %}
+{% endblock %}
+
+		</section>
+		<!-- <footer id="footer" class="dark">
+			
+		</footer> -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+{% block scripts %}
+{% endblock %}
+</body>
+
+

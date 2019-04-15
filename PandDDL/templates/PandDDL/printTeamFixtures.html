@@ -1,0 +1,59 @@
+{% load static %}
+<head>
+	<title>P&amp;DDL</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/print.css' %}" type="text/css" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/style.css' %}" type="text/css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+	<button class="btn btn-primary page-print-button" onclick="window.print();">Print Fixture List</button>
+	<p class="page-title"><strong>Peterborough &amp; District Darts League</strong></p>
+	<p class="page-title"><strong>{{ lge.gender }} {{ lge.season }} League {{ lge.displayyear }}</strong></p>
+	<p class="page-title"><strong>{{ team.name }}</strong></p>
+	<div style="height:20px;"></div>
+	<div class="row">
+		<div class="col-sm-2"></div>
+		<div class="col-sm-8">
+			<table class="team-fixtures table">
+				{% for fixture in dates %}
+				<tr>
+					{% if fixture.location %} <!-- Key Date -->
+					<td><strong>{{ fixture.date }}</strong></td>
+					<td><strong>{{ fixture.time }}</strong></td>
+					<td colspan=4><strong>{{ fixture.name }}</strong></td>
+					<td><strong>@ {{ fixture.location }}</strong></td>
+										
+					{% elif fixture.win or fixture.lose %} <!-- Result -->
+					<td>{{ fixture.date }}</td>
+					<td><span style="display:block;text-align:center;">{% if fixture.win == 1 %}W{% else %}L{% endif %}</span></td>
+					<td style="width:30%;">{{ fixture.hometeam.name }}</td>
+					<td><span style="display:block;text-align:center;">{{ fixture.homescore }}</span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;">{{ fixture.awayscore }}</span></td>
+					<td style="width:30%;"><span style="display:block;text-align:right;">{{ fixture.awayteam.name }}</span></td>
+					
+					{% elif fixture.bye %}
+					<td>{{ fixture.date }}</td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td style="width:30%;">{{ fixture.team.name }}</td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td style="width:30%;"><span style="display:block;text-align:right;">Bye</span></td>
+					
+					{% else %} <!-- Fixture -->
+					<td>{{ fixture.date }}</td>
+					<td></td>
+					<td style="width:30%;">{{ fixture.hometeam.name }}</td>
+					<td></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td></td>
+					<td style="width:30%;"><span style="display:block;text-align:right;">{{ fixture.awayteam.name }}</span></td>
+					{% endif %}
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>

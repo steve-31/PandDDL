@@ -1,0 +1,441 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+{% if beforegame and not fixture.resultverified or not fixture.resultverified and not usertest %} <!-- before the game and game not conceded -->
+<h1>{{ fixture.hometeam.name }} - {{ fixture.awayteam.name }}</h1>
+{% if fixture.walkover %}
+<p>* Fixture conceded by {% if fixture.homescore > fixture.awayscore %}{{ fixture.awayteam.name }}{% else %}{{ fixture.hometeam.name }}{% endif %}{% if not fixture.resultverified %}, awaiting verification from League Admin{% endif %}</p>
+{% else %}
+{% if request.user == fixture.hometeam.admin or request.user == fixture.awayteam.admin %}<button class="btn btn-danger concede-button" id="user-concede" onclick="{% if request.user == fixture.hometeam.admin %}homeTeamConcede{% else %}awayTeamConcede{% endif %}()">Concede Game</button>{% endif %}
+{% if request.user.is_staff %}<button class="btn btn-danger concede-button" id="home-concede" onclick="homeTeamConcede()">{{ fixture.hometeam.name }} Concede Game</button>
+<button class="btn btn-danger concede-button" id="away-concede" onclick="awayTeamConcede()">{{ fixture.awayteam.name }} Concede Game</button>{% endif %}
+<form class="form-inline" id="concede-form" method="post" action=".">{% csrf_token %}
+	<input type="hidden" id="home-team-concede" name="home-team-concede">
+	<input type="hidden" id="away-team-concede" name="away-team-concede"> 
+</form>
+{% endif %}
+<h3>Match Date: {{ fixture.date }}</h3>
+<p>Match Location: {{ fixture.hometeam.address }}</p>
+<h2>Form</h2>
+<div class="row">
+	<div class="col-sm-2">
+		{{ fixture.hometeam.name }}
+	</div>
+	<div class="col-sm-2">
+		{% for game in hometeamlast5games %}
+		{% if game.win == 1 %}
+		<div class="team-form-win" onclick="showHomeFormResult({{ forloop.counter0 }})">W</div>
+		{% else %}
+		<div class="team-form-lose" onclick="showHomeFormResult({{ forloop.counter0 }})">L</div>
+		{% endif %}
+		{% endfor %}
+	</div>
+	<div class="col-sm-5">
+		<p id="home-form-result"></p>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">
+		{{ fixture.awayteam.name }}
+	</div>
+	<div class="col-sm-2">
+		{% for game in awayteamlast5games %}
+		{% if game.win == 1 %}
+		<div class="team-form-win" onclick="showAwayFormResult({{ forloop.counter0 }})">W</div>
+		{% else %}
+		<div class="team-form-lose" onclick="showAwayFormResult({{ forloop.counter0 }})">L</div>
+		{% endif %}
+		{% endfor %}
+	</div>
+	<div class="col-sm-5">
+		<p id="away-form-result"></p>
+	</div>
+</div>
+
+
+{% elif not fixture.resultentered and usertest %} <!-- result not been entered and user can enter result -->
+<h1>{{ fixture.hometeam.name }} <span id="total_home_score">0</span> - <span id="total_away_score">0</span> {{ fixture.awayteam.name }}</h1>
+{% if request.user == fixture.hometeam.admin or request.user == fixture.awayteam.admin %}<button class="btn btn-danger concede-button" id="user-concede" onclick="{% if request.user == fixture.hometeam.admin %}homeTeamConcede{% else %}awayTeamConcede{% endif %}()">Concede Game</button>{% endif %}
+{% if request.user.is_staff %}<button class="btn btn-danger concede-button" id="home-concede" onclick="homeTeamConcede()">{{ fixture.hometeam.name }} Concede Game</button>
+<button class="btn btn-danger concede-button" id="away-concede" onclick="awayTeamConcede()">{{ fixture.awayteam.name }} Concede Game</button>{% endif %}
+<form class="form-inline" id="concede-form" method="post" action=".">{% csrf_token %}
+	<input type="hidden" id="home-team-concede" name="home-team-concede">
+	<input type="hidden" id="away-team-concede" name="away-team-concede"> 
+</form>
+<form class="form-inline" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
+<p>Upload Result Sheet: <input type="file" id="result-sheet" name="result-sheet"></p>
+
+<h2>Singles</h2>
+
+<input type="hidden" id="home-team-score" name="home-team-score" value="">
+<input type="hidden" id="away-team-score" name="away-team-score" value="">
+
+<div class="row">
+	<div class="col-sm-9">
+		<table class="fixture-table table table-striped">
+		{% for i in "xxxxx" %}
+			<tr>
+				<td class="fixture-table-row">
+					<div class="row" style="margin:10px 0 10px 0;">
+						<div class="col-sm-4">
+							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Home Player</option>
+								{% for player in home_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+						</div>
+						
+						<div class="col-sm-4">
+							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number>
+							<div style="display:inline-block;width:5%;text-align:center">-</div> 
+							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number>
+						</div>
+						
+						<div class="col-sm-4">
+							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Away Player</option>
+								{% for player in away_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</td>
+			</tr>
+		{% endfor %}
+		</table>
+	</div>
+</div>
+
+<h2>Doubles</h2>
+<div class="row">
+	<div class="col-sm-9">
+		<table class="fixture-table table table-striped">
+		{% for i in "xx" %}
+			<tr>
+				<td class="fixture-table-row">
+					<div class="row" style="margin:10px 0 10px 0;">
+						<div class="col-sm-4">
+							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Home Player 1</option>
+								{% for player in home_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+							<p style="margin: 5px;text-align: center;">&amp;</p>
+							<select class="form-control" style="width:100%" name="doubles-home-player-2-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Home Player 2</option>
+								{% for player in home_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+						</div>
+						
+						<div class="col-sm-4" style="line-height: 97px;">
+							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number>
+							<div style="display:inline-block;width:5%;text-align:center">-</div> 
+							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number>
+						</div>
+						
+						<div class="col-sm-4">
+							<select class="form-control" style="width:100%" name="doubles-away-player-1-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Away Player 1</option>
+								{% for player in away_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+							<p style="margin: 5px;text-align: center;">&amp;</p>
+							<select class="form-control" style="width:100%" name="doubles-away-player-2-{{ forloop.counter }}">
+								<option class="player_select" disabled selected>Away Player 2</option>
+								{% for player in away_team_players %}
+								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+								{% endfor %}
+							</select>
+						</div>
+						
+					</div>
+				</td>
+			</tr>
+		{% endfor %}
+		</table>
+	</div>
+</div>
+<h2>180's</h2>
+
+<div class="row">
+	{% for i in "xxxxxx" %}
+	<div class="col-sm-2">
+		<select class="form-control" style="width:100%" name="maximums-{{ forloop.counter }}">
+			<option class="player_select" selected value="">Player</option>
+			{% for player in home_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+			{% for player in away_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+		</select>
+	</div>
+	{% endfor %}
+</div>
+
+<p><a class="admin-a-link" onclick="show180s()">+ Additional 180's</a></p>
+
+<div class="row" id="second-180s">
+	{% for i in "xxxxxx" %}
+	<div class="col-sm-2">
+		<select class="form-control" style="width:100%" name="maximums-2-{{ forloop.counter }}">
+			<option class="player_select" selected value="">Player</option>
+			{% for player in home_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+			{% for player in away_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+		</select>
+	</div>
+	{% endfor %}
+</div>
+
+<h2>100+ Finishes</h2>
+
+<div class="row">
+	{% for i in "xxxxxx" %}
+	<div class="col-sm-2">
+		<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
+			<option class="player_select" selected value="">Player</option>
+			{% for player in home_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+			{% for player in away_team_players %}
+			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			{% endfor %}
+		</select>
+		<input class="form-control" name="finishes-amount-{{ forloop.counter }}" style="width:50%" placeholder="Score">
+	</div>
+	{% endfor %}
+</div>
+
+<button class="form-control btn btn-primary" type="submit" style="margin-top:20px;">Submit Results</button>
+</form>
+
+{% else %} <!-- any other scenario -->
+<h1>{{ fixture.hometeam.name }} {{ fixture.homescore }} - {{ fixture.awayscore }} {{ fixture.awayteam.name }}</h1>
+{% if not fixture.resultverified and usertest %}<p>*Fixture not yet verified</p>{% endif %}
+{% if fixture.walkover %}<p>* Fixture conceded by {% if fixture.homescore > fixture.awayscore %}{{ fixture.awayteam.name }}{% else %}{{ fixture.hometeam.name }}{% endif %}{% if not fixture.resultverified %}, awaiting verification from League Admin{% endif %}</p>{% endif %}
+
+<div class="row">
+	<div class="col-sm-7" style="padding:0 30px 0 20px;">
+		{% if single_matches|length != 0 %}
+		<h2>Singles</h2>
+		<table class="table">
+		{% for match in single_matches %}
+			<tr>
+				<td style="width:40%;"><span style="display:block;">{{ match.homeplayer.firstname }} {{ match.homeplayer.surname }}</span></td>
+				<td><span style="display:block;text-align:center;">{{ match.homescore }}</span></td>
+				<td><span style="display:block;text-align:center;">-</span></td>
+				<td><span style="display:block;text-align:center;">{{ match.awayscore }}</span></td>
+				<td style="width:40%;"><span style="display:block; text-align:right;">{{ match.awayplayer.firstname }} {{ match.awayplayer.surname }}</span></td>
+			</tr>
+		{% endfor %}
+		</table>
+		{% endif %}
+
+		{% if double_matches|length != 0 %}
+		<h2>Doubles</h2>
+		<table class="table">
+		{% for match in double_matches %}
+			<tr id="dfixture-show-{{ forloop.counter }}">
+				<td style="width:40%;"><span style="display:block;">{{ match.homeplayer1.firstname }} {{ match.homeplayer1.surname }}</span><span style="display:block;">{{ match.homeplayer2.firstname }} {{ match.homeplayer2.surname }}</span></td>
+				<td><span style="display:block;text-align:center;">{{ match.homescore }}</span></td>
+				<td><span style="display:block;text-align:center;">-</span></td>
+				<td><span style="display:block;text-align:center;">{{ match.awayscore }}</span></td>
+				<td style="width:40%;"><span style="display:block; text-align:right;">{{ match.awayplayer1.firstname }} {{ match.awayplayer1.surname }}</span><span style="display:block; text-align:right;">{{ match.awayplayer2.firstname }} {{ match.awayplayer2.surname }}</span></td>
+			</tr>
+		{% endfor %}
+		</table>
+		{% endif %}
+	</div>
+
+	
+
+	<div class="col-sm-5" style="padding:0 20px 0 30px;">
+		{% if maximums|length != 0 %}
+		<h2>180's</h2>
+		<table class="table">
+			{% for m in maximums %}
+			<tr>
+				<td>{{ m.player.firstname }} {{ m.player.surname }}</td>
+				<td><strong>{{ m.player.team.name }}</strong></td>
+			</tr>
+			{% endfor %}
+		</table>
+		{% endif %}
+
+		{% if topFinishes|length != 0 %}
+		<h2>100+ Finishes</h2>
+		<table class="table">
+			{% for t in topFinishes %}
+			<tr>
+				<td>{{ t.player.firstname }} {{ t.player.surname }}</td>
+				<td><strong>{{ t.player.team.name }}</strong></td>
+				<td>{{ t.finish }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+		{% endif %}
+	</div>
+</div>
+{% endif %}
+
+{% if fixture.resultentered and not fixture.resultverified and request.user.is_staff %}
+
+<div class="row">
+	<div class="col-sm-6">
+		<h2>Result Sheet</h2>
+		<img class="result-sheet-image" src="{{ fixture.resultsheet.url }}" alt="{{ fixture.hometeam.name }} v {{ fixture.awayteam.name}} Result Sheet">
+	</div>
+</div>
+
+<form class="form-inline" id="verify-result-form" method="post" action=".">{% csrf_token %}
+	I confirm that this result is correct: <input type="checkbox" id="result-verified" name="result-verified">
+	<input type="hidden" id="result-rejected" name="result-rejected">
+	<br>
+	<button class="btn btn-success" type="submit">Verify Result</button>
+</form>
+
+{% endif %}
+
+{% if request.user.is_staff %}
+<a href="{% url 'PandDDL:adminFixtureEdit' fixture.pk %}"><button class="btn btn-danger" id="edit-result-btn">Edit Result</button></a>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.onload = updateScore;
+
+function rejectResult() {
+	if (confirm("Please confirm that you wish to reject the result input for this fixture, as a result the fixture will be reset. Do you wish to continue?")) {
+		document.getElementById("result-rejected").value = true;
+		document.getElementById("verify-result-form").submit();
+	}
+}
+
+function homeTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.hometeam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("home-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
+
+function awayTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.awayteam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("away-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
+
+function showHomeFormResult(number){
+	if (number == 0) {
+		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.0.fixture.date }}</strong> {{ hometeamlast5games.0.fixture.hometeam.name }} {{ hometeamlast5games.0.fixture.homescore }} - {{ hometeamlast5games.0.fixture.awayscore }} {{ hometeamlast5games.0.fixture.awayteam.name }}";
+	} else if (number == 1) {
+		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.1.fixture.date }}</strong> {{ hometeamlast5games.1.fixture.hometeam.name }} {{ hometeamlast5games.1.fixture.homescore }} - {{ hometeamlast5games.1.fixture.awayscore }} {{ hometeamlast5games.1.fixture.awayteam.name }}";
+	} else if (number == 2) {
+		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.2.fixture.date }}</strong> {{ hometeamlast5games.2.fixture.hometeam.name }} {{ hometeamlast5games.2.fixture.homescore }} - {{ hometeamlast5games.2.fixture.awayscore }} {{ hometeamlast5games.2.fixture.awayteam.name }}";
+	} else if (number == 3) {
+		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.3.fixture.date }}</strong> {{ hometeamlast5games.3.fixture.hometeam.name }} {{ hometeamlast5games.3.fixture.homescore }} - {{ hometeamlast5games.3.fixture.awayscore }} {{ hometeamlast5games.3.fixture.awayteam.name }}";
+	} else if (number == 4) {
+		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.4.fixture.date }}</strong> {{ hometeamlast5games.4.fixture.hometeam.name }} {{ hometeamlast5games.4.fixture.homescore }} - {{ hometeamlast5games.4.fixture.awayscore }} {{ hometeamlast5games.4.fixture.awayteam.name }}";
+	}
+}
+
+function showAwayFormResult(number){
+	if (number == 0) {
+		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.0.fixture.date }}</strong> {{ awayteamlast5games.0.fixture.hometeam.name }} {{ awayteamlast5games.0.fixture.homescore }} - {{ awayteamlast5games.0.fixture.awayscore }} {{ awayteamlast5games.0.fixture.awayteam.name }}";
+	} else if (number == 1) {
+		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.1.fixture.date }}</strong> {{ awayteamlast5games.1.fixture.hometeam.name }} {{ awayteamlast5games.1.fixture.homescore }} - {{ awayteamlast5games.1.fixture.awayscore }} {{ awayteamlast5games.1.fixture.awayteam.name }}";
+	} else if (number == 2) {
+		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.2.fixture.date }}</strong> {{ awayteamlast5games.2.fixture.hometeam.name }} {{ awayteamlast5games.2.fixture.homescore }} - {{ awayteamlast5games.2.fixture.awayscore }} {{ awayteamlast5games.2.fixture.awayteam.name }}";
+	} else if (number == 3) {
+		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.3.fixture.date }}</strong> {{ awayteamlast5games.3.fixture.hometeam.name }} {{ awayteamlast5games.3.fixture.homescore }} - {{ awayteamlast5games.3.fixture.awayscore }} {{ awayteamlast5games.3.fixture.awayteam.name }}";
+	} else if (number == 4) {
+		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.4.fixture.date }}</strong> {{ awayteamlast5games.4.fixture.hometeam.name }} {{ awayteamlast5games.4.fixture.homescore }} - {{ awayteamlast5games.4.fixture.awayscore }} {{ awayteamlast5games.4.fixture.awayteam.name }}";
+	}
+}
+
+function updateScore() {
+	var homeScore = 0;
+	var awayScore = 0;
+	
+	var singles1home = parseInt(document.getElementById("home_score_s1").value);
+	var singles1away = parseInt(document.getElementById("away_score_s1").value);
+	var singles2home = parseInt(document.getElementById("home_score_s2").value);
+	var singles2away = parseInt(document.getElementById("away_score_s2").value);
+	var singles3home = parseInt(document.getElementById("home_score_s3").value);
+	var singles3away = parseInt(document.getElementById("away_score_s3").value);
+	var singles4home = parseInt(document.getElementById("home_score_s4").value);
+	var singles4away = parseInt(document.getElementById("away_score_s4").value);
+	var singles5home = parseInt(document.getElementById("home_score_s5").value);
+	var singles5away = parseInt(document.getElementById("away_score_s5").value);
+	
+	var doubles1home = parseInt(document.getElementById("home_score_d1").value);
+	var doubles1away = parseInt(document.getElementById("away_score_d1").value);
+	var doubles2home = parseInt(document.getElementById("home_score_d2").value);
+	var doubles2away = parseInt(document.getElementById("away_score_d2").value);
+	
+	if (singles1home > singles1away) {
+		homeScore = homeScore + 1;
+	} else if (singles1home < singles1away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (singles2home > singles2away) {
+		homeScore = homeScore + 1;
+	} else if (singles2home < singles2away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (singles3home > singles3away) {
+		homeScore = homeScore + 1;
+	} else if (singles3home < singles3away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (singles4home > singles4away) {
+		homeScore = homeScore + 1;
+	} else if (singles4home < singles4away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (singles5home > singles5away) {
+		homeScore = homeScore + 1;
+	} else if (singles5home < singles5away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (doubles1home > doubles1away) {
+		homeScore = homeScore + 1;
+	} else if (doubles1home < doubles1away) {
+		awayScore = awayScore + 1;
+	}
+	
+	if (doubles2home > doubles2away) {
+		homeScore = homeScore + 1;
+	} else if (doubles2home < doubles2away) {
+		awayScore = awayScore + 1;
+	}
+	console.log(homeScore);
+	console.log(awayScore);
+	document.getElementById("total_home_score").innerHTML = homeScore;
+	document.getElementById("home-team-score").value = homeScore;
+	document.getElementById("total_away_score").innerHTML = awayScore;
+	document.getElementById("away-team-score").value = awayScore;
+}
+
+function show180s() {
+	document.getElementById("second180s").style.display = 'block';
+}
+</script>
+{% endblock %}

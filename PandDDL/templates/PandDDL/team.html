@@ -1,0 +1,115 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+	<h1>{{ team.name }}{% if not team.paidleaguefee %}*{% endif %}</h1>
+	{% if not team.paidleaguefee %}<p><strong>*League Fee Not Paid</strong></p>{% endif %}
+	<h3>Team Info</h3>
+	<p><strong>Address:</strong> {{ team.address|linebreaks }}</p>
+	<p><strong>Pub Contact Number:</strong> {{ team.pubphoneno }}</p>
+	<p><strong>Team Captain:</strong> {{ captain.firstname }} {{ captain.surname }}</p>
+	<p><strong>Captain Contact Number:</strong> {{ team.captainphoneno }}</p>
+	<div class="row">
+		<div class="col-sm-6">
+			<!-- <div id="googleMap" style="width:100%;height:400px;"></div> -->
+		</div>
+	</div>
+	
+	
+	<h3>Players</h3>
+	<table class="table">
+		<tr>
+			<th class="table-double-line-after"></th>
+			<th class="table-line-before table-double-line-after table-center-align" colspan=5>Singles</th>
+			<th class="table-line-before table-double-line-after table-center-align" colspan=5>Doubles</th>
+		<tr>
+			<th class="table-double-line-after">Player</th>
+			<th class="table-line-before table-double-line-after table-center-align">Pld</th>
+			<th class="table-double-line-after table-center-align">W</th>
+			<th class="table-double-line-after table-center-align">L</th>
+			<th class="table-double-line-after table-center-align">F</th>
+			<th class="table-double-line-after table-center-align">A</th>
+			<th class="table-line-before table-double-line-after table-center-align">Pld</th>
+			<th class="table-double-line-after table-center-align">W</th>
+			<th class="table-double-line-after table-center-align">L</th>
+			<th class="table-double-line-after table-center-align">F</th>
+			<th class="table-double-line-after table-center-align">A</th>
+		</tr>
+		{% for player in singlesResults %}
+		<tr>
+			<td>{{ player.playerFirstName }} {{ player.playerSurname }} {% if player.player == captain.pk %}(C){% endif %}</td>
+			<td class="table-line-before table-center-align">{{ player.Cplayed }}</td>
+			<td class="table-center-align">{{ player.Cwon }}</td>
+			<td class="table-center-align">{{ player.Clost }}</td>
+			<td class="table-center-align">{{ player.Clegs_for }}</td>
+			<td class="table-center-align">{{ player.Clegs_ags }}</td>
+			{% for p in doublesResults %}
+			{% if p.player == player.player %}
+			<td class="table-line-before table-center-align">{{ p.Cplayed }}</td>
+			<td class="table-center-align">{{ p.Cwon }}</td>
+			<td class="table-center-align">{{ p.Clost }}</td>
+			<td class="table-center-align">{{ p.Clegs_for }}</td>
+			<td class="table-center-align">{{ p.Clegs_ags }}</td>
+			{% endif %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</table>
+	
+	<h3>Fixtures<a href="{% url 'PandDDL:printTeamFixtures' team.name %}" target="_blank"><button class="btn btn-primary admin-function-button">Print Fixtures for {{ team.name }}</button></a></h3>
+	<div class="row">
+		<div class="col-sm-9">
+			<table class="table">
+				{% for fixture in dates %}
+				{% if fixture.win or fixture.lose %}
+				<tr>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.date }}</a></td>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{% if fixture.win == 1 %}W{% else %}L{% endif %}</a></td>
+					<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.homescore }}</a></td>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.awayscore }}</a></td>
+					<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+				</tr>
+				{% elif fixture.bye %}
+				<tr>
+					<td><span style="display:block;text-align:center;">{{ fixture.date }}</span></td>
+					<td></td>
+					<td style="width:35%;">{{ fixture.team.name }}</td>
+					<td></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td></td>
+					<td style="width:35%;"><span style="display:block;text-align:right;">Bye</span></td>
+				</tr>
+				
+				{% else %}
+				<tr>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">{{ fixture.date }}</a></td>
+					<td></td>
+					<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}">{{ fixture.hometeam.name }}</a></td>
+					<td></td>
+					<td><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:center;">-</a></td>
+					<td></td>
+					<td style="width:35%;"><a href="{% url 'PandDDL:fixture' fixture.pk %}" style="display:block;text-align:right;">{{ fixture.awayteam.name }}</a></td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function myMap() {
+var mapProp= {
+    center:new google.maps.LatLng(51.508742,-0.120850),
+    zoom:5,
+};
+var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=myMap"></script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayer' %}">Player</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPlayerComps' %}">Player Competitions</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminKeyDates' %}">Key Dates</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminAnnouncements' %}">Announcements</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPhotoGalleries' %}">Photo Galleries</a></li>
+		<li class="breadcrumb-item active" aria-current="page">AGM Minutes & Files</li>
+	</ol>
+</nav>
+
+<h1>AGM Minutes Admin <button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#new-agm">New AGM</button></h1>
+
+<table class="table">
+	{% for min in agmminutes %}
+	<tr>
+		<td>{{ min.date }}</td>
+		<td>{{ min.location }}</td>
+		<td class="agm-minutes-text">{% if min.minutes %}<a href="{% url 'PandDDL:fileDownload' min.minutes.path %}">Download Minutes</a>{% else %}No Minutes File{% endif %}</td>
+		<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-agm-{{ forloop.counter }}">Edit</a></td>
+		<td><a href="{% url 'PandDDL:AGMminutesDelete' min.pk %}">Delete</a></td>
+	</tr>
+	
+	<div class="modal fade" id="edit-agm-{{ forloop.counter }}" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="agm-minutes-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Edit AGM {{ min.date }}</h4>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" name="agm-id" value="{{ min.pk }}">
+						<p>AGM Date:</p>
+						<input class="form-control" type="date" name="edit-agm-date" value="{{ min.date | date:'Y-m-d' }}">
+						<p>AGM Location:</p>
+						<input class="form-control" type="text" name="edit-agm-location" value="{{ min.location }}">
+						<p>Minutes:</p>
+						{% if min.minutes %}Uploaded: {{ min.minutes.name }} <br>
+						<input type="checkbox" name="del-mins" value="True"> Remove Minutes File{% endif %}
+						<input type="file" name="edit-AGMminutesfile">
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-primary">Edit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	{% endfor %}
+</table>
+
+<div class="modal fade" id="new-agm" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="agm-minutes-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">New AGM</h4>
+				</div>
+				<div class="modal-body">
+					<p>AGM Date:</p>
+					<input class="form-control" type="date" name="agm-date">
+					<p>Location:</p>
+					<input class="form-control" type="text" name="agm-location">
+					<p>Minutes:</p>
+					<input type="file" name="AGMminutesfile">
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<h1>Files Admin <button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#new-file">Add File</button></h1>
+
+<table class="table">
+	{% for file in files %}
+	<tr>
+		<td>{{ file.description }}</td>
+		<td class="agm-minutes-text">{% if file.file %}<a href="{% url 'PandDDL:fileDownload' file.file.path %}">Download File</a>{% endif %}</td>
+		<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-file-{{ forloop.counter }}">Edit</a></td>
+		<td><a href="{% url 'PandDDL:FileDelete' file.pk %}">Delete</a></td>
+	</tr>
+	
+	<div class="modal fade" id="edit-file-{{ forloop.counter }}" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="edit-file-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Edit File</h4>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" name="edit-file-id" value="{{ file.pk }}">
+						<p>File Description:
+						<input class="form-control" type="text" name="edit-file-desc" value="{{ file.description }}"></p>
+						<p>File:<br>
+						{% if file.file %}Uploaded: {{ file.file.name }}{% endif %}
+						<input type="file" name="edit-file"></p>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-primary">Edit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	{% endfor %}
+</table>
+
+<div class="modal fade" id="new-file" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="new-file-form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Add File</h4>
+				</div>
+				<div class="modal-body">
+					<p>File Description:</p>
+					<input class="form-control" type="text" name="file-desc">
+					<p>File:</p>
+					<input type="file" name="file">
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+
+{% endblock %}

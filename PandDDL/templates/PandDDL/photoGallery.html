@@ -1,0 +1,39 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>{{ gallery.name }}<span class="back-page-link"><a href="{% url 'PandDDL:photoGalleries' %}">Back to Galleries</a></span></h1>
+<h4>{{ gallery.date }}</h4>
+
+{% if gallery.photos.all|length != 0 %}
+<div id="myCarousel" class="carousel slide" data-ride="carousel">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+    	{% for p in gallery.photos.all %}
+	    <li data-target="#myCarousel" data-slide-to="{{ forloop.counter0 }}" {% if forloop.counter0 == 0 %}class="active"{% endif %}></li>
+	    {% endfor %}
+    </ol>
+
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner">
+    	{% for p in gallery.photos.all %}
+	    <div class="item {% if forloop.counter0 == 0 %}active{% endif %}">
+	     	<img src="{{ p.photo.url }}" alt="{{ gallery.name }}_{{ forloop.counter }}" style="width:100%; height:600px; object-fit:contain;">
+	    </div>
+		{% endfor %}
+
+    </div>
+
+    <!-- Left and right controls -->
+    <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right"></span>
+      <span class="sr-only">Next</span>
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
