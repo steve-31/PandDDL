@@ -4,6 +4,8 @@
 	<title>P&amp;DDL</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" href="{% static 'PandDDL/css/style.css' %}" type="text/css" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/font-icons.css' %}" type="text/css" />
+	<link rel="stylesheet" href="{% static 'PandDDL/css/responsive.css' %}" type="text/css" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head>
 
@@ -15,15 +17,18 @@
 			<div id="header-wrap">
 
 				<div class="container clearfix">
-
-					<div id="primary-menu-trigger"><i class="icon-reorder"></i></div>
-
+				
+					
+					
 					<div id="logo">
-						<a href="{% url 'PandDDL:home' %}" data-href="#section-home">P&amp;DDL</a>
+						<a href="{% url 'PandDDL:home' %}">P&amp;DDL</a>
+						<div id="primary-menu-trigger" onclick="showMobileMenu();"><i class="icon-reorder"></i></div>
 					</div>
+					
+					
 
 					<nav id="primary-menu">
-
+						
 						<ul class="one-page-menu">
 							<li><a href="{% url 'PandDDL:league' active_mens.gender active_mens.season active_mens.year %}"><div>Men's</div></a>
 								<ul>
@@ -60,6 +65,36 @@
 					</nav>
 
 				</div>
+				
+				<nav id="mobile-menu">
+					<ul class="mobile-menu-items">
+						<li onclick="showMensMobileMenu();"><a href="#"><div>Men's</div></a>
+							<ul class="submenu-mobile-list" id="mobile-menu-mens-divs">
+								{% for div in active_divisions %}{% if div.leaguegrp == active_mens %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_mens.gender active_mens.season active_mens.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
+							</ul>
+						</li>
+						<li onclick="showLadiesMobileMenu();"><a href="#"><div>Ladies</div></a>
+							<ul class="submenu-mobile-list" id="mobile-menu-ladies-divs">
+								{% for div in active_divisions %}{% if div.leaguegrp == active_ladies %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_ladies.gender active_ladies.season active_ladies.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
+							</ul>
+						</li>
+						<li><a href="{% url 'PandDDL:archive' %}"><div>Archive</div></a></li>
+						{% if request.user.is_authenticated %}
+							{% if request.user.is_staff %}
+								<li><a href="{% url 'PandDDL:adminPage' %}"><div>{{ request.user.username }}</div></a></li>
+								<li class="user-menu-action"><a href="{% url 'PandDDL:changePassword' request.user.pk %}"><div>Change Password</div></a></li>
+								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
+								
+							{% else %}
+								<li><a href="{% url 'PandDDL:team' logged_in_team.division.leaguegrp.gender logged_in_team.division.leaguegrp.season logged_in_team.division.leaguegrp.year logged_in_team.division.name logged_in_team.name %}"><div>{{ logged_in_team.name }}</div></a></li>
+								<li class="user-menu-action"><a href="{% url 'PandDDL:changePassword' logged_in_team.admin.pk %}"><div>Change Password</div></a></li>
+								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
+							{% endif %}
+						{% else %}
+							<li><a href="{% url 'PandDDL:login' %}"><div>Login</div></a></li>
+						{% endif %}
+					</ul>
+				</nav>
 
 			</div>
 
@@ -72,14 +107,89 @@
 {% endblock %}
 
 		</section>
-		<!-- <footer id="footer" class="dark">
-			
-		</footer> -->
+		<footer id="footer">
+			<div id="footer-wrap">
+				<div class="row">
+					<div class="col-md-3">
+						<p>&copy; Copyright Peterborough &amp; District Darts League {% now "Y" %}</p>
+						<p><a href="{% url 'PandDDL:contactUs' %}">Contact Us</a></p>
+					</div>
+					<div class="col-md-3">
+						<ul class="footer-list">
+							<li><a href="{% url 'PandDDL:league' active_mens.gender active_mens.season active_mens.year %}">Men's Divisions</a></li>
+							<li><a href="{% url 'PandDDL:league' active_ladies.gender active_ladies.season active_ladies.year %}">Ladies Divisions</a></li>
+							<li><a href="{% url 'PandDDL:archive' %}">Archive</a></li>
+						</ul>
+					</div>
+					<div class="col-md-3">
+						<ul class="footer-list">
+							<li><a href="{% url 'PandDDL:photoGalleries' %}">Photo Galleries</a></li>
+							<li><a href="{% url 'PandDDL:AGMminutesList' %}">AGM Minutes</a></li>
+							<li><a href="{% url 'PandDDL:rules' %}">League Rules</a></li>
+						</ul>
+					</div>
+					<div class="col-md-3">
+						<a href="https://www.facebook.com/" class="social-icon si-small si-borderless si-facebook">
+							<i class="icon-facebook"></i>
+						</a>
+						<a href="https://www.youtube.com/" class="social-icon si-small si-borderless si-youtube">
+							<i class="icon-youtube"></i>
+						</a>
+						<p><a href="{% url 'PandDDL:reportProblem' %}">Report a Problem</a></p>
+					</div>
+				</div>
+				
+			</div>
+		</footer>
+	</div>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 {% block scripts %}
 {% endblock %}
+<script>
+var mobileMenuShown = false;
+var mensMobileMenuShown = false;
+var ladiesMobileMenuShown = false;
+
+function showMobileMenu() {
+	if (mobileMenuShown) {
+		document.getElementById('mobile-menu').style.display = 'none';
+		mobileMenuShown = false;
+	} else {
+		document.getElementById('mobile-menu').style.display = "block";
+		mobileMenuShown = true;
+	}
+}
+
+function showMensMobileMenu() {
+	if (ladiesMobileMenuShown) {
+		document.getElementById('mobile-menu-ladies-divs').classList.add('submenu-mobile-list');
+		ladiesMobileMenuShown = false;
+	}
+	if (mensMobileMenuShown) {
+		document.getElementById('mobile-menu-mens-divs').classList.add('submenu-mobile-list');
+		mensMobileMenuShown = false;
+	} else {
+		document.getElementById('mobile-menu-mens-divs').classList.remove('submenu-mobile-list');
+		mensMobileMenuShown = true;
+	}
+}
+
+function showLadiesMobileMenu() {
+	if (mensMobileMenuShown) {
+		document.getElementById('mobile-menu-mens-divs').classList.add('submenu-mobile-list');
+		mensMobileMenuShown = false;
+	}
+	if (ladiesMobileMenuShown) {
+		document.getElementById('mobile-menu-ladies-divs').classList.add('submenu-mobile-list');
+		ladiesMobileMenuShown = false;
+	} else {
+		document.getElementById('mobile-menu-ladies-divs').classList.remove('submenu-mobile-list');
+		ladiesMobileMenuShown = true;
+	}
+}
+</script>
 </body>
 
 

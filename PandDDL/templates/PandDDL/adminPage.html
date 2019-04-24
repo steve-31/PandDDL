@@ -19,8 +19,29 @@
 
 <h1>Admin Tools</h1>
 
+<h3>Issues Reported</h3>
+{% if reported_problems|length == 0 %}
+<p>No Issues Reported By Users</p>
+{% else %}
+<table class="table">
+	<tr>
+		<th>Reported On</th>
+		<th>Reported By</th>
+		<th>Issue Description</th>
+		<th></th>
+	</tr>
+	{% for issue in reported_problems %}
+	<tr>
+		<td>{{ issue.date_reported }}</td>
+		<td>{% if issue.reporter_email %}{{ issue.reporter_email }}{% else %}Anonymous{% endif %}</td>
+		<td>{{ issue.problem_desc|linebreaks }}</td>
+		<td><a href="{% url 'PandDDL:completeIssue' issue.pk %}">Complete</a></td>
+	{% endfor %}
+</table>
+{% endif %}
+
 <div class="row">
-	<div class="col-sm-6">
+	<div class="col-md-6">
 		<h3>Results Not Entered</h3>
 		<ul class="nav nav-tabs">
 		  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions ({{ mens_results_not_entered|length }})</a></li>
@@ -62,7 +83,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-sm-6">
+	<div class="col-md-6">
 		<h3>Results Not Verified</h3>
 		<ul class="nav nav-tabs">
 		  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions ({{ mens_results_not_verified|length }})</a></li>

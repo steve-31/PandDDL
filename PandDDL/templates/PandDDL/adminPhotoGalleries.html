@@ -51,7 +51,7 @@
 							</label>
 							<div class="row">
 								{% for img in gal.photos.all %}
-								<div class="col-sm-4">
+								<div class="col-md-4">
 									<label>
 										<input class="cover-photo-select" type="radio" name="cover-photo-choice" {% if img.pk == gal.coverphoto.pk %}checked{% endif %} value="{{ img.pk }}">
 										<img src="{{ img.photo.url }}" alt="{{ gal.name }}_{{ forloop.counter }}" style="height:100px;">

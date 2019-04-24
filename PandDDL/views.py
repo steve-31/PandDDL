@@ -36,6 +36,44 @@ def home(request):
     
     return render(request, 'PandDDL/home.html', context)
 
+def contactUs(request):
+    context = {}
+    
+    return render(request, 'PandDDL/contact.html', context)
+
+def reportProblem(request):
+    report_success = False
+    if 'problem_reported' in request.session:
+        if request.session['problem_reported']:
+            report_success = True
+    
+    try:
+        del request.session['problem_reported']
+    except:
+        pass
+    
+    if request.method == "POST":
+        problemdesc = request.POST.get('problem-description')
+        reporter = request.POST.get('reporter-email')
+        newproblem = Problem(date_reported=datetime.datetime.now(), reporter_email=reporter, problem_desc=problemdesc, completed=False)
+        newproblem.save()
+        request.session['problem_reported'] = True
+        
+        return redirect('PandDDL:reportProblem')
+        
+    
+    context = {
+        "report_success": report_success,
+    }
+    
+    return render(request, 'PandDDL/reportproblem.html', context)
+
+def completeIssue(request, pid):
+    issue = Problem.objects.get(pk=pid)
+    issue.completed=True
+    issue.save()
+    return redirect('PandDDL:adminPage')
+
 def authlogin(request):
     
     if request.method == "POST":
@@ -264,10 +302,12 @@ def fixture(request, fix_id):
                 awayscore = 0
                 for i in range(1,6):
                     singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
+                    singlesHomePlayerObj = None if int(singlesHomePlayer) == 0 else Player.objects.get(pk=singlesHomePlayer)
                     singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
+                    singlesAwayPlayerObj = None if int(singlesAwayPlayer) == 0 else Player.objects.get(pk=singlesAwayPlayer)
                     singlesHomeScore = request.POST.get('singles-home-score-'+str(i))
                     singlesAwayScore = request.POST.get('singles-away-score-'+str(i))
-                    match = SinglesMatch(fixture=fixture, homeplayer=Player.objects.get(pk=singlesHomePlayer), awayplayer=Player.objects.get(pk=singlesAwayPlayer), homescore=singlesHomeScore, awayscore=singlesAwayScore)
+                    match = SinglesMatch(fixture=fixture, homeplayer=singlesHomePlayerObj, awayplayer=singlesAwayPlayerObj, homescore=singlesHomeScore, awayscore=singlesAwayScore)
                     match.save()
                     
                     homewin = 1 if match.homescore > match.awayscore else 0
@@ -277,10 +317,12 @@ def fixture(request, fix_id):
                     awayscore += awaywin
                     awaylose = 0 if match.awayscore > match.homescore else 1
                     
-                    homeresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesHomePlayer), opposition=Player.objects.get(pk=singlesAwayPlayer), win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
-                    homeresult.save()
-                    awayresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesAwayPlayer), opposition=Player.objects.get(pk=singlesHomePlayer), win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
-                    awayresult.save()
+                    if singlesHomePlayerObj:
+                        homeresult = SinglesResult(match=match, player=singlesHomePlayerObj, opposition=singlesAwayPlayerObj, win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
+                        homeresult.save()
+                    if singlesAwayPlayerObj:
+                        awayresult = SinglesResult(match=match, player=singlesAwayPlayerObj, opposition=singlesHomePlayerObj, win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
+                        awayresult.save()
                     
                 for i in range(1,3):
                     doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
@@ -496,15 +538,25 @@ def team(request, tid):
     players = Player.objects.filter(team=team.pk)
     singlesresults = SinglesResult.objects.filter(player__in=players, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
     singlesresults_f = []
+    playersaddedafterstart = False
+    seasonstartdate = fixture_dates[len(fixture_dates)/2]['date']
+    #range((len(fixture_dates)/2) - (1 if float(len(fixture_dates)) % 2 == 0 else 0), len(fixture_dates)/2+1)]['date']
+    #seasonstartdate = fixture_dates[0]['date']
+    print seasonstartdate
     for player in players:
+        playerafterstart = False
+        print player.dateadded > seasonstartdate
+        if player.dateadded > seasonstartdate:
+            playersaddedafterstart = True
+            playerafterstart = True
         try:
             sresultplayer = singlesresults.get(player=player)
         except SinglesResult.DoesNotExist:
             sresultplayer = None
         if sresultplayer != None:
-            splayerobj = {"player": sresultplayer['player'], "playerFirstName": sresultplayer['player__firstname'], "playerSurname": sresultplayer['player__surname'], "Cplayed": sresultplayer['Cplayed'], "Cwon": sresultplayer['Cwon'], "Clost": sresultplayer['Clost'], "Clegs_for": sresultplayer['Clegs_for'], "Clegs_ags": sresultplayer['Clegs_ags']}
+            splayerobj = {"player": sresultplayer['player'], "playerFirstName": sresultplayer['player__firstname'], "playerSurname": sresultplayer['player__surname'], "Cplayed": sresultplayer['Cplayed'], "Cwon": sresultplayer['Cwon'], "Clost": sresultplayer['Clost'], "Clegs_for": sresultplayer['Clegs_for'], "Clegs_ags": sresultplayer['Clegs_ags'], "addedafterstart": playerafterstart}
         else:
-            splayerobj = {"player": player.pk, "playerFirstName": player.firstname, "playerSurname": player.surname, "Cplayed": 0, "Cwon": 0, "Clost": 0, "Clegs_for": 0, "Clegs_ags": 0}
+            splayerobj = {"player": player.pk, "playerFirstName": player.firstname, "playerSurname": player.surname, "Cplayed": 0, "Cwon": 0, "Clost": 0, "Clegs_for": 0, "Clegs_ags": 0, "addedafterstart": playerafterstart}
         singlesresults_f.append(splayerobj)
         singlesresults_f = sorted(singlesresults_f, key=itemgetter('Clegs_ags', 'playerSurname'))
         singlesresults_f = sorted(singlesresults_f, key=itemgetter('Cwon', 'Clegs_for'), reverse=True)
@@ -539,7 +591,6 @@ def team(request, tid):
         dates.append(d)
     
     for d in fixture_dates:
-        print d['date']
         fixtures_on_date = allfixtures.filter(date=d['date'])
         teams_on_date = []
         for fixture in fixtures_on_date:
@@ -560,6 +611,7 @@ def team(request, tid):
         "fixtures": fixtures,
         "results": results,
         "dates": dates,
+        "playersaddedafterstart": playersaddedafterstart,
     }
     
     return render(request, 'PandDDL/team.html', context)
@@ -667,6 +719,7 @@ def adminPage(request):
     all_teams = Team.objects.filter(division__leaguegrp__in=active_leagues)
     player_comps = Competition.objects.filter(keydate__league__active=True, winner1=None, keydate__date__lte=datetime.datetime.today())
     all_players = Player.objects.filter(team__division__leaguegrp__in=active_leagues).order_by('firstname')
+    all_open_issues = Problem.objects.filter(completed=False)
     
     if request.method == "POST":
         if request.POST.get('key-date-name'):
@@ -685,6 +738,7 @@ def adminPage(request):
         "all_teams": all_teams,
         "player_comps": player_comps,
         "all_players":all_players,
+        "reported_problems": all_open_issues,
     }
     
     return render(request, 'PandDDL/adminPage.html', context)
@@ -724,45 +778,20 @@ def gallery(request, gid):
     return render(request, 'PandDDL/photoGallery.html', context)
 
 def archive(request):
-    mens_archive_leagues = LeagueGrp.objects.filter(gender="Men's", active=False).order_by('-year', '-season')
-    mens_archive_divs = Division.objects.filter(leaguegrp__in=mens_archive_leagues).order_by('name')
-    player_comps = Competition.objects.filter(keydate__league__active=False)
-    mens_cup_winners = []
-    mens_div_winners = []
-    for div in mens_archive_divs:
-        div_teams = Team.objects.filter(division=div.pk)
-        points_deductions = PointsDeduction.objects.filter(team__in=div_teams).order_by('date', 'team__name')
-        points_deductions_teams = []
-        for d in points_deductions:
-            points_deductions_teams.append(d.team.name)
-        div_table = Result.objects.filter(team__division=div.pk, fixture__resultverified=True).values('team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against'), Cpoints=Sum('points')).order_by('-Cpoints', '-Clegs_for', 'Clegs_ags', 'team__name')
-        div_table_f = []
-        for team in div_teams:
-            try:
-                table_team = div_table.get(team=team)
-            except Result.DoesNotExist:
-                table_team = None
-            points_deducted = 0
-            for d in points_deductions:
-                if team == d.team:
-                    points_deducted += d.points
-            if table_team != None:
-                teamobj = {"teamName": table_team['team__name'], "Cplayed": table_team['Cplayed'], "Cwon": table_team['Cwon'], "Clost": table_team['Clost'], "Clegs_for": table_team['Clegs_for'], "Clegs_ags": table_team['Clegs_ags'], "Cpoints": table_team['Cpoints']-points_deducted}
-            else:
-                teamobj = {"teamName": team.name, "Cplayed": 0, "Cwon": 0, "Clost": 0, "Clegs_for": 0, "Clegs_ags": 0, "Cpoints": 0-points_deducted}
-            div_table_f.append(teamobj)
-            div_table_f = sorted(div_table_f, key=itemgetter('Clegs_ags', 'teamName'))
-            div_table_f = sorted(div_table_f, key=itemgetter('Cpoints', 'Clegs_for'), reverse=True)
-        mens_div_winners.append({"division": div, "winner": div_table_f[0]['teamName'], "runnerup": div_table_f[1]['teamName']})
-    ladies_archive_leagues = LeagueGrp.objects.filter(gender='Ladies', active=False)
+    mens_archive_leagues = ArchiveSeason.objects.filter(gender="Men's").order_by('-year', '-season')
+    mens_archive_divs = ArchiveDivision.objects.filter(season__in=mens_archive_leagues).order_by('division_name')
+    mens_player_comps = ArchiveComp.objects.filter(season__in=mens_archive_leagues)
+    ladies_archive_leagues = ArchiveSeason.objects.filter(gender="Ladies").order_by('-year', '-season')
+    ladies_archive_divs = ArchiveDivision.objects.filter(season__in=ladies_archive_leagues).order_by('division_name')
+    ladies_player_comps = ArchiveComp.objects.filter(season__in=ladies_archive_leagues)
     
     context = {
         "mens_archive_leagues": mens_archive_leagues,
         "mens_archive_divs": mens_archive_divs,
-        "mens_div_winners": mens_div_winners,
-        "mens_cup_winners": mens_cup_winners,
-        "player_comps": player_comps,
+        "mens_player_comps": mens_player_comps,
         "ladies_archive_leagues": ladies_archive_leagues,
+        "ladies_archive_divs": ladies_archive_divs,
+        "ladies_player_comps": ladies_player_comps,
     }
     
     return render(request, 'PandDDL/archive.html', context)
@@ -775,7 +804,6 @@ def AGMminutesList(request):
     proposal_success = False
     if 'proposal_submit' in request.session:
         if request.session['proposal_submit']:
-            print "test"
             proposal_success = True
     
     try:
@@ -860,6 +888,7 @@ def setActiveLeague(request, lg_id):
     oldactivelg = LeagueGrp.objects.get(gender=newactivelg.gender, active=True)
     oldactivelg.active = False
     newactivelg.active = True
+    newactivelg.finished = False
     oldactivelg.save()
     newactivelg.save()
     
@@ -881,7 +910,54 @@ def FinishSeason(request, lge_id):
         
     oldleague = LeagueGrp.objects.get(pk=lge_id)
     oldleague.active = False
+    oldleague.finished = True
     oldleague.save()
+    
+    leaguename = oldleague.season + " League " + str(oldleague.displayyear)
+    archiveseason = ArchiveSeason(display_name=leaguename, year=oldleague.year, season=oldleague.season, gender=oldleague.gender)
+    archiveseason.save()
+    
+    olddivisions = Division.objects.filter(leaguegrp=oldleague)
+    for div in olddivisions:
+        div_teams = Team.objects.filter(division=div.pk)
+        points_deductions = PointsDeduction.objects.filter(team__in=div_teams).order_by('date', 'team__name')
+        div_table = Result.objects.filter(team__division=div.pk, fixture__resultverified=True).values('team__name', 'team__id').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against'), Cpoints=Sum('points')).order_by('-Cpoints', '-Clegs_for', 'Clegs_ags', 'team__name')
+        div_table_f = []
+        for team in div_teams:
+            points_deducted = 0
+            for d in points_deductions:
+                if team == d.team:
+                    points_deducted += d.points
+            
+            try:
+                table_team = div_table.get(team=team)
+                teamobj = {"teamName": table_team['team__name'], "teamid": table_team['team__id'], "Cplayed": table_team['Cplayed'], "Cwon": table_team['Cwon'], "Clost": table_team['Clost'], "Clegs_for": table_team['Clegs_for'], "Clegs_ags": table_team['Clegs_ags'], "Cpoints": table_team['Cpoints']-points_deducted}
+                div_table_f.append(teamobj)
+            except Result.DoesNotExist:
+                table_team = None
+            
+            div_table_f = sorted(div_table_f, key=itemgetter('Clegs_ags', 'teamName'))
+            div_table_f = sorted(div_table_f, key=itemgetter('Cpoints', 'Clegs_for'), reverse=True)
+            
+        divname = "Division " + div.name
+        if div_table.count() >= 2:
+            archivedivision = ArchiveDivision(season=archiveseason, division_name=divname, winner=div_table_f[0]['teamName'], runner_up=div_table_f[1]['teamName'])
+            archivedivision.save()
+    
+    oldcomps = Competition.objects.filter(keydate__league=oldleague)
+    for comp in oldcomps:
+        print comp.keydate.name
+        print comp.winner1
+        w1 = None if not comp.winner1 else comp.winner1.firstname + " " + comp.winner1.surname
+        w2 = None if not comp.winner2 else comp.winner2.firstname + " " + comp.winner2.surname
+        w3 = None if not comp.winner3 else comp.winner3.firstname + " " + comp.winner3.surname
+        r1 = None if not comp.runnerup1 else comp.runnerup1.firstname + " " + comp.runnerup1.surname
+        r2 = None if not comp.runnerup2 else comp.runnerup2.firstname + " " + comp.runnerup2.surname
+        r3 = None if not comp.runnerup3 else comp.runnerup3.firstname + " " + comp.runnerup3.surname
+        print w1
+        print r1
+        archivecomp = ArchiveComp(season=archiveseason, comp_name=comp.keydate.name, winner1=w1, winner2=w2, winner3=w3, runnerup1=r1, runnerup2=r2, runnerup3=r3)
+        archivecomp.save()
     
     return redirect('PandDDL:adminLeague')
 
@@ -1648,7 +1724,7 @@ def AdminPhotoGalleriesDelete(request, pid):
 @permission_required('request.user.is_staff', raise_exception=True) 
 def AdminAGMminutes(request):
     
-    agmminutes = AGMminutes.objects.all()
+    agmminutes = AGMminutes.objects.all().order_by('date')
     agmfile = ""
     files = MiscFile.objects.all()
     

@@ -13,7 +13,7 @@
 	<p class="page-title"><strong>{{ lge.gender }} {{ lge.season }} League {{ lge.displayyear }}</strong></p>
 	<p class="page-title"><strong>Division {{ div.name }}</strong></p>
 	<div class="row">
-		<div class="col-sm-4">
+		<div class="col-md-4">
 			{% for date in first_half_fixtures %}
 			<!-- <h6>{{ date.date }}</h6> -->
 			<table class="table">
@@ -42,7 +42,7 @@
 			</table>
 			{% endfor %}
 		</div>
-		<div class="col-sm-4">
+		<div class="col-md-4">
 			{% for date in second_half_fixtures %}
 			<!-- <h6>{{ date.date }}</h6> -->
 			<table class="table">
@@ -60,7 +60,7 @@
 			</table>
 			{% endfor %}
 		</div>
-		<div class="col-sm-4">
+		<div class="col-md-4">
 			<p><strong>Key Dates</strong></p>
 			<table class="table key-dates-table">
 				{% for date in key_dates %}

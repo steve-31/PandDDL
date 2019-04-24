@@ -247,7 +247,11 @@ class SinglesMatchAdmin(admin.ModelAdmin):
     form = SinglesMatchAdminForm
     
     def matchName(self, obj):
-        return ("%s %s %s - %s %s %s" % (obj.homeplayer.firstname, obj.homeplayer.surname, obj.homescore, obj.awayscore, obj.awayplayer.firstname, obj.awayplayer.surname))
+        homeplayer_firstname = "WALKOVER" if obj.homeplayer == None else obj.homeplayer.firstname
+        homeplayer_surname = "" if obj.homeplayer == None else obj.homeplayer.surname
+        awayplayer_firstname = "WALKOVER" if obj.awayplayer == None else obj.awayplayer.firstname
+        awayplayer_surname = "" if obj.awayplayer == None else obj.awayplayer.surname
+        return ("%s %s %s - %s %s %s" % (homeplayer_firstname, homeplayer_surname, obj.homescore, obj.awayscore, awayplayer_firstname, awayplayer_surname))
     matchName.short_description = "Match"
     
     def fixtureName(self, obj):
@@ -347,3 +351,9 @@ admin.site.register(Result, ResultAdmin)
 
 admin.site.register(NoOfAnnouncements)
 admin.site.register(AGMminutes)
+
+class ArchiveSeasonAdmin(admin.ModelAdmin):
+    list_display = ('display_name',)
+admin.site.register(ArchiveSeason, ArchiveSeasonAdmin)
+admin.site.register(ArchiveDivision)
+admin.site.register(ArchiveComp)

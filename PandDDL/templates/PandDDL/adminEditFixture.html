@@ -22,13 +22,13 @@
 <h2>Singles</h2>
 
 <div class="row">
-	<div class="col-sm-9">
+	<div class="col-md-9">
 		<table class="fixture-table table table-striped">
 		{% for match in singles_matches %}
 			<tr>
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" selected disabled>Home Player</option>
 								{% for player in home_team_players %}
@@ -37,13 +37,13 @@
 							</select>
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
 							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}">
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player</option>
 								{% for player in away_team_players %}
@@ -60,7 +60,7 @@
 			<tr>
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" selected disabled>Home Player</option>
 								{% for player in home_team_players %}
@@ -69,13 +69,13 @@
 							</select>
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
 							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}">
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player</option>
 								{% for player in away_team_players %}
@@ -94,13 +94,13 @@
 
 <h2>Doubles</h2>
 <div class="row">
-	<div class="col-sm-9">
+	<div class="col-md-9">
 		<table class="fixture-table table table-striped">
 		{% for match in doubles_matches %}
 			<tr>
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
@@ -116,13 +116,13 @@
 							</select>
 						</div>
 						
-						<div class="col-sm-4" style="line-height: 97px;">
+						<div class="col-md-4" style="line-height: 97px;">
 							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
 							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
@@ -147,7 +147,7 @@
 			<tr>
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
@@ -163,13 +163,13 @@
 							</select>
 						</div>
 						
-						<div class="col-sm-4" style="line-height: 97px;">
+						<div class="col-md-4" style="line-height: 97px;">
 							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
 							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
 						</div>
 						
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
@@ -198,7 +198,7 @@
 
 <div class="row">
 	{% for max in maximums %}
-	<div class="col-sm-2">
+	<div class="col-md-2">
 		<select class="form-control" style="width:100%" name="maximums-{{ forloop.counter }}">
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
@@ -213,7 +213,7 @@
 	
 	{% for i in "xxxxxx" %}
 	{% if forloop.counter > maximums|length %}
-	<div class="col-sm-2">
+	<div class="col-md-2">
 		<select class="form-control" style="width:100%" name="maximums-{{ forloop.counter }}">
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
@@ -232,7 +232,7 @@
 
 <div class="row">
 	{% for top in top_finishes %}
-	<div class="col-sm-2">
+	<div class="col-md-2">
 		<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
@@ -248,7 +248,7 @@
 	
 	{% for i in "xxxxxx" %}
 	{% if forloop.counter > top_finishes|length %}
-	<div class="col-sm-2">
+	<div class="col-md-2">
 		<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
@@ -271,7 +271,7 @@
 {% if fixture.resultsheet %}
 
 <div class="row">
-	<div class="col-sm-6">
+	<div class="col-md-6">
 		<h2>Result Sheet</h2>
 		<img class="result-sheet-image" src="{{ fixture.resultsheet.url }}" alt="{{ fixture.hometeam.name }} v {{ fixture.awayteam.name}} Result Sheet">
 	</div>

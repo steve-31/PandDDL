@@ -222,7 +222,7 @@ function select_team(event, number) {
 					"<td>"+ json.players[x].firstname +" "+ json.players[x].surname +" "+ capc +"</td>" +
 					"<td>"+ json.players[x].dateadded +"</td>" +
 					"<td>" +capcol + "</td>" +
-					"<td><a class=\"admin-a-link\" data-toggle=\"modal\" data-target=\"#edit-player-"+ json.players[x].pk +"\">Edit</a></td>" +
+					"<td><a class=\"admin-a-link\" data-toggle=\"modal\" data-target=\"#edit-player-"+ json.players[x].pk +"\">Edit</a>" +
 						"<div class=\"modal fade\" id=\"edit-player-"+ json.players[x].pk +"\" role=\"dialog\">" +
 							"<div class=\"modal-dialog\">" +
 								"<div class=\"modal-content\">" +
@@ -254,9 +254,11 @@ function select_team(event, number) {
 								"</div>" +
 							"</div>" +
 						"</div>" +
+					"</td>"+
 					"<td>"+ capdel +"</td>" +
 				"</tr>";
 			}
+			console.log(playerlist);
 			document.getElementById("player-table-"+number).innerHTML = "<h3>"+ json.team.name + "</h3>" +
 					"<table class=\"table\">" +
 						"<tr>" +
