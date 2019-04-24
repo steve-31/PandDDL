@@ -5,11 +5,11 @@
 	<h1>{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</h1>
 	
 	<div class="row">
-		<div class="col-sm-6">
+		<div class="col-md-6">
 			<h2>Divisions</h2>
 			{% for division in divs %}<h3><a href="{% url 'PandDDL:division' league.gender league.season league.year division.name %}">Division {{ division.name }}</a></h3>{% endfor %}
 		</div>
-		<!-- <div class="col-sm-6">
+		<!-- <div class="col-md-6">
 			<h2>Cup Competitions</h2>
 			{% for cup in cups %}<h3><a href="{% url 'PandDDL:cup' league.gender league.season league.year cup.name %}">{{ cup.name }}</a></h3>{% endfor %}
 		</div> -->

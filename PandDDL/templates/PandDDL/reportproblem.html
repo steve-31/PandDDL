@@ -1,0 +1,43 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>Report a Problem</h1>
+<div class="alert alert-danger" id="form-errors" style="display:none;">
+	<strong>Submit Failed!</strong> There were errors in the form highlighted, please correct and try again.
+</div>
+{% if report_success %}
+<div class="alert alert-success  alert-dismissible" id="form-success">
+	<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	<strong>Form Submitted!</strong> Your issue has been reported, it will be looked into by the admin team at the earliest available opportunity
+</div>
+{% endif %}
+<div class="row">
+	<div class="col-md-5">
+		<form id="report-problem-form" action="." method="POST" onsubmit="submitProblemForm(event);">{% csrf_token %}
+			Reported By - Email (optional):
+			<input class="form-control" name="reporter-email" type="email">
+			Issue Description:
+			<textarea class="form-control" id="problem-description" name="problem-description" rows="5" form="report-problem-form"></textarea>
+			<button type="submit" class="btn btn-primary" style="margin-top: 15px">Report Problem</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function submitProblemForm() {
+	event.preventDefault();
+	var problemDesc = document.getElementById('problem-description');
+	if (problemDesc.value != "") {
+		document.getElementById("report-problem-form").submit();
+	} else {
+		document.getElementById('form-errors').style.display = "block";
+		problemDesc.style.border = "2px solid red";
+	}
+}
+
+</script>
+
+{% endblock %}

@@ -111,10 +111,10 @@
 												<textarea class="form-control" rows="4" cols="65" name="edit-team-address" form="edit-team-form-{{ team.pk }}">{{ team.address }}</textarea>
 											</p>
 											<p>Pub Phone Number:
-												<input class="form-control" type="tel" name="edit-team-pub-phone">
+												<input class="form-control" type="tel" name="edit-team-pub-phone" value="{{ team.pubphoneno }}">
 											</p>
 											<p>Captain Phone Number:
-												<input class="form-control" type="tel" name="edit-team-captain-phone">
+												<input class="form-control" type="tel" name="edit-team-captain-phone" value="{{ team.captainphoneno }}">
 											</p>
 										</div>
 										<div class="modal-footer">

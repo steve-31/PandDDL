@@ -6,7 +6,7 @@
 
 <div class="row">
 	{% for gallery in galleries %}
-	<div class="col-sm-3">
+	<div class="col-md-3">
 		<a href="{% url 'PandDDL:gallery' gallery.pk %}"><div class="photo-gallery">
 			<div class="photo-wrapper">
 				<img class="gallery-cover-photo" src="{% if gallery.coverphoto.photo.url == '' or gallery.coverphoto.photo.url == null %}{% static 'PandDDL/media/photos/default.jpg' %}{% else %}{{ gallery.coverphoto.photo.url }}{% endif %}">

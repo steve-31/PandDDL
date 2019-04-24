@@ -8,12 +8,12 @@
 	<ol class="breadcrumb">
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:photoGalleries' %}">Photo Galleries</a></li>
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:AGMminutesList' %}">AGM Minutes</a></li>
-		<li class="breadcrumb-item"><a href="{% url 'PandDDL:rules' %}">League Rules & Constitution</a></li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:rules' %}">League Rules</a></li>
 	</ol>
 </nav>
 
 <div class="row">
-	<div class="col-sm-8">
+	<div class="col-md-8">
 		<div id="myCarousel" class="carousel slide" data-ride="carousel">
 		    <!-- Indicators -->
 		    <ol class="carousel-indicators">
@@ -50,14 +50,14 @@
 		    </a>
 		  </div>
 		<!-- <div class="row">
-			<div class="col-sm-6">
+			<div class="col-md-6">
 				<h2>Leagues</h2>
 				{% for lge in leaguegrps %}<h3><a href="{% url 'PandDDL:league' lge.gender lge.season lge.year %}">{{ lge.gender }} {{ lge.season }} League {{ lge.displayyear }}</a></h3>{% endfor %}
 			</div>
 		</div> -->
 	</div>
 	
-	<div class="col-sm-4">
+	<div class="col-md-4">
 		<h3>Men's Divisions</h3>
 		<ul>
 			{% for div in mens_divs %}

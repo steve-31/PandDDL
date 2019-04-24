@@ -13,6 +13,7 @@ class LeagueGrp(models.Model):
     year=models.IntegerField()
     displayyear=models.CharField(max_length=10)
     active=models.BooleanField(default=True)
+    finished=models.BooleanField()
     class Meta:
         verbose_name = 'League'
         verbose_name_plural = 'Leagues'
@@ -82,8 +83,8 @@ class Maximum(models.Model):
 
 class SinglesMatch(models.Model):
     fixture=models.ForeignKey(Fixture)
-    homeplayer=models.ForeignKey(Player, related_name="home")
-    awayplayer=models.ForeignKey(Player, related_name="away")
+    homeplayer=models.ForeignKey(Player, related_name="home", null=True, blank=True)
+    awayplayer=models.ForeignKey(Player, related_name="away", null=True, blank=True)
     homescore=models.IntegerField(default=0)
     awayscore=models.IntegerField(default=0)
     class Meta:
@@ -93,7 +94,7 @@ class SinglesMatch(models.Model):
 class SinglesResult(models.Model):
     match=models.ForeignKey(SinglesMatch)
     player=models.ForeignKey(Player, related_name='singlesplayer')
-    opposition=models.ForeignKey(Player, related_name='opposition')
+    opposition=models.ForeignKey(Player, related_name='opposition', null=True, blank=True)
     played=models.IntegerField(default=1)
     win=models.IntegerField()
     lose=models.IntegerField()
@@ -233,3 +234,32 @@ class MiscFile(models.Model):
     date_uploaded=models.DateTimeField()
     description=models.CharField(max_length=300)
     file=models.FileField(upload_to="files")
+
+class Problem(models.Model):
+    date_reported=models.DateTimeField()
+    reporter_email=models.CharField(max_length=300, blank=True, null=True)
+    problem_desc=models.CharField(max_length=2000)
+    completed=models.BooleanField()
+
+class ArchiveSeason(models.Model):
+    display_name=models.CharField(max_length=50)
+    year=models.IntegerField()
+    gender=models.CharField(max_length=20)
+    season=models.CharField(max_length=20)
+
+class ArchiveDivision(models.Model):
+    season=models.ForeignKey(ArchiveSeason)
+    division_name=models.CharField(max_length=20)
+    winner=models.CharField(max_length=100)
+    runner_up=models.CharField(max_length=100)
+
+class ArchiveComp(models.Model):
+    season=models.ForeignKey(ArchiveSeason)
+    comp_name=models.CharField(max_length=400)
+    winner1=models.CharField(max_length=200, null=True, blank=True)
+    winner2=models.CharField(max_length=200, null=True, blank=True)
+    winner3=models.CharField(max_length=200, null=True, blank=True)
+    runnerup1=models.CharField(max_length=200, null=True, blank=True)
+    runnerup2=models.CharField(max_length=200, null=True, blank=True)
+    runnerup3=models.CharField(max_length=200, null=True, blank=True)
+    
