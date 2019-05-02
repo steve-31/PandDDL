@@ -355,5 +355,16 @@ admin.site.register(AGMminutes)
 class ArchiveSeasonAdmin(admin.ModelAdmin):
     list_display = ('display_name',)
 admin.site.register(ArchiveSeason, ArchiveSeasonAdmin)
-admin.site.register(ArchiveDivision)
+
+class ArchiveSeasonField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return ("%s %s" % (obj.gender, obj.display_name))
+
+class ArchiveDivisionAdminForm(forms.ModelForm):
+    season = ArchiveSeasonField(queryset=ArchiveSeason.objects.all())
+    
+class ArchiveDivisionAdmin(admin.ModelAdmin):
+    list_display = ('division_name', 'winner', 'runner_up',)
+    form = ArchiveDivisionAdminForm
+admin.site.register(ArchiveDivision, ArchiveDivisionAdmin)
 admin.site.register(ArchiveComp)

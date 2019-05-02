@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 from django.conf import settings
 import pandas
 import xlrd
@@ -539,14 +540,15 @@ def team(request, tid):
     singlesresults = SinglesResult.objects.filter(player__in=players, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
     singlesresults_f = []
     playersaddedafterstart = False
-    seasonstartdate = fixture_dates[len(fixture_dates)/2]['date']
+    if len(fixture_dates) == 0:
+        seasonstartdate = 0
+    else:
+        seasonstartdate = fixture_dates[len(fixture_dates)/2]['date']
     #range((len(fixture_dates)/2) - (1 if float(len(fixture_dates)) % 2 == 0 else 0), len(fixture_dates)/2+1)]['date']
     #seasonstartdate = fixture_dates[0]['date']
-    print seasonstartdate
     for player in players:
         playerafterstart = False
-        print player.dateadded > seasonstartdate
-        if player.dateadded > seasonstartdate:
+        if seasonstartdate != 0 and player.dateadded > seasonstartdate:
             playersaddedafterstart = True
             playerafterstart = True
         try:
@@ -977,7 +979,8 @@ def AdminDivision(request):
     
     if request.method == "POST":
         if request.POST.get('new-div-name'):
-            new_div = Division(name=request.POST.get('new-div-name'), leaguegrp=LeagueGrp.objects.get(pk=request.POST.get('new-div-league')), bestoflegs=request.POST.get('new-div-legs'))
+            stripped_div_name = re.sub(r'[Dd]ivision|[Dd]iv| ','',request.POST.get('new-div-name'))
+            new_div = Division(name=stripped_div_name, leaguegrp=LeagueGrp.objects.get(pk=request.POST.get('new-div-league')), bestoflegs=request.POST.get('new-div-legs'))
             new_div.save()
         
         if request.POST.get('edit-div-id'):
