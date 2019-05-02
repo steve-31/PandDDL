@@ -1,13 +1,5 @@
-:root {
-	--BACKGROUND_COLOUR: #ffffff;
-	--PRIMARY_COLOUR: #efefde;
-	--SECONDARY_COLOUR: #353433;
-	--TERTIARY_COLOUR: #00ad08;
-	--FOURTH_COLOUR: #c61d00;
-}
-
 body {
-	background-color: var(--BACKGROUND_COLOUR) !important;
+	background-color: #ffffff !important;
 }
 
 html, body {
@@ -125,7 +117,7 @@ html, body {
 	position:relative;
 	width: 1220px;
 	margin: 0 auto;
-	background-color: var(--BACKGROUND_COLOUR);
+	background-color: #ffffff;
 }
 
 #content {
@@ -138,7 +130,7 @@ html, body {
 	bottom: 0;
 	width: 100%;
 	height: 100px;   /* Height of the footer */
-	background-color: var(--SECONDARY_COLOUR);
+	background-color: #353433;
 	color: #848d95;
 }
 
@@ -180,7 +172,7 @@ html, body {
 
 #header {
 	position: relative;
-	background-color: var(--PRIMARY_COLOUR);
+	background-color: #efefde;
 	border-bottom: 1px solid #F5F5F5;
 }
 
@@ -204,13 +196,13 @@ html, body {
 	top: 0;
 	left: 0;
 	width: 100%;
-	background-color: var(--PRIMARY_COLOUR);
-	color: var(--BACKGROUND-COLOUR);
+	background-color: #efefde;
+	color: x;
 	box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 #header .one-page-menu .current {
-	border-bottom: 10px solid var(--TERTIARY_COLOUR);
+	border-bottom: 10px solid #00ad08;
 }
 
 #header .one-page-menu li {
@@ -218,19 +210,19 @@ html, body {
 	height: 100%;
 	padding: 20px 30px 0 30px;
 	font-size: 20px;
-	color: var(--SECONDARY_COLOUR);
+	color: #353433;
 }
 
 #header .one-page-menu li:not(.sub-menu-item) > a {
-	color: var(--SECONDARY_COLOUR);
+	color: #353433;
 }
 
 #header .one-page-menu li:hover:not(.sub-menu-item), 
 #header .one-page-menu li:hover:not(.sub-menu-item) > a {
-	border-bottom: 10px solid var(--FOURTH_COLOUR);
-	background-color: var(--SECONDARY_COLOUR);
+	border-bottom: 10px solid #c61d00;
+	background-color: #353433;
 	text-decoration: none;
-	color: var(--PRIMARY_COLOUR) !important;
+	color: #efefde !important;
 }
 
 #logo{
@@ -239,12 +231,12 @@ html, body {
 	height: 100%;
 	padding: 20px 0 0 0;
 	font-size: 30px;
-	color: var(--PRIMARY_COLOUR);
+	color: #efefde;
 }
 
 #logo a {
 	height:100%;
-	color: var(--SECONDARY_COLOUR);
+	color: #353433;
 }
 
 #logo:hover a {
@@ -274,7 +266,7 @@ html, body {
 	width: 150px;
 	background-color: rgba(0, 0, 0, 0.7);
 	box-shadow: 0px 13px 42px 11px rgba(0, 0, 0, 0.05);
-	border-top: 2px solid var(--FOURTH_COLOUR);
+	border-top: 2px solid #c61d00;
 	height: auto;
 	z-index: 199;
 	top: 70px;
@@ -354,21 +346,21 @@ html, body {
 }
 
 .mobile-menu-items li > a {
-	color: var(--SECONDARY_COLOUR);
+	color: #353433;
 }
 
 #mobile-menu ul li:hover {
-	background-color: var(--SECONDARY_COLOUR);
+	background-color: #353433;
 }
 
 #mobile-menu ul li:hover > a, 
 #mobile-menu ul li:hover > ul li > a {
-	color: var(--PRIMARY_COLOUR) !important;
+	color: #efefde !important;
 	text-decoration: none;
 }
 
 #mobile-menu ul li:hover > ul li:last-child {
-	border-bottom: 2px solid var(--FOURTH_COLOUR);
+	border-bottom: 2px solid #c61d00;
 }
 
 #mobile-menu ul li.user-menu-action {
@@ -417,7 +409,7 @@ html, body {
 }
 
 .team-form-win {
-	background-color: var(--TERTIARY_COLOUR);
+	background-color: #00ad08;
 	border-radius: 3px;
 	padding: 3px;
 	margin: 2px;
@@ -429,7 +421,7 @@ html, body {
 }
 
 .team-form-lose {
-	background-color: var(--FOURTH_COLOUR);
+	background-color: #c61d00;
 	border-radius: 3px;
 	padding: 3px;
 	margin: 2px;

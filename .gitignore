@@ -1,5 +1,8 @@
 #ignore database
-db.*
+db.sqlite3
 
 #ignore migrations
 */migrations/*
+
+#ignore media
+media/*

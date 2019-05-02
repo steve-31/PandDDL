@@ -41,6 +41,7 @@
 				<table class="table">
 					<tr>
 						<th>Team</th>
+						<th>Username</th>
 						<th>Points Deductions</th>
 						<th>League Fee Paid</th>
 						<th>Reset Password</th>
@@ -51,6 +52,7 @@
 					{% if team.division.pk == div.pk %}
 					<tr>
 						<td>{{ team.name }}</td>
+						<td>{{ team.admin.username }}</td>
 						<td>{% if team.pk in points_deductions_teams %}<a class="admin-a-link" data-toggle="modal" data-target="#edit-team-deductions-{{ team.pk }}">Edit Points Deductions</a>
 							<div class="modal fade" id="edit-team-deductions-{{ team.pk }}" role="dialog">
 								<div class="modal-dialog">
