@@ -30,16 +30,20 @@
 					<nav id="primary-menu">
 						
 						<ul class="one-page-menu">
+							{% if active_mens %}
 							<li><a href="{% url 'PandDDL:league' active_mens.gender active_mens.season active_mens.year %}"><div>Men's</div></a>
 								<ul>
 									{% for div in active_divisions %}{% if div.leaguegrp == active_mens %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_mens.gender active_mens.season active_mens.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
 								</ul>
 							</li>
+							{% endif %}
+							{% if active_ladies %}
 							<li><a href="{% url 'PandDDL:league' active_ladies.gender active_ladies.season active_ladies.year %}"><div>Ladies</div></a>
 								<ul>
 									{% for div in active_divisions %}{% if div.leaguegrp == active_ladies %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_ladies.gender active_ladies.season active_ladies.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
 								</ul>
 							</li>
+							{% endif %}
 							<li><a href="{% url 'PandDDL:archive' %}"><div>Archive</div></a></li>
 							{% if request.user.is_authenticated %}
 								{% if request.user.is_staff %}
@@ -118,8 +122,12 @@
 					</div>
 					<div class="col-md-3">
 						<ul class="footer-list">
+							{% if active_mens %}
 							<li><a href="{% url 'PandDDL:league' active_mens.gender active_mens.season active_mens.year %}">Men's Divisions</a></li>
+							{% endif %}
+							{% if active_ladies %}
 							<li><a href="{% url 'PandDDL:league' active_ladies.gender active_ladies.season active_ladies.year %}">Ladies Divisions</a></li>
+							{% endif %}
 							<li><a href="{% url 'PandDDL:archive' %}">Archive</a></li>
 						</ul>
 					</div>

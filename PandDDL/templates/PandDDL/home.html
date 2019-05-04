@@ -14,6 +14,7 @@
 
 <div class="row">
 	<div class="col-md-8">
+		{% if announements|length == 0 %}
 		<div id="myCarousel" class="carousel slide" data-ride="carousel">
 		    <!-- Indicators -->
 		    <ol class="carousel-indicators">
@@ -49,6 +50,7 @@
 		      <span class="sr-only">Next</span>
 		    </a>
 		  </div>
+		  {% endif %}
 		<!-- <div class="row">
 			<div class="col-md-6">
 				<h2>Leagues</h2>
@@ -58,18 +60,22 @@
 	</div>
 	
 	<div class="col-md-4">
+		{% if mens_divs|length != 0 %}
 		<h3>Men's Divisions</h3>
 		<ul>
 			{% for div in mens_divs %}
 			<a href="{% url 'PandDDL:division' div.leaguegrp.gender div.leaguegrp.season div.leaguegrp.year div.name %}"><li class="div-list">Division {{ div.name }}</li></a>
 			{% endfor %}
 		</ul>
+		{% endif %}
+		{% if ladies_divs|length != 0 %}
 		<h3>Ladies Divisions</h3>
 		<ul>
 			{% for div in ladies_divs %}
 			<a href="{% url 'PandDDL:division' div.leaguegrp.gender div.leaguegrp.season div.leaguegrp.year div.name %}"><li class="div-list">Division {{ div.name }}</li></a>
 			{% endfor %}
 		</ul>
+		{% endif %}
 	</div>
 </div>
 {% endblock %}
