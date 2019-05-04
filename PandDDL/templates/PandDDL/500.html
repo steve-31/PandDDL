@@ -1,0 +1,9 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<h1>Something Went Wrong</h1>
+<h3>Sorry, we seem to have screwed up <a href="{% url 'PandDDL:reportProblem' %}">report it here</a> and we will fix it as soon as possible!</h3>
+<p><a href="{% url 'PandDDL:home' %}">Return Home</a></p>
+
+{% endblock %}

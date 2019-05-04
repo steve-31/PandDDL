@@ -9,7 +9,9 @@
 	<strong>Success!</strong> Your proposal has been submitted
 </div>
 {% endif %}
-
+{% if all_minutes|length == 0 %}
+<p>No AGMs currently scheduled</p>
+{% else %}
 <table class="table">
 	<tr>
 		<th>AGM Date</th>
@@ -69,8 +71,12 @@
 	</div>
 	{% endfor %}
 </table>
+{% endif %}
 
 <h1>Files</h1>
+{% if files|length == 0 %}
+<p>No files uploaded</p>
+{% else %}
 <table class="table">
 	{% for file in files %}
 	<tr>
@@ -80,6 +86,7 @@
 	</tr>
 	{% endfor %}
 </table>
+{% endif %}
 
 
 

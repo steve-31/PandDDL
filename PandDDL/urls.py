@@ -18,6 +18,7 @@ from django.contrib import admin
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls import handler404, handler500
 
 app_name = 'PandDDL'
 
@@ -77,4 +78,5 @@ urlpatterns = [
     url(r'^reportproblem/$', views.reportProblem, name='reportProblem'),
     url(r'^admin/completeissue/(?P<pid>[0-9]+)/$', views.completeIssue, name='completeIssue'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
