@@ -15,8 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from PandDDL import views
 
 urlpatterns = [
     url(r'^siteadmin/', admin.site.urls),
     url(r'^', include('PandDDL.urls'), name="index"),
 ]
+
+handler403 = views.handler403
+handler500 = views.handler500

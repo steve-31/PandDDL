@@ -9,7 +9,8 @@ import xlrd
 import math
 import datetime
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, render_to_response
+from django.template import RequestContext
 from django.db.models import Q, Count, Sum
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
@@ -17,7 +18,14 @@ from django.http import HttpResponse, JsonResponse, Http404
 from operator import itemgetter 
 from .models import *
 
+
 # Create your views here.
+
+def handler403(request, *args, **argv):
+    return render(request, 'PandDDL/403.html', status=403)
+
+def handler500(request, *args, **argv):
+    return render(request, 'PandDDL/500.html', status=500)
 
 def home(request):
     leaguegrps = LeagueGrp.objects.filter(active=True)
