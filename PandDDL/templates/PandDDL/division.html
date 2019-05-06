@@ -230,6 +230,16 @@
 			</tr>
 			{% endif %}
 			{% endfor %}
+			{% for bye in teams_with_bye %}{% if bye.date == date.date %}
+			<tr>
+				<td style="width:35%;">{{ bye.team.name }}</td>
+				<td><span style="display:block;text-align:center;"></span></td>
+				<td><span style="display:block;text-align:center;">-</span></td>
+				<td><span style="display:block;text-align:center;"></span></td>
+				<td style="width:35%;"><span style="display:block;text-align:right;">Bye</span></td>
+			</tr>
+			{% endif %}
+			{% endfor %}
 		</table>
 		{% endfor %}
 	</div>
