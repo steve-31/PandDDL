@@ -203,6 +203,7 @@ def division(request, lge_gender, lge_season, lge_year, div_id):
         for team in div_teams:
             if not team in teams_on_date:
                 teams_with_bye.append({"date":d['date'], "team":team})
+    print teams_with_bye
     top_singles_table = SinglesResult.objects.filter(player__team__in=div_teams, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
     top_singles_table = top_singles_table.filter(Cwon__gt=0)[:10]
     top_doubles_table = DoublesResult.objects.filter(player__team__in=div_teams, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
