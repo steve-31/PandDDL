@@ -1160,12 +1160,14 @@ def AdminPlayerSelectTeam(request):
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminPlayerSetCaptain(request, pid):
     player = Player.objects.get(pk=pid)
-    previous_captain = Player.objects.get(team__pk=player.team.pk, iscaptain=True)
+    previous_captain = Player.objects.filter(team__pk=player.team.pk, iscaptain=True)
     
+    for cap in previous_captain:
+        cap.iscaptain = False
+        cap.save()
+        
     player.iscaptain = True
     player.save()
-    previous_captain.iscaptain = False
-    previous_captain.save()
     
     return redirect('PandDDL:adminPlayer')
 
