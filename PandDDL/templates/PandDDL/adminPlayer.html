@@ -210,8 +210,9 @@ function select_team(event, number) {
 				var capc = "";
 				var capdel = "";
 				if (json.players[x].iscaptain !== true) {
-					var capcol = "<a href=\"admin/player/captain/"+ json.players[x].pk +"\">Set</a>";
-					var capdel = "<a href=\"admin/player/delete/"+ json.players[x].pk +"\">Delete</a>";
+					var capcol = "<a href=\"/admin/player/captain/"+ json.players[x].pk +"\">Set</a>";
+					console.log(capcol);
+					var capdel = "<a href=\"/admin/player/delete/"+ json.players[x].pk +"\">Delete</a>";
 				} else {
 					var capcol = "Set";
 					var capc = "(C)";
