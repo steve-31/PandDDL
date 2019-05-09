@@ -30,10 +30,10 @@ class DivisionAdminForm(forms.ModelForm):
     leaguegrp = LeagueModelNameField(queryset=LeagueGrp.objects.all()) 
     class Meta:
         model = Division
-        fields = ('name', 'leaguegrp', 'bestoflegs',)
+        fields = ('name', 'leaguegrp', 'singlesbestoflegs', 'doublesbestoflegs', )
 
 class DivisionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'leagueName', 'bestoflegs',)
+    list_display = ('name', 'leagueName', 'singlesbestoflegs', 'doublesbestoflegs', )
     list_filter = ('leaguegrp__gender', 'leaguegrp__year', 'leaguegrp__season')
     form = DivisionAdminForm
       

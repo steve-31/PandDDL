@@ -55,7 +55,7 @@
 										</ul>
 									</li>
 								{% else %}
-									<li><a href="{% url 'PandDDL:team' logged_in_team.division.leaguegrp.gender logged_in_team.division.leaguegrp.season logged_in_team.division.leaguegrp.year logged_in_team.division.name logged_in_team.name %}"><div>{{ logged_in_team.name }}</div></a>
+									<li><a href="{% url 'PandDDL:team' logged_in_team.pk %}"><div>{{ logged_in_team.name }}</div></a>
 										<ul>
 											<li class="sub-menu-item"><a href="{% url 'PandDDL:changePassword' logged_in_team.admin.pk %}"><div>Change Password</div></a></li>
 											<li class="sub-menu-item"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
@@ -91,7 +91,7 @@
 								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
 								
 							{% else %}
-								<li><a href="{% url 'PandDDL:team' logged_in_team.division.leaguegrp.gender logged_in_team.division.leaguegrp.season logged_in_team.division.leaguegrp.year logged_in_team.division.name logged_in_team.name %}"><div>{{ logged_in_team.name }}</div></a></li>
+								<li><a href="{% url 'PandDDL:team' logged_in_team.pk %}"><div>{{ logged_in_team.name }}</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:adminPage' %}"><div>Admin Tools</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:changePassword' logged_in_team.admin.pk %}"><div>Change Password</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>

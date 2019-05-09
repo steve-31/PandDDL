@@ -203,7 +203,6 @@ def division(request, lge_gender, lge_season, lge_year, div_id):
         for team in div_teams:
             if not team in teams_on_date:
                 teams_with_bye.append({"date":d['date'], "team":team})
-    print teams_with_bye
     top_singles_table = SinglesResult.objects.filter(player__team__in=div_teams, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
     top_singles_table = top_singles_table.filter(Cwon__gt=0)[:10]
     top_doubles_table = DoublesResult.objects.filter(player__team__in=div_teams, match__fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Cplayed=Sum('played'), Cwon=Sum('win'), Clost=Sum('lose'), Clegs_for=Sum('legs_for'), Clegs_ags=Sum('legs_against')).order_by('-Cwon', '-Clegs_for', 'Clegs_ags', 'player__surname')
@@ -252,7 +251,8 @@ def fixture(request, fix_id):
     single_matches = SinglesMatch.objects.filter(fixture=fixture.pk)
     double_matches = DoublesMatch.objects.filter(fixture=fixture.pk)
     triple_matches = TriplesMatch.objects.filter(fixture=fixture.pk)
-    legstowin = int(math.ceil(float(fixture.hometeam.division.bestoflegs) / 2))
+    singleslegstowin = int(math.ceil(float(fixture.hometeam.division.singlesbestoflegs) / 2))
+    doubleslegstowin = int(math.ceil(float(fixture.hometeam.division.doublesbestoflegs) / 2))
     beforegame = True if datetime.date.today() < fixture.date else False
     hometeamlast5games = Result.objects.filter(team=fixture.hometeam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
     awayteamlast5games = Result.objects.filter(team=fixture.awayteam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
@@ -268,7 +268,8 @@ def fixture(request, fix_id):
         "single_matches": single_matches,
         "double_matches": double_matches,
         "triple_matches": triple_matches,
-        "legstowin": legstowin,
+        "singleslegstowin": singleslegstowin,
+        "doubleslegstowin": doubleslegstowin,
         "beforegame": beforegame,
         "hometeamlast5games": hometeamlast5games,
         "awayteamlast5games": awayteamlast5games,
@@ -896,11 +897,14 @@ def AdminLeague(request):
 def setActiveLeague(request, lg_id):
     
     newactivelg = LeagueGrp.objects.get(pk=lg_id)
-    oldactivelg = LeagueGrp.objects.get(gender=newactivelg.gender, active=True)
-    oldactivelg.active = False
+    try:
+        oldactivelg = LeagueGrp.objects.get(gender=newactivelg.gender, active=True)
+        oldactivelg.active = False
+        oldactivelg.save()
+    except LeagueGrp.DoesNotExist:
+        pass
     newactivelg.active = True
     newactivelg.finished = False
-    oldactivelg.save()
     newactivelg.save()
     
     return redirect('PandDDL:adminLeague')
@@ -989,13 +993,14 @@ def AdminDivision(request):
     if request.method == "POST":
         if request.POST.get('new-div-name'):
             stripped_div_name = re.sub(r'[Dd]ivision|[Dd]iv| ','',request.POST.get('new-div-name'))
-            new_div = Division(name=stripped_div_name, leaguegrp=LeagueGrp.objects.get(pk=request.POST.get('new-div-league')), bestoflegs=request.POST.get('new-div-legs'))
+            new_div = Division(name=stripped_div_name, leaguegrp=LeagueGrp.objects.get(pk=request.POST.get('new-div-league')), singlesbestoflegs=request.POST.get('new-div-legs-singles'), doublesbestoflegs=request.POST.get('new-div-legs-doubles'))
             new_div.save()
         
         if request.POST.get('edit-div-id'):
             edit_div = Division.objects.get(pk=request.POST.get('edit-div-id'))
             edit_div.name = request.POST.get('edit-div-name')
-            edit_div.bestoflegs = request.POST.get('edit-div-legs')
+            edit_div.singlesbestoflegs = request.POST.get('edit-div-legs-singles')
+            edit_div.doublesbestoflegs = request.POST.get('edit-div-legs-doubles')
             edit_div.save()
         
         return redirect('PandDDL:adminDivision')
