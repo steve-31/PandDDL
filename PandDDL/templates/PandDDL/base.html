@@ -92,7 +92,6 @@
 								
 							{% else %}
 								<li><a href="{% url 'PandDDL:team' logged_in_team.pk %}"><div>{{ logged_in_team.name }}</div></a></li>
-								<li class="user-menu-action"><a href="{% url 'PandDDL:adminPage' %}"><div>Admin Tools</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:changePassword' logged_in_team.admin.pk %}"><div>Change Password</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
 							{% endif %}
