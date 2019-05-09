@@ -114,6 +114,9 @@ def changePassword(request, uid):
         if user is not None and request.POST.get('change-password') == request.POST.get('change-password-confirm'):
             user.set_password(request.POST.get('change-password'))
             user.save()
+            team = Team.objects.get(admin=user)
+            team.newpassword = False
+            team.save()
             login(request, user)
             return redirect('PandDDL:home')
         else: 

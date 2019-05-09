@@ -2,7 +2,7 @@
 db.sqlite3
 
 #ignore migrations
-*/migrations/*
+PandDDL/migrations/*
 
 #ignore media
 media/*

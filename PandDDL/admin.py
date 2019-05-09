@@ -89,7 +89,7 @@ class TeamAdminForm(forms.ModelForm):
     division = DivisionModelNameField(queryset=Division.objects.all())
     class Meta:
         model = Team
-        fields = ('name', 'address', 'division', 'admin')
+        fields = ('name', 'address', 'division', 'newpassword', 'admin')
 
 class TeamAdmin(admin.ModelAdmin):
     list_display = ('name', 'address', 'leagueName', 'divisionName')
