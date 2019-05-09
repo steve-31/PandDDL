@@ -26,7 +26,7 @@
 		<td>{{ min.location }}</td>
 		<td class="agm-minutes-text">{% if min.minutes %}<a href="{% url 'PandDDL:fileDownload' min.minutes.path %}">Download Minutes</a>{% else %}No Minutes File{% endif %}</td>
 		<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-agm-{{ forloop.counter }}">Edit</a></td>
-		<td><a href="{% url 'PandDDL:AGMminutesDelete' min.pk %}">Delete</a></td>
+		<td><a class="admin-a-link" onclick="deleteitem({{ min.pk }});">Delete</a></td>
 	</tr>
 	
 	<div class="modal fade" id="edit-agm-{{ forloop.counter }}" role="dialog">
@@ -92,7 +92,7 @@
 		<td>{{ file.description }}</td>
 		<td class="agm-minutes-text">{% if file.file %}<a href="{% url 'PandDDL:fileDownload' file.file.path %}">Download File</a>{% endif %}</td>
 		<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-file-{{ forloop.counter }}">Edit</a></td>
-		<td><a href="{% url 'PandDDL:FileDelete' file.pk %}">Delete</a></td>
+		<td><a class="admin-a-link" onclick="deletefile({{ file.pk }});">Delete</a></td>
 	</tr>
 	
 	<div class="modal fade" id="edit-file-{{ forloop.counter }}" role="dialog">
@@ -146,4 +146,21 @@
 
 
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this AGM?")) {
+		window.location.replace("/admin/AGM/delete/"+item);
+	}
+}
+
+function deletefile(item) {
+	if (confirm("Are you sure you wish to delete this file?")) {
+		window.location.replace("/admin/file/delete/"+item);
+	}
+}
+
+</script>
 {% endblock %}

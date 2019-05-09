@@ -1022,7 +1022,7 @@ def AdminDivisionDelete(request, div_id):
     div = Division.objects.get(pk=div_id)
     div.delete()
     
-    return redirect('PandDDL:adminTeam')
+    return redirect('PandDDL:adminDivision')
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminTeam(request):
@@ -1524,12 +1524,16 @@ def AdminKeyDates(request):
     ladies_key_dates = KeyDate.objects.filter(league__in=active_leagues, league__gender="Ladies").order_by('date')
     
     if request.method == "POST":
+        if request.POST.get('key-date-name'):
+            newdate = KeyDate(name=request.POST.get('key-date-name'), location=request.POST.get('key-date-location'), date=request.POST.get('key-date-date'), time=request.POST.get('key-date-time'), league=LeagueGrp.objects.get(pk=request.POST.get('key-date-league')))
+            newdate.save()
         if request.POST.get('edit-key-date-id'):
             date = KeyDate.objects.get(pk=request.POST.get('edit-key-date-id'))
             date.name = request.POST.get('edit-key-date-name')
             date.location = request.POST.get('edit-key-date-location')
             date.date = request.POST.get('edit-key-date-date')
             date.time = request.POST.get('edit-key-date-time')
+            date.league = LeagueGrp.objects.get(pk=request.POST.get('edit-key-date-league'))
             date.save()
         
         return redirect('PandDDL:adminKeyDates')
@@ -1706,6 +1710,11 @@ def AdminPhotoGalleries(request):
     photo_galleries = PhotoGallery.objects.all()
     
     if request.method == "POST":
+        if request.POST.get('new-gal-name'):
+            newgal = PhotoGallery(name=request.POST.get('new-gal-name'), date=request.POST.get('new-gal-date'))
+            newgal.save()
+            print request.POST.get('new-gal-name')
+            print request.POST.get('new-gal-date')
         if request.POST.get('edit-gal-id'):
             gallery = PhotoGallery.objects.get(pk=request.POST.get('edit-gal-id'))
             gallery.name = request.POST.get('edit-gal-name')

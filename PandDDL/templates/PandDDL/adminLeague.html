@@ -32,13 +32,14 @@
 				<th>League</th>
 				<th>Active</th>
 				<th></th>
+				<th></th>
 			</tr>
 			{% for league in mens_leagues %}
 			<tr>
 				<td> {{ league.gender }} {{ league.season }} League {{ league.displayyear }}</td>
 				<td>{% if league.active %}Yes{% else %}<a href="{% url 'PandDDL:setActiveLeague' league.pk %}">Set Active</a>{% endif %}</td>
 				<td>{% if league.active %}<span class="admin-a-link" data-toggle="modal" data-target="#new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
-				<td>{% if league.active %}Delete{% else %}<a href="{% url 'PandDDL:LeagueDelete' league.pk %}">Delete</a>{% endif %}</td>
+				<td>{% if league.active %}Delete{% else %}<a class="admin-a-link" onclick="deleteitem({{ league.pk }});">Delete</a>{% endif %}</td>
 				{% if league.active %}
 				<div class="modal fade" id="new-season-{{ forloop.counter }}" role="dialog">
 					<div class="modal-dialog">
@@ -93,8 +94,9 @@
 			{% for league in ladies_leagues %}
 			<tr>
 				<td> {{ league.gender }} {{ league.season }} League {{ league.displayyear }}</td>
-				<td>{% if league.active %}Yes{% else %}No {% endif %}</td>
-				<td>{% if league.active %}<span class="finish-season-btn" data-toggle="modal" data-target="#new-season-{{ forloop.counter }}">Finish Season</span>{% endif %}</td>
+				<td>{% if league.active %}Yes{% else %}<a href="{% url 'PandDDL:setActiveLeague' league.pk %}">Set Active</a>{% endif %}</td>
+				<td>{% if league.active %}<span class="finish-season-btn" data-toggle="modal" data-target="#new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
+				<td>{% if league.active %}Delete{% else %}<a class="admin-a-link" onclick="deleteitem({{ league.pk }});">Delete</a>{% endif %}</td>
 				{% if league.active %}
 				<div class="modal fade" id="new-season-{{ forloop.counter }}" role="dialog">
 					<div class="modal-dialog">
@@ -183,4 +185,14 @@
 		</div>
 	</div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this League?")) {
+		window.location.replace("/admin/league/delete/"+item);
+	}
+}
+</script>
 {% endblock %}

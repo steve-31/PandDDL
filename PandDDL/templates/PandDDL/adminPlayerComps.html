@@ -152,7 +152,7 @@
 						</div>
 					</div>
 				</div>
-				<td><a href="{% url 'PandDDL:adminPlayerCompDelete' comp.pk %}">Delete</a></td>
+				<td><a class="admin-a-link" onclick="deleteitem({{ comp.pk }})">Delete</a></td>
 			</tr>
 			{% endfor %}
 		</table>
@@ -282,7 +282,7 @@
 						</div>
 					</div>
 				</div>
-				<td><a href="{% url 'PandDDL:adminPlayerCompDelete' comp.pk %}">Delete</a></td>
+				<td><a class="admin-a-link" onclick="deleteitem({{ comp.pk }})">Delete</a></td>
 			</tr>
 			{% endfor %}
 		</table>
@@ -327,4 +327,14 @@
 </div>
 
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Competition?")) {
+		window.location.replace("/admin/playercomps/delete/"+item);
+	}
+}
+</script>
 {% endblock %}
