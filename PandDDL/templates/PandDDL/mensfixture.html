@@ -94,9 +94,9 @@
 						</div>
 						
 						<div class="col-md-4">
-							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ singleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ singleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
@@ -141,9 +141,9 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 97px;">
-							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ doubleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number min="0" max="{{ doubleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
@@ -377,17 +377,17 @@ function checkScore(gameType, gameNo) {
 	var awayScore = document.getElementById("away_score_"+gameType+gameNo);
 	homeScore.style.border = "1px solid #ccc";
 	awayScore.style.border = "1px solid #ccc";
-	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ legstowin }}) {
+	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
 		console.log("singles");
 		noOfErrors++;
 	} 
-	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ legstowin }}) {
+	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ singleslegstowin }}) {
 		awayScore.style.border = "2px solid red";
 		console.log("singles");
 		noOfErrors++;
 	}
-	if (parseInt(homeScore.value) != {{ legstowin }} && parseInt(awayScore.value) != {{ legstowin }}) {
+	if (parseInt(homeScore.value) != {{ singleslegstowin }} && parseInt(awayScore.value) != {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
 		awayScore.style.border = "2px solid red";
 		console.log("singles");
@@ -493,17 +493,17 @@ function submitFixture() {
 			homeScore.style.border = "1px solid #ccc";
 			awayScore.style.border = "1px solid #ccc";
 			
-			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ legstowin }}) {
+			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
 				console.log("doubles");
 				noOfErrors++;
 			} 
-			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ legstowin }}) {
+			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ doubleslegstowin }}) {
 				awayScore.style.border = "2px solid red";
 				console.log("doubles");
 				noOfErrors++;
 			} 
-			if (parseInt(homeScore.value) != {{ legstowin }} && parseInt(awayScore.value) != {{ legstowin }}) {
+			if (parseInt(homeScore.value) != {{ doubleslegstowin }} && parseInt(awayScore.value) != {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
 				console.log("doubles");

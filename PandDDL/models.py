@@ -13,7 +13,7 @@ class LeagueGrp(models.Model):
     year=models.IntegerField()
     displayyear=models.CharField(max_length=10)
     active=models.BooleanField(default=True)
-    finished=models.BooleanField()
+    finished=models.BooleanField(default=False)
     class Meta:
         verbose_name = 'League'
         verbose_name_plural = 'Leagues'
@@ -21,7 +21,8 @@ class LeagueGrp(models.Model):
 class Division(models.Model):
     name=models.CharField(max_length=1)
     leaguegrp=models.ForeignKey(LeagueGrp)
-    bestoflegs=IntegerField()
+    singlesbestoflegs=IntegerField()
+    doublesbestoflegs=IntegerField()
     
 class Team(models.Model):
     name=models.CharField(max_length=100)

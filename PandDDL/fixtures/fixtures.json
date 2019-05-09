@@ -1,0 +1,9 @@
+[
+  {
+    "model": "PandDDL.NoOfAnnouncements",
+    "pk": 1,
+    "fields": {
+      "number": 5
+    }
+  }
+]

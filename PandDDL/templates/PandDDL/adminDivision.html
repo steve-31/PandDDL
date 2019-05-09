@@ -29,14 +29,16 @@
 		<table class="table">
 			<tr>
 				<th>Division</th>
-				<th>Best of Legs</th>
+				<th>Best of Legs (Singles)</th>
+				<th>Best of Legs (Doubles)</th>
 				<th></th>
 				<th></th>
 			</tr>
 			{% for div in mens_divs %}
 			<tr>
 				<td><a href="{% url 'PandDDL:division' div.leaguegrp.gender div.leaguegrp.season div.leaguegrp.year div.name %}">Division {{ div.name }}</a></td>
-				<td>{{ div.bestoflegs }}</td>
+				<td>{{ div.singlesbestoflegs }}</td>
+				<td>{{ div.doublesbestoflegs }}</td>
 				<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-div-{{ div.pk }}">Edit</a></td>
 				<div class="modal fade" id="edit-div-{{ div.pk }}" role="dialog">
 					<div class="modal-dialog">
@@ -51,8 +53,11 @@
 									<p>Division: 
 										<input class="form-control" type="text" name="edit-div-name" value="{{ div.name }}">
 									</p>
-									<p>Best of Legs:
-										<input class="form-control" type="number" name="edit-div-legs" value="{{ div.bestoflegs }}">
+									<p>Best of Legs (Singles):
+										<input class="form-control" type="number" name="edit-div-legs-singles" value="{{ div.singlesbestoflegs }}">
+									</p>
+									<p>Best of Legs (Doubles):
+										<input class="form-control" type="number" name="edit-div-legs-doubles" value="{{ div.doublesbestoflegs }}">
 									</p>
 								</div>
 								<div class="modal-footer">
@@ -93,8 +98,12 @@
 									<p>Division: 
 										<input class="form-control" type="text" name="edit-div-name" value="{{ div.name }}">
 									</p>
-									<p>Best of Legs:
-										<input class="form-control" type="number" name="edit-div-legs" value="{{ div.bestoflegs }}">
+									<p>Best of Legs (Singles):
+										<input class="form-control" type="number" name="edit-div-legs-singles" value="{{ div.singlesbestoflegs }}">
+									</p>
+									
+									<p>Best of Legs (Doubles):
+										<input class="form-control" type="number" name="edit-div-legs-doubles" value="{{ div.doublesbestoflegs }}">
 									</p>
 								</div>
 								<div class="modal-footer">
@@ -130,8 +139,11 @@
 					<p>Division: 
 						<input class="form-control" type="text" name="new-div-name">
 					</p>
-					<p>Best of Legs:
-						<input class="form-control" type="number" name="new-div-legs">
+					<p>Best of Legs (Singles):
+						<input class="form-control" type="number" name="new-div-legs-singles">
+					</p>
+					<p>Best of Legs (Doubles):
+						<input class="form-control" type="number" name="new-div-legs-doubles">
 					</p>
 				</div>
 				<div class="modal-footer">
