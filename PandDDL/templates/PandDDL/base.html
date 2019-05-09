@@ -73,20 +73,25 @@
 				
 				<nav id="mobile-menu">
 					<ul class="mobile-menu-items">
+						{% if active_mens %}
 						<li onclick="showMensMobileMenu();"><a href="#"><div>Men's</div></a>
 							<ul class="submenu-mobile-list" id="mobile-menu-mens-divs">
 								{% for div in active_divisions %}{% if div.leaguegrp == active_mens %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_mens.gender active_mens.season active_mens.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
 							</ul>
 						</li>
+						{% endif %}
+						{% if active_ladies %}
 						<li onclick="showLadiesMobileMenu();"><a href="#"><div>Ladies</div></a>
 							<ul class="submenu-mobile-list" id="mobile-menu-ladies-divs">
 								{% for div in active_divisions %}{% if div.leaguegrp == active_ladies %}<li class="sub-menu-item"><a href="{% url 'PandDDL:division' active_ladies.gender active_ladies.season active_ladies.year div.name %}">Division {{ div.name }}</a></li>{% endif %}{% endfor %}
 							</ul>
 						</li>
+						{% endif %}
 						<li><a href="{% url 'PandDDL:archive' %}"><div>Archive</div></a></li>
 						{% if request.user.is_authenticated %}
 							{% if request.user.is_staff %}
 								<li><a href="{% url 'PandDDL:adminPage' %}"><div>{{ request.user.username }}</div></a></li>
+								<li class="sub-menu-item"><a href="{% url 'PandDDL:adminPage' %}"><div>Admin Tools</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:changePassword' request.user.pk %}"><div>Change Password</div></a></li>
 								<li class="user-menu-action"><a href="{% url 'PandDDL:logout' %}"><div>Logout</div></a></li>
 								
