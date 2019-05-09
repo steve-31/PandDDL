@@ -74,7 +74,7 @@
 														<td>{{ d.points }}</td>
 														<td>{{ d.reason }}</td>
 														<td>{{ d.date }}</td>
-														<td><a href="{% url 'PandDDL:adminTeamDeductionDelete' d.pk %}">Delete</a></td>
+														<td><a class="admin-a-link" onclick="deletededuction({{ d.pk }})">Delete</a></td>
 													</tr>
 													{% endif %}{% endfor %}
 												</table>
@@ -127,7 +127,7 @@
 							</div>
 						</div>
 						</td>
-						<td><a href="{% url 'PandDDL:adminTeamDelete' team.pk %}">Delete</a></td>
+						<td><a class="admin-a-link" onclick="deleteitem({{ team.pk }})">Delete</a></td>
 					</tr>
 					{% endif %}
 					{% endfor %}
@@ -154,8 +154,8 @@
 						<th>Team</th>
 						<th>Points Deductions</th>
 						<th>Reset Password</th>
-						<th>Edit</th>
-						<th>Delete</th>
+						<th></th>
+						<th></th>
 					</tr>
 					{% for team in active_teams %}
 					{% if team.division.pk == div.pk %}
@@ -182,7 +182,7 @@
 														<td>{{ d.points }}</td>
 														<td>{{ d.reason }}</td>
 														<td>{{ d.date }}</td>
-														<td><a href="{% url 'PandDDL:adminTeamDeductionDelete' d.pk %}">Delete</a></td>
+														<td><a class="admin-a-link" onclick="deletededuction({{ d.pk }})">Delete</a></td>
 													</tr>
 													{% endif %}{% endfor %}
 												</table>
@@ -228,7 +228,7 @@
 							</div>
 						</div>
 						</td>
-						<td><a href="{% url 'PandDDL:adminTeamDelete' team.pk %}">Delete</a></td>
+						<td><a class="admin-a-link" onclick="deleteitem({{ team.pk }})">Delete</a></td>
 					</tr>
 					{% endif %}
 					{% endfor %}
@@ -319,6 +319,18 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Team?")) {
+		window.location.replace("/admin/team/delete/"+item);
+	}
+}
+function deletededuction(item) {
+	if (confirm("Are you sure you wish to delete this Points Deduction?")) {
+		window.location.replace("/admin/team/points_deduction/delete/"+item);
+	}
+}
+</script>
 
 <script>
 function resetPasswordAlert(uname, uid) {

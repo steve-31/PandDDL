@@ -28,8 +28,8 @@ class Team(models.Model):
     name=models.CharField(max_length=100)
     address=models.CharField(max_length=300)
     division=models.ForeignKey(Division)
-    pubphoneno=models.CharField(max_length=20)
-    captainphoneno=models.CharField(max_length=20)
+    pubphoneno=models.CharField(max_length=20, null=True)
+    captainphoneno=models.CharField(max_length=20, null=True)
     paidleaguefee=models.BooleanField(default=False)
     admin=models.ForeignKey(User)
     newpassword=models.BooleanField()
@@ -202,7 +202,7 @@ class PhotoGallery(models.Model):
     
 class Announcement(models.Model):
     date=models.DateTimeField()
-    heading=models.TextField()
+    heading=models.TextField(null=True)
     text=models.TextField(null=True)
     picture=models.ImageField(upload_to="announcements", blank=True, null=True)
     gallery=models.ForeignKey(PhotoGallery, null=True)

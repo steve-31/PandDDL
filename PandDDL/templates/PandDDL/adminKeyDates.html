@@ -4,7 +4,7 @@
 <nav aria-label="breadcrumb">
 	<ol class="breadcrumb">
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminPage' %}">Admin Home</a></li>
-		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</li>
+		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminLeague' %}">League</a></li>
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminDivision' %}">Division</a></li>
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminFixture' %}">Fixture</a></li>
 		<li class="breadcrumb-item"><a href="{% url 'PandDDL:adminTeam' %}">Team</a></li>
@@ -78,7 +78,7 @@
 					</div>
 				</div>
 				
-				<td><a href="{% url 'PandDDL:adminKeyDateDelete' kd.pk %}">Delete</a></td>
+				<td><a class="admin-a-link" onclick="deleteitem({{ kd.pk }})">Delete</a></td>
 			</tr>
 			{% endfor %}
 		</table>
@@ -123,4 +123,14 @@
 	</div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Key Date?")) {
+		window.location.replace("/admin/KeyDates/delete/"+item);
+	}
+}
+</script>
 {% endblock %}

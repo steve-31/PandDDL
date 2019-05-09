@@ -95,7 +95,7 @@
 						<td style="text-align:right;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.awayteam.name }}</a></td>
 						<td>{% if fix.resultverified %}Verified{% elif fix.resultentered %}Entered{% else %}Not Entered{% endif %}</td>
 						<td><a href="{% url 'PandDDL:adminFixtureEdit' fix.pk %}">Edit</a></td>
-						<td><a href="{% url 'PandDDL:adminFixtureDelete' fix.pk %}">Delete</a></td>
+						<td><a class="admin-a-link" onclick="deleteitem({{ fix.pk }})">Delete</a></td>
 					</tr>
 					{% endif %}
 					{% endfor %}
@@ -173,7 +173,7 @@
 						<td style="text-align:right;"><a href="{% url 'PandDDL:fixture' fix.pk %}">{{ fix.awayteam.name }}</a></td>
 						<td>{% if fix.resultverified %}Verified{% elif fix.resultentered %}Entered{% else %}Not Entered{% endif %}</td>
 						<td><a href="{% url 'PandDDL:adminFixtureEdit' fix.pk %}">Edit</a></td>
-						<td><a href="{% url 'PandDDL:adminFixtureDelete' fix.pk %}">Delete</a></td>
+						<td><a class="admin-a-link" onclick="deleteitem({{ fix.pk }})">Delete</a></td>
 					</tr>
 					{% endif %}
 					{% endfor %}
@@ -215,4 +215,14 @@
 	</div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Fixture?")) {
+		window.location.replace("/admin/fixture/delete/"+item);
+	}
+}
+</script>
 {% endblock %}

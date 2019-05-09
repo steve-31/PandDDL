@@ -67,7 +67,7 @@
 						</div>
 					</div>
 				</div>
-				<td><a href="{% url 'PandDDL:adminDivisionDelete' div.pk %}">Delete</a></td>
+				<td><a class="admin-a-link" onclick="deleteitem({{ div.pk }})">Delete</a></td>
 			{% endfor %}
 		</table>
 	</div>
@@ -113,7 +113,7 @@
 						</div>
 					</div>
 				</div>
-				<td><a href="{% url 'PandDDL:adminDivisionDelete' div.pk %}">Delete</a></td>
+				<td><a class="admin-a-link" onclick="deleteitem({{ div.pk }})">Delete</a></td>
 			{% endfor %}
 		</table>
 	</div>
@@ -153,4 +153,14 @@
 		</div>
 	</div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Division?")) {
+		window.location.replace("/admin/division/delete/"+item);
+	}
+}
+</script>
 {% endblock %}

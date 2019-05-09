@@ -84,8 +84,8 @@
 							<tr>
 								<th>Player</th>
 								<th>Set Captain</th>
-								<th>Edit</th>
-								<th>Delete</th>
+								<th></th>
+								<th></th>
 							</tr>
 							{% for player in active_players %}
 							{% if player.team.pk == team.pk %}
@@ -124,7 +124,7 @@
 											</div>
 										</div>
 									</div>
-								<td>{% if not player.iscaptain %}<a href="{% url 'PandDDL:adminPlayerDelete' player.pk %}">Delete</a>{% else %}Delete{% endif %}</td>
+								<td>{% if not player.iscaptain %}<a class="admin-a-link" onclick="deleteitem({{ player.pk }});">Delete</a>{% else %}Delete{% endif %}</td>
 							</tr>
 							{% endif %}
 							{% endfor %}
@@ -178,6 +178,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Player?")) {
+		window.location.replace("/admin/player/delete/"+item);
+	}
+}
+</script>
+
 <script type="text/javascript">
 function select_team(event, number) {
 	event.preventDefault();
@@ -212,7 +220,7 @@ function select_team(event, number) {
 				if (json.players[x].iscaptain !== true) {
 					var capcol = "<a href=\"/admin/player/captain/"+ json.players[x].pk +"\">Set</a>";
 					console.log(capcol);
-					var capdel = "<a href=\"/admin/player/delete/"+ json.players[x].pk +"\">Delete</a>";
+					var capdel = "<a class=\"admin-a-link\" onclick=\"deleteitem("+ json.players[x].pk +")\">Delete</a>";
 				} else {
 					var capcol = "Set";
 					var capc = "(C)";

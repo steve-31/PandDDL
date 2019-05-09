@@ -17,7 +17,9 @@
 	</ol>
 </nav>
 
-<h1>Photo Galleries Admin</h1>
+<h1>Photo Galleries Admin
+	<button class="admin-function-button btn btn-primary" data-toggle="modal" data-target="#new-gallery">Add Photo Gallery</button>
+</h1>
 
 <table class="table">
 	<tr>
@@ -111,9 +113,41 @@
 				</div>
 			</div>
 		</div>
-		<td><a href="{% url 'PandDDL:adminPhotoGalleriesDelete' gal.pk %}">Delete</a></td>
+		<td><a class="admin-a-link" onclick="deleteitem({{ gal.pk }});">Delete</a></td>
 	</tr>
 	{% endfor %}
 </table>
 
+<div class="modal fade" id="new-gallery" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="edit-gallery" action="." method="POST">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">New Photo Gallery</h4>
+				</div>
+				<div class="modal-body">
+					<p>Gallery Name:</p>
+					<p><input class="form-control" type="text" name="new-gal-name"></p>
+					<p>Gallery Date:</p>
+					<p><input class="form-control" type="date" name="new-gal-date"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">New Gallery</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteitem(item) {
+	if (confirm("Are you sure you wish to delete this Photo Gallery?")) {
+		window.location.replace("/admin/photo_galleries/delete/"+item);
+	}
+}
+</script>
 {% endblock %}

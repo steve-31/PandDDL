@@ -75,7 +75,7 @@
 				</div>
 			</div>
 		</td>
-		<td style="width: 5%;"><a href="{% url 'PandDDL:adminAnnouncementDelete' announcement.pk %}">Delete</a></td>
+		<td style="width: 5%;"><a class="admin-a-link" onclick="deleteannouncement({{ announcement.pk }})">Delete</a></td>
 	</tr>
 	{% endfor %}
 </table>
@@ -113,4 +113,14 @@
 	</div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteannouncement(item) {
+	if (confirm("Are you sure you wish to delete this Announcement?")) {
+		window.location.replace("/admin/announcements/delete/"+item);
+	}
+}
+</script>
 {% endblock %}
