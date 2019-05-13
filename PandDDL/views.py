@@ -8,6 +8,7 @@ import pandas
 import xlrd
 import math
 import datetime
+import logging
 from django.utils import timezone
 from django.shortcuts import render, redirect, render_to_response
 from django.template import RequestContext
@@ -20,6 +21,8 @@ from .models import *
 
 
 # Create your views here.
+
+#logger = logging.getLogger(__name__)
 
 def handler403(request, *args, **argv):
     return render(request, 'PandDDL/403.html', status=403)
@@ -528,13 +531,49 @@ def fixture(request, fix_id):
             awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=awaywin, lose=awaylose, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=awaypoints)
             awayresult.save()
             
+        print request.POST.get('result-rejected')
+        print request.POST.get('result-verified')
         if request.POST.get('result-verified') or fixture.resultenteredby.is_staff: 
             fixture.resultverified = True
             fixture.save()
-            
-#             results = Result.objects.filter(fixture=fixture)
-#             for r in results:
-#                 r.delete()
+        elif request.POST.get('result-rejected') == "True":
+            print "testing"
+            results = Result.objects.filter(fixture=fixture)
+            for r in results:
+                print r.win
+                r.delete()
+            singles_matches = SinglesMatch.objects.filter(fixture=fixture)
+            for s in singles_matches:
+                singles_result = SinglesResult.objects.filter(match=s)
+                for sr in singles_result:
+                    sr.delete()
+                s.delete()
+            doubles_matches = DoublesMatch.objects.filter(fixture=fixture)
+            for d in doubles_matches:
+                doubles_result = DoublesResult.objects.filter(match=d)
+                for dr in doubles_result:
+                    dr.delete()
+                d.delete()
+            triples_matches = TriplesMatch.objects.filter(fixture=fixture)
+            for t in triples_matches:
+                triples_result = TriplesResult.objects.filter(match=t)
+                for tr in triples_result:
+                    tr.delete()
+                t.delete()
+                
+            maximums = Maximum.objects.filter(fixture=fixture)
+            for m in maximums:
+                m.delete()
+            top_finishes = TopFinish.objects.filter(fixture=fixture)
+            for tf in top_finishes:
+                tf.delete()
+            fixture.walkover = False
+            fixture.homescore = 0
+            fixture.awayscore = 0
+            fixture.resultentered = False
+            fixture.resultenteredby = None
+            fixture.resultverified = False
+            fixture.save()
         
         return redirect('PandDDL:fixture', fixture.pk)   
         
