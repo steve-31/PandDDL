@@ -352,7 +352,7 @@
 
 <form class="form-inline" id="verify-result-form" onsubmit="fixtureSubmit()" method="post" action=".">{% csrf_token %}
 	I confirm that this result is correct: <input type="checkbox" id="result-verified" name="result-verified">
-	<input type="hidden" id="result-rejected" name="result-rejected">
+	<input type="hidden" id="result-rejected" name="result-rejected" value="True">
 	<br>
 	<button class="btn btn-success" type="submit">Verify Result</button>
 </form>
@@ -379,25 +379,21 @@ function checkScore(gameType, gameNo) {
 	awayScore.style.border = "1px solid #ccc";
 	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
-		console.log("singles");
 		noOfErrors++;
 	} 
 	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ singleslegstowin }}) {
 		awayScore.style.border = "2px solid red";
-		console.log("singles");
 		noOfErrors++;
 	}
 	if (parseInt(homeScore.value) != {{ singleslegstowin }} && parseInt(awayScore.value) != {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
 		awayScore.style.border = "2px solid red";
-		console.log("singles");
 		noOfErrors++;
 	} 
 	
 	if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
 		homeScore.style.border = "2px solid red";
 		awayScore.style.border = "2px solid red";
-		console.log("singles");
 		noOfErrors++;
 	} 
 	
@@ -412,7 +408,6 @@ function checkScore(gameType, gameNo) {
 		
 		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value || homePlayer5 == homePlayer.value) {
 			homePlayer.style.border = "2px solid red";
-			console.log("singles");
 			noOfErrors++;
 		} 
 			
@@ -426,19 +421,16 @@ function checkScore(gameType, gameNo) {
 		
 		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value || awayPlayer5 == awayPlayer.value) {
 			awayPlayer.style.border = "2px solid red";
-			console.log("singles");
 			noOfErrors++;
 		} 
 		
 		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {
 			homeScore.style.border = "2px solid red";
-			console.log("singles");
 			noOfErrors++;
 		}
 		
 		if (awayPlayer.value == 0 && parseInt(awayScore.value) != 0) {
 			awayScore.style.border = "2px solid red";
-			console.log("singles");
 			noOfErrors;
 		}
 		
@@ -456,9 +448,6 @@ function submitFixture() {
 		checkScore("s", i);
 	}
 	
-	for (i = 1; i < 3; i++) {
-		checkScore("d", i);
-	}
 	
 	for (i = 1; i < 3; i++) {
 		for (j = 1; j < 3; j++) {
@@ -471,7 +460,6 @@ function submitFixture() {
 			
 			if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
 				homePlayer.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			} 
 			
@@ -484,7 +472,6 @@ function submitFixture() {
 			
 			if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
 				awayPlayer.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			}
 			
@@ -495,24 +482,20 @@ function submitFixture() {
 			
 			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			} 
 			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ doubleslegstowin }}) {
 				awayScore.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			} 
 			if (parseInt(homeScore.value) != {{ doubleslegstowin }} && parseInt(awayScore.value) != {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			} 
 			if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
-				console.log("doubles");
 				noOfErrors++;
 			} 
 		}
@@ -546,7 +529,6 @@ function submitFixture() {
 				maximum.style.border = "1px solid #ccc";
 			} else {
 				maximum.style.border = "2px solid red";
-				console.log("maximums");
 				noOfErrors++;
 			}
 			
@@ -554,13 +536,11 @@ function submitFixture() {
 				finishPlayer.style.border = "1px solid #ccc";
 			} else {
 				finishPlayer.style.border = "2px solid red";
-				console.log("finishes");
 				noOfErrors++;
 			}
 			
 			if (finishPlayer.value != "" && finishScore.value == "") {
 				finishScore.style.border = "2px solid red";
-				console.log("finishes");
 				noOfErrors++;
 			} else {
 				finishScore.style.border = "1px solid #ccc";
@@ -568,7 +548,6 @@ function submitFixture() {
 			
 			if (parseInt(finishScore.value) < 100 || parseInt(finishScore.value) > 180) {
 				finishScore.style.border = "2px solid red";
-				console.log("finishes");
 				noOfErrors++;
 			} else {
 				finishScore.style.border = "1px solid #ccc";
