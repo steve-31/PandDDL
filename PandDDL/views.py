@@ -636,12 +636,12 @@ def team(request, tid):
         captain = None
         
     dates = []
-    for date in fixtures:
-        d = {"pk": date.pk, "date": date.date, "hometeam": date.hometeam, "homescore": date.homescore, "awayscore": date.awayscore, "awayteam": date.awayteam}
+    for newdate in fixtures:
+        d = {"pk": newdate.pk, "date": newdate.date, "hometeam": newdate.hometeam, "homescore": newdate.homescore, "awayscore": newdate.awayscore, "awayteam": newdate.awayteam}
         dates.append(d)
     
     for date in results:
-        d = {"pk": date.pk, "date": date.fixture.date, "hometeam": date.fixture.hometeam, "homescore": date.fixture.homescore, "awayscore": date.fixture.awayscore, "awayteam": date.fixture.awayteam, "lose": date.lose, "win": date.win}
+        d = {"pk": date.fixture.pk, "date": date.fixture.date, "hometeam": date.fixture.hometeam, "homescore": date.fixture.homescore, "awayscore": date.fixture.awayscore, "awayteam": date.fixture.awayteam, "lose": date.lose, "win": date.win}
         dates.append(d)
     
     for d in fixture_dates:
