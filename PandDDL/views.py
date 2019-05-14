@@ -22,7 +22,7 @@ from .models import *
 
 # Create your views here.
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def handler403(request, *args, **argv):
     return render(request, 'PandDDL/403.html', status=403)
