@@ -720,8 +720,8 @@ def printFixtures(request, lge_gender, lge_season, lge_year, div_id):
     
     return render(request, 'PandDDL/printFixtures.html', context)
 
-def printTeamFixtures(request, team_name):
-    team = Team.objects.get(name=team_name)
+def printTeamFixtures(request, team_id):
+    team = Team.objects.get(pk=team_id)
     lge = LeagueGrp.objects.get(pk=team.division.leaguegrp.pk)
     fixture_dates = Fixture.objects.filter(division=team.division).values('date').order_by('date').distinct()
     fixtures = Fixture.objects.filter(Q(hometeam=team.pk) | Q(awayteam=team.pk), Q(resultverified=False)).order_by('date')

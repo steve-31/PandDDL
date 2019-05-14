@@ -57,7 +57,7 @@
 	</table>
 	{% if playersaddedafterstart %}<p>* Player registered after the midpoint of season</p>{% endif %}
 	
-	<h3>Fixtures<a href="{% url 'PandDDL:printTeamFixtures' team.name %}" target="_blank"><button class="btn btn-primary admin-function-button">Print Fixtures for {{ team.name }}</button></a></h3>
+	<h3>Fixtures<a href="{% url 'PandDDL:printTeamFixtures' team.pk %}" target="_blank"><button class="btn btn-primary admin-function-button">Print Fixtures for {{ team.name }}</button></a></h3>
 	<div class="row">
 		<div class="col-md-9">
 			<table class="table">
