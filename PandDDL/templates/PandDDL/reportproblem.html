@@ -15,8 +15,8 @@
 <div class="row">
 	<div class="col-md-5">
 		<form id="report-problem-form" action="." method="POST" onsubmit="submitProblemForm(event);">{% csrf_token %}
-			Reported By - Email (optional):
-			<input class="form-control" name="reporter-email" type="email">
+			Reported By (optional):
+			<input class="form-control" name="reporter-email" type="text">
 			Issue Description:
 			<textarea class="form-control" id="problem-description" name="problem-description" rows="5" form="report-problem-form"></textarea>
 			<button type="submit" class="btn btn-primary" style="margin-top: 15px">Report Problem</button>
