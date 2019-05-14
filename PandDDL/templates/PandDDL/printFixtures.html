@@ -31,7 +31,7 @@
 				{% for fixture in teams_with_bye %}{% if fixture.date == date.date %}
 				<tr>
 					<td style="width:25%;">{{ fixture.date }}</td>
-					<td style="width:35%;">{{ fixture.hometeam.name }}</td>
+					<td style="width:35%;">{{ fixture.team.name }}</td>
 					<td><span style="display:block;text-align:center;"></span></td>
 					<td><span style="display:block;text-align:center;">-</span></td>
 					<td><span style="display:block;text-align:center;"></span></td>
@@ -54,6 +54,17 @@
 					<td><span style="display:block;text-align:center;">-</span></td>
 					<td><span style="display:block;text-align:center;">{% if fixture.resultverified %}{{ fixture.awayscore }}{% elif fixture.date <= today %}0{% endif %}</span></td>
 					<td style="width:35%;"><span style="display:block;text-align:right;">{{ fixture.awayteam.name }}</span></td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+				{% for fixture in teams_with_bye %}{% if fixture.date == date.date %}
+				<tr>
+					<td style="width:25%;">{{ fixture.date }}</td>
+					<td style="width:35%;">{{ fixture.team.name }}</td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td><span style="display:block;text-align:center;">-</span></td>
+					<td><span style="display:block;text-align:center;"></span></td>
+					<td style="width:35%;"><span style="display:block;text-align:right;">Bye</span></td>
 				</tr>
 				{% endif %}
 				{% endfor %}
