@@ -23,8 +23,7 @@
 				
 					
 					<div id="logo">
-						<img src="{% static 'PandDDL/media/photos/pddl-favicon.png' %}" alt="PDDL Logo" style="height:60px; display:inline-block; position:absolute;"/>
-						<div style="padding-left:90px; display:inline; line-height:70px"><a href="{% url 'PandDDL:home' %}">P&amp;DDL{% if environment != 'Prod' %} <span id="dev-header">({{ environment | upper }})</span>{% endif %}</a></div>
+						<div style="display:inline; line-height:70px"><a href="{% url 'PandDDL:home' %}">P&amp;DDL{% if environment != 'Prod' %} <span id="dev-header">({{ environment | upper }})</span>{% endif %}</a></div>
 						<div id="primary-menu-trigger" onclick="showMobileMenu();"><i class="icon-reorder"></i></div>
 					</div>
 					
