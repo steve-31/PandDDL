@@ -82,7 +82,7 @@
 		{% for i in "xxxxx" %}
 			<tr>
 				<td class="fixture-table-row">
-					<div class="row" style="margin:10px 0 10px 0;">
+					<div class="row mobile-fixture-table-row">
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}" id="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player</option>
@@ -123,7 +123,7 @@
 		{% for i in "xx" %}
 			<tr>
 				<td class="fixture-table-row">
-					<div class="row" style="margin:10px 0 10px 0;">
+					<div class="row mobile-fixture-table-row">
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}" id="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
@@ -177,7 +177,7 @@
 			<div class="row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
-					<select class="form-control" style="width:100%" name="maximums-1-{{ forloop.counter }}" id="maximums-1-{{ forloop.counter }}">
+					<select class="form-control mobile-fixture-table-row" style="width:100%" name="maximums-1-{{ forloop.counter }}" id="maximums-1-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -195,7 +195,7 @@
 		<td>
 			<div class="row">
 				{% for i in "xxxxxx" %}
-				<div class="col-md-2">
+				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="maximums-2-{{ forloop.counter }}" id="maximums-2-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
@@ -221,7 +221,7 @@
 		<td>
 			<div class="row">
 				{% for i in "xxxxxx" %}
-				<div class="col-md-2">
+				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="finishes-name-1-{{ forloop.counter }}" id="finishes-name-1-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
@@ -241,7 +241,7 @@
 		<td>
 			<div class="row">
 				{% for i in "xxxxxx" %}
-				<div class="col-md-2">
+				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="finishes-name-2-{{ forloop.counter }}" id="finishes-name-2-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
@@ -407,8 +407,10 @@ function checkScore(gameType, gameNo) {
 		homePlayer.style.border = "1px solid #ccc";
 		
 		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value || homePlayer5 == homePlayer.value) {
-			homePlayer.style.border = "2px solid red";
-			noOfErrors++;
+			if (homePlayer.value != 0) {
+				homePlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
 		} 
 			
 		var awayPlayer = document.getElementById("singles-away-player-"+gameNo);
@@ -420,8 +422,10 @@ function checkScore(gameType, gameNo) {
 		awayPlayer.style.border = "1px solid #ccc";
 		
 		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value || awayPlayer5 == awayPlayer.value) {
-			awayPlayer.style.border = "2px solid red";
-			noOfErrors++;
+			if (awayPlayer.value != 0) {
+				awayPlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
 		} 
 		
 		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {

@@ -2,23 +2,53 @@
 {% load static %}
 {% block content %}
 
-<h1>{{ cup.name }} {{ lge.displayyear }}</h1>
-<div class="row">
-{% for round in rounds %}
-	<div class="col-md-2 round-fixtures">
-		<h3>{{ round.name }}</h3>
-		
-		{% for fixture in fixtures %}
-		{% if fixture.round == round %}
-		<p>{{ fixture.hometeam.name }}</p>
-		<p>{{ fixture.homescore }} - {{ fixture.awayscore }}</p>
-		<p>{{ fixture.awayteam.name }}</p>
-		{% endif %}
-		{% endfor %}
-	</div>
+<h1>Competitions</h1>
+<h3>Results</h3>
 
+<table class="table">
+	<tr>
+		<th>Date</th>
+		<th>Competition</th>
+		<th>Winner(s)</th>
+		<th>Runner-Up(s)</th>
+	</tr>
+{% for result in cup_results %}
+	<tr>
+		<td>{{ result.keydate.date }}</td>
+		<td>{{ result.keydate.name }}</td>
+		<td>
+			{% if result.winner1 %}{{ result.winner1.firstname }}{{ result.winner1.surname }}{% endif %}
+			{% if result.winner2 %}<br>{{ result.winner2.firstname }}{{ result.winner2.surname }}{% endif %}
+			{% if result.winner3 %}<br>{{ result.winner3.firstname }}{{ result.winner3.surname }}{% endif %}
+		</td>
+		<td>
+			{% if result.runnerup1 %}{{ result.runnerup1.firstname }}{{ result.runnerup1.surname }}{% endif %}
+			{% if result.runnerup2 %}<br>{{ result.runnerup2.firstname }}{{ result.runnerup2.surname }}{% endif %}
+			{% if result.runnerup3 %}<br>{{ result.runnerup3.firstname }}{{ result.runnerup3.surname }}{% endif %}
+		</td>
+	</tr>
 {% endfor %}
-</div>
+</table>
 
 
+<h3>Upcoming</h3>
+
+<table class="table">
+	<tr>
+		<th>Date</th>
+		<th>Time</th>
+		<th>Location</th>
+		<th>Competition</th>
+		<th>Type</th>
+	</tr>
+{% for fixture in cup_fixtures %}
+	<tr>
+		<td>{{ fixture.keydate.date }}</td>
+		<td>{{ fixture.keydate.time }}</td>
+		<td>{{ fixture.keydate.location }}</td>
+		<td>{{ fixture.keydate.name }}</td>
+		<td>{{ fixture.comptype }}</td>
+	</tr>
+{% endfor %}
+</table>
 {% endblock %}

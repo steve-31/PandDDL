@@ -44,12 +44,12 @@
 	<div class="col-md-6">
 		<h3>Results Not Entered</h3>
 		<ul class="nav nav-tabs">
-		  <li class="active"><a data-toggle="tab" href="#mensLeague">Men's Divisions ({{ mens_results_not_entered|length }})</a></li>
-		  <li><a data-toggle="tab" href="#ladiesLeague">Ladies' Divisions ({{ ladies_results_not_entered|length }})</a></li>
+		  <li class="active"><a data-toggle="tab" href="#mensLeagueentered">Men's Divisions ({{ mens_results_not_entered|length }})</a></li>
+		  <li><a data-toggle="tab" href="#ladiesLeagueentered">Ladies' Divisions ({{ ladies_results_not_entered|length }})</a></li>
 		</ul>
 		
 		<div class="tab-content">
-			<div id="mensLeague" class="tab-pane fade in active">
+			<div id="mensLeagueentered" class="tab-pane fade in active">
 				{% if mens_results_not_entered|length == 0 %}
 				<p>All results entered</p>
 				{% else %}
@@ -65,7 +65,7 @@
 				</table>
 				{% endif %}
 			</div>
-			<div id="ladiesLeague" class="tab-pane fade in">
+			<div id="ladiesLeagueentered" class="tab-pane fade in">
 				{% if ladies_results_not_entered|length == 0 %}
 				<p>All results entered</p>
 				{% else %}

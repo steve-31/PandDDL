@@ -71,11 +71,11 @@ urlpatterns = [
     url(r'^fixtures/print/(?P<team_id>[0-9]+)/$', views.printTeamFixtures, name='printTeamFixtures'),
     url(r'^(?P<lge_gender>[A-Za-z0-9\']+)_(?P<lge_season>[A-Za-z0-9]+)_(?P<lge_year>[0-9]+)/$', views.league, name='league'),
     url(r'^(?P<lge_gender>[A-Za-z0-9\']+)_(?P<lge_season>[A-Za-z0-9]+)_(?P<lge_year>[0-9]+)/div(?P<div_id>[A-Za-z0-9]+)/$', views.division, name='division'),
-    url(r'^(?P<lge_gender>[A-Za-z0-9\']+)_(?P<lge_season>[A-Za-z0-9]+)_(?P<lge_year>[0-9]+)/(?P<cup_id>[A-Za-z0-9 ]+)/$', views.cupComp, name='cup'),
     url(r'^fixture/(?P<fix_id>[0-9]+)/$', views.fixture, name='fixture'),
     url(r'^team/(?P<tid>[0-9\']+)/$',views.team, name='team'),
     url(r'^contact/$',views.contactUs, name='contactUs'),
     url(r'^reportproblem/$', views.reportProblem, name='reportProblem'),
+    url(r'^competitions/$', views.CompetitionPage, name='competitions'),
     url(r'^admin/completeissue/(?P<pid>[0-9]+)/$', views.completeIssue, name='completeIssue'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
