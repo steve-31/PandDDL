@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from .models import Team, LeagueGrp, Division
+from django.conf import settings
 
 def header_processor(request):
     if request.user.is_authenticated() and not request.user.is_staff:
@@ -19,5 +20,5 @@ def header_processor(request):
         active_ladies = None
     active_divisions = Division.objects.filter(leaguegrp__in=active_leagues)
     
-    return { "logged_in_team": team, "active_divisions": active_divisions, "active_leagues": active_leagues, "active_mens": active_mens, "active_ladies": active_ladies }
+    return { "environment": settings.ENVIRONMENT, "logged_in_team": team, "active_divisions": active_divisions, "active_leagues": active_leagues, "active_mens": active_mens, "active_ladies": active_ladies }
 

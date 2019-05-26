@@ -1,8 +1,11 @@
 {% load static %}
 
 <head>
-	<title>Peterborough &amp; District Darts League</title>
+	<title>{% if environment != 'Prod' %}({{ environment | upper }}) {% endif %}Peterborough &amp; District Darts League</title>
+	<link rel="icon" href="{% static 'PandDDL/media/photos/pddl-favicon.png' %}" type="image/x-icon"/>
+	<link rel="shortcut icon" href="{% static 'PandDDL/media/photos/pddl-favicon.png' %}" type="image/x-icon"/>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="google-site-verification" content="Xy3m10xfw0pmUh2qHIVihb3cTjXPoF9PVDovvattNQQ" />
 	<link rel="stylesheet" href="{% static 'PandDDL/css/style.css' %}" type="text/css" />
 	<link rel="stylesheet" href="{% static 'PandDDL/css/font-icons.css' %}" type="text/css" />
 	<link rel="stylesheet" href="{% static 'PandDDL/css/responsive.css' %}" type="text/css" />
@@ -12,16 +15,16 @@
 <body class="sticky-footer stretched">
 	<div id="wrapper" class="clearfix">
 	
-		<header id="header">
+		<header id="header" class={% if environment != 'Prod' %}"header-dev"{% else %}"header-prod"{% endif %}>
 
 			<div id="header-wrap">
 
 				<div class="container clearfix">
 				
 					
-					
 					<div id="logo">
-						<a href="{% url 'PandDDL:home' %}">P&amp;DDL</a>
+						<img src="{% static 'PandDDL/media/photos/pddl-favicon.png' %}" alt="PDDL Logo" style="height:60px; display:inline-block; position:absolute;"/>
+						<div style="padding-left:90px; display:inline; line-height:70px"><a href="{% url 'PandDDL:home' %}">P&amp;DDL{% if environment != 'Prod' %} <span id="dev-header">({{ environment | upper }})</span>{% endif %}</a></div>
 						<div id="primary-menu-trigger" onclick="showMobileMenu();"><i class="icon-reorder"></i></div>
 					</div>
 					

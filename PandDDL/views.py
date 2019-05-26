@@ -9,6 +9,7 @@ import xlrd
 import math
 import datetime
 import logging
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.shortcuts import render, redirect, render_to_response
 from django.template import RequestContext
@@ -26,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 def handler403(request, *args, **argv):
     return render(request, 'PandDDL/403.html', status=403)
+
+def handler404(request, *args, **argv):
+    return render(request, 'PandDDL/404.html', status=404)
 
 def handler500(request, *args, **argv):
     return render(request, 'PandDDL/500.html', status=500)
@@ -111,19 +115,22 @@ def authlogin(request):
     return render(request, 'PandDDL/login.html', context)
 
 def changePassword(request, uid):
+    user_test = User.objects.get(pk=uid)
+    if request.user != user_test:
+        raise PermissionDenied
     if request.method == "POST":
-        user_test = User.objects.get(pk=uid)
+        
         user = authenticate(username=user_test.username, password=request.POST.get('old-password'))
-        if user is not None and request.POST.get('change-password') == request.POST.get('change-password-confirm'):
+        if user is not None and request.POST.get('change-password') and request.POST.get('change-password') == request.POST.get('change-password-confirm'):
             user.set_password(request.POST.get('change-password'))
-            user.save()
             team = Team.objects.get(admin=user)
             team.newpassword = False
             team.save()
+            user.save()
             login(request, user)
             return redirect('PandDDL:home')
         else: 
-            return redirect('PandDDL:changePassword')
+            return redirect('PandDDL:changePassword', user.pk)
     
     context = {
     
@@ -149,17 +156,13 @@ def league(request, lge_gender, lge_season, lge_year):
             
     return render(request, 'PandDDL/league.html', context)
 
-def cupComp(request, lge_gender, lge_season, lge_year, cup_id):
-    lge = LeagueGrp.objects.get(gender=lge_gender, season=lge_season, year=lge_year)
-    cup = CupComp.objects.get(leaguegrp=lge.pk, name=cup_id)
-    rounds = CupRound.objects.filter(comp=cup.pk).order_by('roundnumber')
-    fixtures = CupFixture.objects.filter(round__in=rounds)
+def CompetitionPage(request):
+    results = Competition.objects.filter(keydate__league__active=True).exclude(winner1=None).order_by('keydate__date')
+    fixtures = Competition.objects.filter(keydate__league__active=True, winner1=None).order_by('keydate__date')
     
     context = {
-        "cup": cup,
-        "lge": lge,
-        "rounds": rounds,
-        "fixtures": fixtures,
+        "cup_results": results,
+        "cup_fixtures": fixtures,
     }
     
     return render(request, 'PandDDL/cup.html', context)

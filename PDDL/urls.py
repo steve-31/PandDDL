@@ -24,3 +24,4 @@ urlpatterns = [
 
 handler403 = views.handler403
 handler500 = views.handler500
+handler404 = views.handler404

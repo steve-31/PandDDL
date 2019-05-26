@@ -1,3 +1,8 @@
+#ignore local project files
+.project
+.pydevproject
+.settings/
+
 #ignore database
 db.sqlite3
 
@@ -7,5 +12,12 @@ PandDDL/migrations/*
 #ignore media
 media/*
 
-#ignore settings
-PDDL/settings*
+#ignore local settings
+PDDL/local_settings*
+
+#ignore secret_key
+PDDL/secret_key*
+
+#ignore logs
+logs/*
+*.log

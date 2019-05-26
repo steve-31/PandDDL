@@ -8,6 +8,21 @@ html, body {
 	height:100%;
 }
 
+@media (max-width: 992px) {
+	.header-dev #primary-menu-trigger {
+		color: #efefde !important;
+	}
+	
+	.mobile-fixture-table-row {
+		margin: 30px 0 30px 0 !important;
+	}
+}
+
+@media (max-width: 400px) {
+	#header, #header-wrap {
+		height: 150px !important;
+	}
+}
 
 @media (min-width: 992px) {
 	
@@ -170,10 +185,30 @@ html, body {
     background-color: #C4302B !important;
 }
 
+#dev-header {
+	font-size: 20px;
+}
+
 #header {
 	position: relative;
-	background-color: #efefde;
 	border-bottom: 1px solid #F5F5F5;
+}
+.header-prod #header-wrap {
+	background-color: #efefde !important;
+}
+
+.header-prod .one-page-menu li:not(.sub-menu-item), 
+.header-prod .one-page-menu li:not(.sub-menu-item) > a {
+	color: #353433;
+}
+
+.header-dev #header-wrap {
+	background-color: #353433 !important;
+}
+
+.header-dev .one-page-menu li:not(.sub-menu-item), 
+.header-dev .one-page-menu li:not(.sub-menu-item) > a {
+	color: #efefde !important;
 }
 
 #header,
@@ -196,8 +231,6 @@ html, body {
 	top: 0;
 	left: 0;
 	width: 100%;
-	background-color: #efefde;
-	color: x;
 	box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
@@ -210,11 +243,6 @@ html, body {
 	height: 70px;
 	padding: 20px 30px 0 30px;
 	font-size: 20px;
-	color: #353433;
-}
-
-#header .one-page-menu li:not(.sub-menu-item) > a {
-	color: #353433;
 }
 
 #header .one-page-menu li:hover:not(.sub-menu-item), 
@@ -229,14 +257,19 @@ html, body {
 	display: inline-block;
 	float: none;
 	height: 100%;
-	padding: 20px 0 0 0;
 	font-size: 30px;
-	color: #efefde;
 }
 
 #logo a {
 	height:100%;
-	color: #353433;
+}
+
+.header-prod #logo a {
+	color: #353433 !important;
+}
+
+.header-dev #logo a {
+	color: #efefde !important;
 }
 
 #logo:hover a {
@@ -345,8 +378,12 @@ html, body {
 	font-size: 20px;
 }
 
-.mobile-menu-items li > a {
+.header-prod .mobile-menu-items li > a {
 	color: #353433;
+}
+
+.header-dev .mobile-menu-items li > a {
+	color: #efefde;
 }
 
 #mobile-menu ul li:hover {
@@ -365,6 +402,10 @@ html, body {
 
 #mobile-menu ul li.user-menu-action {
 	font-size: 18px !important;
+}
+
+.mobile-fixture-table-row {
+	margin:10px 0 10px 0;
 }
 
 
@@ -569,7 +610,7 @@ html, body {
 }
 
 .contact-card {
-	height: 100px;
+	height: 130px;
 	padding: 10px;
 	box-shadow: 3px 3px 5px grey;
 }
