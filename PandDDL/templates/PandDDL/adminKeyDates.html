@@ -41,8 +41,8 @@
 				<td>{{ kd.date }}</td>
 				<td>{{ kd.time }}</td>
 				<td>{{ kd.location }}</td>
-				<td><a class="admin-a-link" data-toggle="modal" data-target="#key-date-edit-{{ forloop.counter }}">Edit</a></td>
-				<div class="modal fade" id="key-date-edit-{{ forloop.counter }}" role="dialog">
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#key-date-edit-{{ kd.pk }}">Edit</a></td>
+				<div class="modal fade" id="key-date-edit-{{ kd.pk }}" role="dialog">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<form id="edit-key-date-form-{{ forloop.counter }}" action="." method="POST">{% csrf_token %}
@@ -84,7 +84,62 @@
 		</table>
 	</div>
 	<div id="ladiesLeague" class="tab-pane fade in">
-	
+		<table class="table">
+			<tr>
+				<th>Description</th>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Location</th>
+				<th></th>
+				<th></th>
+			</tr>
+			{% for kd in ladies_key_dates %}
+			<tr>
+				<td>{{ kd.name }}</td>
+				<td>{{ kd.date }}</td>
+				<td>{{ kd.time }}</td>
+				<td>{{ kd.location }}</td>
+				<td><a class="admin-a-link" data-toggle="modal" data-target="#key-date-edit-{{ kd.pk }}">Edit</a></td>
+				<div class="modal fade" id="key-date-edit-{{ kd.pk }}" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<form id="edit-key-date-form-{{ forloop.counter }}" action="." method="POST">{% csrf_token %}
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+									<h4 class="modal-title">Edit Key Date</h4>
+								</div>
+								<div class="modal-body">
+									<input type="hidden" name="edit-key-date-id" value="{{ kd.pk }}">
+									<p>League:</p>
+									<p>
+										<select class="form-control" name="edit-key-date-league">
+											<option disabled>Select League</option>
+											{% for league in active_leagues %}
+											<option value="{{ league.pk }}" {% if league.pk == kd.league.pk %}selected{% endif %}>{{ league.gender }} {{ league.season }} League {{ league.displayyear }}</option>
+											{% endfor %}
+										</select>
+									</p>
+									<p>Event Name:</p>
+									<p><input class="form-control" type="text" name="edit-key-date-name" value="{{ kd.name }}"></p>
+									<p>Event Location:</p>
+									<p><input class="form-control" type="text" name="edit-key-date-location" value="{{ kd.location }}"></p>
+									<p>Event Date:</p>
+									<p><input class="form-control" type="date" name="edit-key-date-date" value="{{ kd.date | date:'Y-m-d' }}"></p>
+									<p>Event Time:</p>
+									<p><input class="form-control" type="time" name="edit-key-date-time" value="{{ kd.time | time:'H:i' }}"></p>
+								</div>
+								<div class="modal-footer">
+									<button type="submit" class="btn btn-primary">Submit</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				
+				<td><a class="admin-a-link" onclick="deleteitem({{ kd.pk }})">Delete</a></td>
+			</tr>
+			{% endfor %}
+		</table>
 	</div>
 </div>
 

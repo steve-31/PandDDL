@@ -11,6 +11,7 @@ PandDDL/migrations/*
 
 #ignore media
 media/*
+static/*
 
 #ignore local settings
 PDDL/local_settings*
