@@ -83,6 +83,7 @@
 						<table class="table">
 							<tr>
 								<th>Player</th>
+								<th>Date Added</th>
 								<th>Set Captain</th>
 								<th></th>
 								<th></th>
@@ -91,6 +92,7 @@
 							{% if player.team.pk == team.pk %}
 							<tr>
 								<td>{{ player.firstname }} {{ player.surname }} {% if player.iscaptain %}(C){% endif %}</td>
+								<td>{{ player.dateadded }}</td>
 								<td>{% if not player.iscaptain %}<a href="{% url 'PandDDL:adminPlayerSetCaptain' player.pk %}">Set</a>{% else %}Set{% endif %}
 								<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-player-{{ player.pk }}">Edit</a></td>
 									<div class="modal fade" id="edit-player-{{ player.pk }}" role="dialog">
@@ -160,7 +162,7 @@
 						<select class="form-control" name="new-player-team">
 							<option selected disabled>Select Team</option>
 							{% for team in active_teams %}
-							<option value="{{ team.pk }}">{{ team.name }}</option>
+							<option value="{{ team.pk }}">{{ team.name }}{% if team.division.leaguegrp.gender == "Ladies" %} - Ladies{% endif %}</option>
 							{% endfor %}
 						</select>
 					</p>

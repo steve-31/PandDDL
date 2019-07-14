@@ -40,7 +40,7 @@
 				<th></th>
 				<th></th>
 			</tr>
-			{% for comp in active_comps %}
+			{% for comp in mens_comps %}
 			<tr>
 				<td>{{ comp.keydate.name }}</td>
 				<td>{{ comp.comptype }}</td>
@@ -61,14 +61,14 @@
 									<p>Competition Winner{% if comp.comptype != "Singles" %}s{% endif %}:
 										<select class="form-control" name="comp-winner1">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.winner1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
 										{% if comp.comptype != "Singles" %}
 										<select class="form-control" name="comp-winner2">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.winner2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -76,7 +76,7 @@
 										{% if comp.comptype == "Triples" %}
 										<select class="form-control" name="comp-winner3">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.winner3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -85,14 +85,14 @@
 									<p>Competition Runner Up{% if comp.comptype != "Singles" %}s{% endif %}:
 										<select class="form-control" name="comp-runnerup1">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
 										{% if comp.comptype != "Singles" %}
 										<select class="form-control" name="comp-runnerup2">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -100,7 +100,7 @@
 										{% if comp.comptype == "Triples" %}
 										<select class="form-control" name="comp-runnerup3">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in mens_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -170,7 +170,7 @@
 				<th></th>
 				<th></th>
 			</tr>
-			{% for comp in active_comps %}
+			{% for comp in ladies_comps %}
 			<tr>
 				<td>{{ comp.keydate.name }}</td>
 				<td>{{ comp.comptype }}</td>
@@ -191,14 +191,14 @@
 									<p>Competition Winner{% if comp.comptype != "Singles" %}s{% endif %}:
 										<select class="form-control" name="comp-winner1">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.winner1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
 										{% if comp.comptype != "Singles" %}
 										<select class="form-control" name="comp-winner2">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.winner2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -206,7 +206,7 @@
 										{% if comp.comptype == "Triples" %}
 										<select class="form-control" name="comp-winner3">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.winner3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -215,14 +215,14 @@
 									<p>Competition Runner Up{% if comp.comptype != "Singles" %}s{% endif %}:
 										<select class="form-control" name="comp-runnerup1">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
 										{% if comp.comptype != "Singles" %}
 										<select class="form-control" name="comp-runnerup2">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>
@@ -230,7 +230,7 @@
 										{% if comp.comptype == "Triples" %}
 										<select class="form-control" name="comp-runnerup3">
 											<option selected disabled>Select Player</option>
-											{% for player in all_players %}
+											{% for player in ladies_players %}
 											<option value="{{ player.pk }}" {% if comp.runnerup3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option>
 											{% endfor %}
 										</select>

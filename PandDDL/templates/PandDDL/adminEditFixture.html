@@ -286,39 +286,30 @@
 var noOfErrors = 0;
 window.onload = updateScore;
 
-
 function checkScore(gameType, gameNo) {
 	var homeScore = document.getElementById("home_score_"+gameType+gameNo);
 	var awayScore = document.getElementById("away_score_"+gameType+gameNo);
-	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ legstowin }}) {
+	homeScore.style.border = "1px solid #ccc";
+	awayScore.style.border = "1px solid #ccc";
+	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
 		noOfErrors++;
-	} else {
-		homeScore.style.border = "1px solid #ccc";
-	}
-	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ legstowin }}) {
+	} 
+	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ singleslegstowin }}) {
 		awayScore.style.border = "2px solid red";
 		noOfErrors++;
-	} else {
-		awayScore.style.border = "1px solid #ccc";
 	}
-	if (parseInt(homeScore.value) != {{ legstowin }} && parseInt(awayScore.value) != {{ legstowin }}) {
+	if (parseInt(homeScore.value) != {{ singleslegstowin }} && parseInt(awayScore.value) != {{ singleslegstowin }}) {
 		homeScore.style.border = "2px solid red";
 		awayScore.style.border = "2px solid red";
 		noOfErrors++;
-	} else {
-		homeScore.style.border = "1px solid #ccc";
-		awayScore.style.border = "1px solid #ccc";
-	}
+	} 
 	
 	if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
 		homeScore.style.border = "2px solid red";
 		awayScore.style.border = "2px solid red";
 		noOfErrors++;
-	} else {
-		homeScore.style.border = "1px solid #ccc";
-		awayScore.style.border = "1px solid #ccc";
-	}
+	} 
 	
 	if (gameType == "s") {
 		var homePlayer = document.getElementById("singles-home-player-"+gameNo);
@@ -327,12 +318,14 @@ function checkScore(gameType, gameNo) {
 		var homePlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-home-player-3").value);
 		var homePlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-home-player-4").value);
 		var homePlayer5 = ((gameNo == 5) ? "" : document.getElementById("singles-home-player-5").value);
+		homePlayer.style.border = "1px solid #ccc";
+		
 		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value || homePlayer5 == homePlayer.value) {
-			homePlayer.style.border = "2px solid red";
-			noOfErrors++;
-		} else {
-			homePlayer.style.border = "1px solid #ccc";
-		}
+			if (homePlayer.value != 0) {
+				homePlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		} 
 			
 		var awayPlayer = document.getElementById("singles-away-player-"+gameNo);
 		var awayPlayer1 = ((gameNo == 1) ? "" : document.getElementById("singles-away-player-1").value);
@@ -340,11 +333,23 @@ function checkScore(gameType, gameNo) {
 		var awayPlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-away-player-3").value);
 		var awayPlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-away-player-4").value);
 		var awayPlayer5 = ((gameNo == 5) ? "" : document.getElementById("singles-away-player-5").value);
+		awayPlayer.style.border = "1px solid #ccc";
+		
 		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value || awayPlayer5 == awayPlayer.value) {
-			awayPlayer.style.border = "2px solid red";
+			if (awayPlayer.value != 0) {
+				awayPlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		} 
+		
+		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {
+			homeScore.style.border = "2px solid red";
 			noOfErrors++;
-		} else {
-			awayPlayer.style.border = "1px solid #ccc";
+		}
+		
+		if (awayPlayer.value == 0 && parseInt(awayScore.value) != 0) {
+			awayScore.style.border = "2px solid red";
+			noOfErrors;
 		}
 		
 	} 
@@ -361,9 +366,6 @@ function submitFixture() {
 		checkScore("s", i);
 	}
 	
-	for (i = 1; i < 3; i++) {
-		checkScore("d", i);
-	}
 	
 	for (i = 1; i < 3; i++) {
 		for (j = 1; j < 3; j++) {
@@ -372,55 +374,48 @@ function submitFixture() {
 			var homePlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-home-player-2-1").value);
 			var homePlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-home-player-1-2").value);
 			var homePlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-home-player-2-2").value);
+			homePlayer.style.border = "1px solid #ccc";
+			
 			if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
 				homePlayer.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				homePlayer.style.border = "1px solid #ccc";
-			}
+			} 
 			
 			var awayPlayer = document.getElementById("doubles-away-player-"+i+"-"+j);
 			var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-away-player-1-1").value);
 			var awayPlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-away-player-2-1").value);
 			var awayPlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-away-player-1-2").value);
 			var awayPlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-away-player-2-2").value);
+			awayPlayer.style.border = "1px solid #ccc";
+			
 			if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
 				awayPlayer.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				awayPlayer.style.border = "1px solid #ccc";
 			}
 			
 			var homeScore = document.getElementById("home_score_d"+i);
 			var awayScore = document.getElementById("away_score_d"+i);
-			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ legstowin }}) {
+			homeScore.style.border = "1px solid #ccc";
+			awayScore.style.border = "1px solid #ccc";
+			
+			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				homeScore.style.border = "1px solid #ccc";
-			}
-			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ legstowin }}) {
+			} 
+			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ doubleslegstowin }}) {
 				awayScore.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				awayScore.style.border = "1px solid #ccc";
-			}
-			if (parseInt(homeScore.value) != {{ legstowin }} && parseInt(awayScore.value) != {{ legstowin }}) {
+			} 
+			if (parseInt(homeScore.value) != {{ doubleslegstowin }} && parseInt(awayScore.value) != {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				homeScore.style.border = "1px solid #ccc";
-				awayScore.style.border = "1px solid #ccc";
-			}
+			} 
 			if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				homeScore.style.border = "1px solid #ccc";
-				awayScore.style.border = "1px solid #ccc";
-			}
+			} 
 		}
 	}
 	
@@ -455,11 +450,11 @@ function submitFixture() {
 				noOfErrors++;
 			}
 			
-			if (finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18) {
+			if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18) {
+				finishPlayer.style.border = "1px solid #ccc";
+			} else {
 				finishPlayer.style.border = "2px solid red";
 				noOfErrors++;
-			} else {
-				finishPlayer.style.border = "1px solid #ccc";
 			}
 			
 			if (finishPlayer.value != "" && finishScore.value == "") {

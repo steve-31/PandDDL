@@ -18,7 +18,7 @@
 				<th>F</th>
 				<th>A</th>
 				<th>Pts</th>
-				<th>Form</th>
+				<th>Form (Last 5)</th>
 			</tr>
 			{% for team in div_table %}
 			<tr>
@@ -30,13 +30,13 @@
 				<td>{{ team.Clegs_for }}</td>
 				<td>{{ team.Clegs_ags }}</td>
 				<td>{{ team.Cpoints }}{% if team.teamName in points_deductions_teams %} *{% endif %}</td>
-				<td>{% for game in results %}{% if game.team.name == team.teamName %}
+				<td>{% for game in team.results %}
 					{% if game.win == 1 %}
 						<div data-toggle="tooltip" data-html="true" data-placement="top" title="<strong>{{ game.fixture.date }}</strong><br>{{ game.fixture.hometeam.name }} {{ game.fixture.homescore }} - {{ game.fixture.awayscore }} {{ game.fixture.awayteam.name }}" class="team-form-win table-team-form">W</div>
 					{% else %}
 						<div data-toggle="tooltip" data-html="true" data-placement="top" title="<strong>{{ game.fixture.date }}</strong><br>{{ game.fixture.hometeam.name }} {{ game.fixture.homescore }} - {{ game.fixture.awayscore }} {{ game.fixture.awayteam.name }}" class="team-form-lose table-team-form">L</div>
 					{% endif %}
-					{% endif %}{% endfor %}
+					{% endfor %}
 				</td>
 			</tr>
 			{% endfor %}
@@ -144,9 +144,9 @@
 			</tr>
 			{% for p in maximum_table %}
 			<tr>
-				<td>{{ p.player__firstname }} {{ p.player__surname }}</td>
+				<td>{{ p.player__pk }} {{ p.player__firstname }} {{ p.player__surname }}</td>
 				<td>{{ p.player__team__name }}</td>
-				<td>{{ p.total }}</td>
+				<td>{{ p.id__count }}</td>
 			</tr>
 			{% endfor %}
 		</table>

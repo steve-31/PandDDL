@@ -46,8 +46,8 @@ def find_or_create_secret_key():
         return SECRET_KEY
 
 # Make this unique, and don't share it with anybody.
-#SECRET_KEY = find_or_create_secret_key()
-SECRET_KEY = 'bxld_r!$47lbx$69(!*n_o@9wr=@$%nc2$f0ticbo0_(gijlna'
+SECRET_KEY = find_or_create_secret_key()
+#SECRET_KEY = 'bxld_r!$47lbx$69(!*n_o@9wr=@$%nc2$f0ticbo0_(gijlna'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False

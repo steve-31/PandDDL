@@ -152,7 +152,9 @@
 				<table class="table">
 					<tr>
 						<th>Team</th>
+						<th>Username</th>
 						<th>Points Deductions</th>
+						<th>League Fee Paid</th>
 						<th>Reset Password</th>
 						<th></th>
 						<th></th>
@@ -161,6 +163,7 @@
 					{% if team.division.pk == div.pk %}
 					<tr>
 						<td>{{ team.name }}</td>
+						<td>{{ team.admin.username }}</td>
 						<td>{% if team.pk in points_deductions_teams %}<a class="admin-a-link" data-toggle="modal" data-target="#edit-team-deductions-{{ team.pk }}">Edit Points Deductions</a>
 							<div class="modal fade" id="edit-team-deductions-{{ team.pk }}" role="dialog">
 								<div class="modal-dialog">
@@ -194,6 +197,7 @@
 								</div>
 							</div>
 						{% else %}None{% endif %}</td>
+						<td>{% if team.paidleaguefee %}Paid{% else %}<a href="{% url 'PandDDL:adminTeamLeagueFee' team.pk %}">Pay</a>{% endif %}</td>
 						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.admin.pk }}')">Reset</span></td>
 						<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-team-{{ team.pk }}">Edit</a>
 						<div class="modal fade" id="edit-team-{{ team.pk }}" role="dialog">
@@ -218,6 +222,12 @@
 												</select>
 											<p>Team Address:
 												<textarea class="form-control" rows="4" cols="65" name="edit-team-address" form="edit-team-form-{{ team.pk }}">{{ team.address }}</textarea>
+											</p>
+											<p>Pub Phone Number:
+												<input class="form-control" type="tel" name="edit-team-pub-phone" value="{{ team.pubphoneno }}">
+											</p>
+											<p>Captain Phone Number:
+												<input class="form-control" type="tel" name="edit-team-captain-phone" value="{{ team.captainphoneno }}">
 											</p>
 										</div>
 										<div class="modal-footer">

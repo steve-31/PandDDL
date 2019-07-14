@@ -23,6 +23,7 @@ class Division(models.Model):
     leaguegrp=models.ForeignKey(LeagueGrp)
     singlesbestoflegs=IntegerField()
     doublesbestoflegs=IntegerField()
+    triplesbestoflegs=IntegerField(null=True, blank=True)
     
 class Team(models.Model):
     name=models.CharField(max_length=100)
