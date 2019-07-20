@@ -469,49 +469,74 @@ def fixture(request, fix_id):
                         #print "some weird error (Please no)"
                 
                 if not errors:
+                    maximumslist = []
+                    topfinisheslist = []
                     for i in range(1,7):
+                        player_ok = False
                         maximum = request.POST.get('maximums-1-'+str(i))
                         if maximum != None and maximum != "":
                             maximumplayer = Player.objects.get(pk=maximum)
                             for s in singlesresults:
                                 if maximumplayer == s.player:
-                                    errors = True
+                                    player_ok = True
                             for d in doublesresults:
                                 if maximumplayer == d.player:
-                                    errors = True
-                            maxi = Maximum(player=maximumplayer, fixture=fixture)
-                            maxi.save()
+                                    player_ok = True
+                            if player_ok:
+                                maxi = Maximum(player=maximumplayer, fixture=fixture)
+                                maximumslist.append(maxi)
+                            else: 
+                                errors = True
                     
+                        player_ok = False
                         maximum = request.POST.get('maximums-2-'+str(i))
                         if maximum != None and maximum != "":
                             maximumplayer = Player.objects.get(pk=maximum)
                             for s in singlesresults:
                                 if maximumplayer == s.player:
-                                    errors = True
+                                    player_ok = True
                             for d in doublesresults:
                                 if maximumplayer == d.player:
-                                    errors = True
-                            maxi = Maximum(player=maximumplayer, fixture=fixture)
-                            maxi.save()
+                                    player_ok = True
+                            if player_ok:
+                                maxi = Maximum(player=maximumplayer, fixture=fixture)
+                                maximumslist.append(maxi)
+                            else: 
+                                errors = True
                         
+                        player_ok = False
                         top_finish_player = request.POST.get('finishes-name-1-'+str(i))
                         top_finish_score = request.POST.get('finishes-amount-1-'+str(i))
                         if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
                             topfinishplayer = Player.objects.get(pk=top_finish_player)
                             for s in singlesresults:
                                 if topfinishplayer == s.player:
-                                    errors = True
+                                    player_ok = True
                             for d in doublesresults:
                                 if topfinishplayer == d.player:
-                                    errors = True
-                            finish = TopFinish(player=topfinishplayer, finish=top_finish_score, fixture=fixture)
-                            finish.save()
-                            
+                                    player_ok = True
+                            if player_ok:
+                                finish = TopFinish(player=topfinishplayer, finish=top_finish_score, fixture=fixture)
+                                topfinisheslist.append(finish)
+                            else: 
+                                errors = True
+                        
+                        player_ok = False 
                         top_finish_player = request.POST.get('finishes-name-2-'+str(i))
                         top_finish_score = request.POST.get('finishes-amount-2-'+str(i))
                         if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            finish = TopFinish(player=Player.objects.get(pk=top_finish_player), finish=top_finish_score, fixture=fixture)
-                            finish.save()
+                            topfinishplayer = Player.objects.get(pk=top_finish_player)
+                            for s in singlesresults:
+                                if topfinishplayer == s.player:
+                                    player_ok = True
+                            for d in doublesresults:
+                                if topfinishplayer == d.player:
+                                    player_ok = True
+                            if player_ok:
+                                finish = TopFinish(player=topfinishplayer, finish=top_finish_score, fixture=fixture)
+                                topfinisheslist.append(finish)
+                            else:
+                                errors = True
                 
                 if request.FILES:
                     fixture.resultsheet = request.FILES['result-sheet']
@@ -519,9 +544,7 @@ def fixture(request, fix_id):
                 if not errors:
                     for s in singlesmatches:
                         s.save()
-                        print s.id
                     for s in singlesresults:
-                        print s.match.id
                         newmatch = SinglesMatch.objects.get(pk=s.match.id)
                         s.match = newmatch
                         s.save()
@@ -531,6 +554,10 @@ def fixture(request, fix_id):
                         newmatch = DoublesMatch.objects.get(pk=d.match.id)
                         d.match = newmatch
                         d.save()
+                    for m in maximumslist:
+                        m.save()
+                    for t in topfinisheslist:
+                        t.save()
                 
             else:
                 homescore = 0
@@ -668,7 +695,6 @@ def fixture(request, fix_id):
                 fixture.resultverified = True
                 fixture.save()
         elif request.POST.get('result-rejected') == "True":
-            print "testing"
             results = Result.objects.filter(fixture=fixture)
             for r in results:
                 print r.win
