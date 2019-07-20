@@ -322,26 +322,33 @@ def fixture(request, fix_id):
                 awayscore = 0
                 singlesmatches = []
                 singlesresults = []
+                #print "singles"
                 for i in range(1,6):
+                    #print i
                     try:
                         singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
                         singlesHomePlayerObj = None if int(singlesHomePlayer) == 0 else Player.objects.get(pk=singlesHomePlayer)
                         for s in singlesmatches:
                             if singlesHomePlayerObj == s.homeplayer:
                                 errors = True
+                                #print "Home Player exists"
                         singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
                         singlesAwayPlayerObj = None if int(singlesAwayPlayer) == 0 else Player.objects.get(pk=singlesAwayPlayer)
                         for s in singlesmatches:
                             if singlesAwayPlayerObj == s.awayplayer:
                                 errors = True
-                        singlesHomeScore = request.POST.get('singles-home-score-'+str(i))
-                        singlesAwayScore = request.POST.get('singles-away-score-'+str(i))
+                                #print "away player exists"
+                        singlesHomeScore = int(request.POST.get('singles-home-score-'+str(i)))
+                        singlesAwayScore = int(request.POST.get('singles-away-score-'+str(i)))
                         if singlesHomeScore < 0 or singlesHomeScore > singleslegstowin:
                             errors = True
+                            #print "home legs greater than " + singleslegstowin
                         if singlesAwayScore < 0 or singlesAwayScore > singleslegstowin:
                             errors = True
+                            #print "away legs greater than " + singleslegstowin
                         if singlesHomeScore != singleslegstowin and singlesAwayScore != singleslegstowin:
                             errors = True
+                            #print "neither team wins max legs " + singleslegstowin
 
                         if singlesHomePlayerObj and singlesAwayPlayerObj:
                             match = SinglesMatch(fixture=fixture, homeplayer=singlesHomePlayerObj, awayplayer=singlesAwayPlayerObj, homescore=singlesHomeScore, awayscore=singlesAwayScore)
@@ -355,25 +362,30 @@ def fixture(request, fix_id):
                             awaylose = 0 if match.awayscore > match.homescore else 1
                         else:
                             errors = True
+                            #print "one player obj does not exist" + singlesHomePlayerObj + ", " + singlesAwayPlayerObj
                         
                         if singlesHomePlayerObj:
                             homeresult = SinglesResult(match=match, player=singlesHomePlayerObj, opposition=singlesAwayPlayerObj, win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
                             singlesresults.append(homeresult)
                         else:
                             errors = True
+                            #print "home player obj does not exist"
                         
                         if singlesAwayPlayerObj:
                             awayresult = SinglesResult(match=match, player=singlesAwayPlayerObj, opposition=singlesHomePlayerObj, win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
                             singlesresults.append(awayresult)
                         else: 
                             errors = True
+                            #print "away player obj does not exist"
                     except:
                         errors = True
                     
                 
                 doublesmatches = []
                 doublesresults = []
+                #print "doubles"
                 for i in range(1,3):
+                    #print i
                     try:
                         doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
                         doublesHomePlayer1Obj = None if doublesHomePlayer1 == 0 else Player.objects.get(pk=doublesHomePlayer1)
@@ -382,8 +394,10 @@ def fixture(request, fix_id):
                         for d in doublesmatches:
                             if doublesHomePlayer1Obj == d.homeplayer1 or doublesHomePlayer1Obj == d.homeplayer2:
                                 errors = True
+                                #print "home player 1 already used"
                             if doublesHomePlayer2Obj == d.homeplayer1 or doublesHomePlayer2Obj == d.homeplayer2:
                                 errors = True
+                                #print "home player 2 already used"
                             
                         doublesAwayPlayer1 = request.POST.get('doubles-away-player-1-'+str(i))
                         doublesAwayPlayer1Obj = None if doublesAwayPlayer1 == 0 else Player.objects.get(pk=doublesAwayPlayer1)
@@ -392,17 +406,22 @@ def fixture(request, fix_id):
                         for d in doublesmatches:
                             if doublesAwayPlayer1Obj == d.awayplayer1 or doublesAwayPlayer1Obj == d.awayplayer2:
                                 errors = True
+                                #print "away player 1 already used"
                             if doublesAwayPlayer2Obj == d.awayplayer1 or doublesAwayPlayer2Obj == d.awayplayer2:
                                 errors = True
-                        doublesHomeScore = request.POST.get('doubles-home-score-'+str(i))
-                        doublesAwayScore = request.POST.get('doubles-away-score-'+str(i))
+                                #print "away player 2 already used"
+                        doublesHomeScore = int(request.POST.get('doubles-home-score-'+str(i)))
+                        doublesAwayScore = int(request.POST.get('doubles-away-score-'+str(i)))
                         if doublesHomeScore < 0 or doublesHomeScore > doubleslegstowin:
                             errors = True
+                            #print "home score greater than " + str(doubleslegstowin)
                         if doublesAwayScore < 0 or doublesAwayScore > doubleslegstowin:
                             errors = True
+                            #print "away score greater than " + str(doubleslegstowin)
                         if doublesHomeScore != doubleslegstowin and doublesAwayScore != doubleslegstowin:
                             errors = True
-                        
+                            #print "neither score equals " + str(doubleslegstowin)
+                        #print "got to here"
                         if doublesHomePlayer1Obj and doublesHomePlayer2Obj and doublesAwayPlayer1Obj and doublesAwayPlayer2Obj:
                             match = DoublesMatch(fixture=fixture, homeplayer1=doublesHomePlayer1Obj, homeplayer2=doublesHomePlayer2Obj, awayplayer1=doublesAwayPlayer1Obj, awayplayer2=doublesAwayPlayer2Obj, homescore=doublesHomeScore, awayscore=doublesAwayScore)
                             doublesmatches.append(match)
@@ -415,30 +434,39 @@ def fixture(request, fix_id):
                             awaylose = 0 if match.awayscore > match.homescore else 1
                         else: 
                             errors = True
+                            #print "not all player obj exist"
                             
                         if doublesHomePlayer1Obj:
                             homeresult1 = DoublesResult(match=match, player=doublesHomePlayer1Obj, partner=doublesHomePlayer2Obj, opposition1=doublesAwayPlayer1Obj, opposition2=doublesAwayPlayer2Obj, win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
                             doublesresults.append(homeresult1)
                         else:
                             errors = True
+                            #print "home player 1 doesnt exist"
+                            
                         if doublesHomePlayer2Obj:
                             homeresult2 = DoublesResult(match=match, player=doublesHomePlayer2Obj, partner=doublesHomePlayer1Obj, opposition1=doublesAwayPlayer1Obj, opposition2=doublesAwayPlayer2Obj, win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
                             doublesresults.append(homeresult2)
                         else:
                             errors = True
+                            #print "home player 2 doesnt exist"
+                            
                         if doublesAwayPlayer1Obj:
                             awayresult1 = DoublesResult(match=match, player=doublesAwayPlayer1Obj, partner=doublesAwayPlayer2Obj, opposition1=doublesHomePlayer1Obj, opposition2=doublesHomePlayer2Obj, win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
                             doublesresults.append(awayresult1)
                         else: 
                             errors = True
+                            #print "away player 1 doesnt exist"
+                            
                         if doublesAwayPlayer2Obj:
                             awayresult2 = DoublesResult(match=match, player=doublesAwayPlayer2Obj, partner=doublesAwayPlayer1Obj, opposition1=doublesHomePlayer1Obj, opposition2=doublesHomePlayer2Obj, win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
                             doublesresults.append(awayresult2)
                         else: 
                             errors = True
-                    
+                            ##print "away player 2 doesnt exist"
+                        
                     except:
                         errors = True
+                        #print "some weird error (Please no)"
                 
                 if not errors:
                     for i in range(1,7):
