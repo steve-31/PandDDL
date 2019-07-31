@@ -144,7 +144,7 @@
 			</tr>
 			{% for p in maximum_table %}
 			<tr>
-				<td>{{ p.player__pk }} {{ p.player__firstname }} {{ p.player__surname }}</td>
+				<td>{{ p.player__firstname }} {{ p.player__surname }}</td>
 				<td>{{ p.player__team__name }}</td>
 				<td>{{ p.id__count }}</td>
 			</tr>
@@ -156,13 +156,13 @@
 			<tr>
 				<th>Player</th>
 				<th>Team</th>
-				<th>Score</th>
+				<th>No.</th>
 			</tr>
-			{% for player in scores_table %}
+			{% for p in scores_table %}
 			<tr>
-				<td>{{ player.player.firstname }} {{ player.player.surname }}</td>
-				<td>{{ player.player.team.name }}</td>
-				<td>{{ player.score }}</td>
+				<td>{{ p.player__firstname }} {{ p.player__surname }}</td>
+				<td>{{ p.player__team__name }}</td>
+				<td>{{ p.id__count }}</td>
 			</tr>
 			{% endfor %}
 		</table>
