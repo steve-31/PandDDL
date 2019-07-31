@@ -69,6 +69,7 @@
 	<input type="hidden" id="away-team-concede" name="away-team-concede"> 
 </form>
 <form class="form-inline" method="post" action="." enctype="multipart/form-data" id="result-entry-form" onsubmit="submitFixture(event);">{% csrf_token %}
+<input type="hidden" id="results-entered" name="results-entered">
 <p>Upload Result Sheet: <input type="file" id="result-sheet" name="result-sheet"></p>
 
 <h2>Singles</h2>
@@ -174,7 +175,7 @@
 <table class="table table-striped">
 	<tr>
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
 					<select class="form-control mobile-fixture-table-row" style="width:100%" name="maximums-1-{{ forloop.counter }}" id="maximums-1-{{ forloop.counter }}">
@@ -193,7 +194,7 @@
 	</tr>
 	<tr id="second-180s" style="display: none;">
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="maximums-2-{{ forloop.counter }}" id="maximums-2-{{ forloop.counter }}">
@@ -219,7 +220,7 @@
 <table class="table table-striped">
 	<tr>
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="finishes-name-1-{{ forloop.counter }}" id="finishes-name-1-{{ forloop.counter }}">
@@ -231,7 +232,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="finishes-amount-1-{{ forloop.counter }}" id="finishes-amount-1-{{ forloop.counter }}" style="width:50%" placeholder="Checkout">
+					<input class="form-control" name="finishes-amount-1-{{ forloop.counter }}" id="finishes-amount-1-{{ forloop.counter }}" style="width:50%" placeholder="Checkout" min="100" max="170">
 				</div>
 				{% endfor %}
 			</div>
@@ -239,7 +240,7 @@
 	</tr>
 	<tr id="second-checkouts" style="display: none;">
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2 mobile-fixture-table-row">
 					<select class="form-control" style="width:100%" name="finishes-name-2-{{ forloop.counter }}" id="finishes-name-2-{{ forloop.counter }}">
@@ -251,7 +252,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="finishes-amount-2-{{ forloop.counter }}" id="finishes-amount-2-{{ forloop.counter }}" style="width:50%" placeholder="Checkout">
+					<input class="form-control" name="finishes-amount-2-{{ forloop.counter }}" id="finishes-amount-2-{{ forloop.counter }}" style="width:50%" placeholder="Checkout" min="100" max="170">
 				</div>
 				{% endfor %}
 			</div>
@@ -411,6 +412,16 @@ function checkScore(gameType, gameNo) {
 				noOfErrors++;
 			}
 		} 
+		
+		if (homePlayer.value == 0) {
+			if (awayScore.value != 0) {
+				document.getElementById("form-errors-bottom").style.display = "block";
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+				
+			}
+		}
 			
 		var awayPlayer = document.getElementById("singles-away-player-"+gameNo);
 		var awayPlayer1 = ((gameNo == 1) ? "" : document.getElementById("singles-away-player-1").value);
@@ -424,8 +435,17 @@ function checkScore(gameType, gameNo) {
 			if (awayPlayer.value != 0) {
 				awayPlayer.style.border = "2px solid red";
 				noOfErrors++;
-			}
+			} 
 		} 
+		
+		if (awayPlayer.value == 0) {
+			if (homeScore.value != 0) {
+				document.getElementById("form-errors-bottom").style.display = "block";
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		}
 		
 		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {
 			homeScore.style.border = "2px solid red";
@@ -562,6 +582,7 @@ function submitFixture() {
 		document.getElementById("form-errors").style.display = "block";
 		document.getElementById("form-errors-bottom").style.display = "block";
 	} else {
+		document.getElementById("results-entered").value = true;
 		document.getElementById("result-entry-form").submit();
 	}
 	

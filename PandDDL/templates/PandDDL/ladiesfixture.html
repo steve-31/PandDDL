@@ -63,7 +63,8 @@
 	<input type="hidden" id="home-team-concede" name="home-team-concede">
 	<input type="hidden" id="away-team-concede" name="away-team-concede"> 
 </form>
-<form class="form-inline" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
+<form class="form-inline" method="post" action="." enctype="multipart/form-data" id="result-entry-form" onsubmit="submitFixture(event);">{% csrf_token %}
+<input type="hidden" id="results-entered" name="results-entered">
 <p>Upload Result Sheet: <input type="file" id="result-sheet" name="result-sheet"></p>
 
 <input type="hidden" id="home-team-score" name="home-team-score" value="">
@@ -77,14 +78,14 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-home-player-1-1">
+							<select class="form-control" style="width:100%" name="doubles-home-player-1-1" id="doubles-home-player-1-1">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-home-player-2-1">
+							<select class="form-control" style="width:100%" name="doubles-home-player-2-1" id="doubles-home-player-2-1">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -93,20 +94,20 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 97px;">
-							<input class="form-control" id="home_score_d1" style="width:45%" name="doubles-home-score-1" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_d1" style="width:45%" name="doubles-home-score-1" onchange="updateScore()" type=number min="0" max="{{ doubleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_d1" style="width:45%" name="doubles-away-score-1" onchange="updateScore(this)" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_d1" style="width:45%" name="doubles-away-score-1" onchange="updateScore()" type=number min="0" max="{{ doubleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-away-player-1-1">
+							<select class="form-control" style="width:100%" name="doubles-away-player-1-1" id="doubles-away-player-1-1">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-away-player-2-1">
+							<select class="form-control" style="width:100%" name="doubles-away-player-2-1" id="doubles-away-player-2-1">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -131,8 +132,9 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}" id="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -140,14 +142,15 @@
 						</div>
 						
 						<div class="col-md-4">
-							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ singleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number min="0" max="{{ singleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}" id="singles-away-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -169,14 +172,14 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-home-player-1-2">
+							<select class="form-control" style="width:100%" name="doubles-home-player-1-2" id="doubles-home-player-1-2">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-home-player-2-2">
+							<select class="form-control" style="width:100%" name="doubles-home-player-2-2" id="doubles-home-player-2-2">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -185,20 +188,20 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 97px;">
-							<input class="form-control" id="home_score_d2" style="width:45%" name="doubles-home-score-2"onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_d2" style="width:45%" name="doubles-home-score-2"onchange="updateScore()" type=number min="0" max="{{ doubleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_d2" style="width:45%" name="doubles-away-score-2" onchange="updateScore(this)" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_d2" style="width:45%" name="doubles-away-score-2" onchange="updateScore()" type=number min="0" max="{{ doubleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-away-player-1-2">
+							<select class="form-control" style="width:100%" name="doubles-away-player-1-2" id="doubles-away-player-1-2">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-away-player-2-2">
+							<select class="form-control" style="width:100%" name="doubles-away-player-2-2" id="doubles-away-player-2-2">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -221,21 +224,21 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-home-player-1">
+							<select class="form-control" style="width:100%" name="triples-home-player-1-1" id="triples-home-player-1-1">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-2">
+							<select class="form-control" style="width:100%" name="triples-home-player-2-1" id="triples-home-player-2-1">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-3">
+							<select class="form-control" style="width:100%" name="triples-home-player-3-1" id="triples-home-player-3-1">
 								<option class="player_select" disabled selected>Home Player 3</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -244,27 +247,27 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 165px;">
-							<input class="form-control" id="home_score_t1" style="width:45%" name="triples-home-score" onchange="updateScore()" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="home_score_t1" style="width:45%" name="triples-home-score-1" onchange="updateScore()" type=number min="0" max="{{ tripleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_t1" style="width:45%" name="triples-away-score" onchange="updateScore(this)" type=number min="0" max="{{ legstowin }}">
+							<input class="form-control" id="away_score_t1" style="width:45%" name="triples-away-score-1" onchange="updateScore()" type=number min="0" max="{{ tripleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-away-player-1">
+							<select class="form-control" style="width:100%" name="triples-away-player-1-1" id="triples-away-player-1-1">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-2">
+							<select class="form-control" style="width:100%" name="triples-away-player-2-1" id="triples-away-player-2-1">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-3">
+							<select class="form-control" style="width:100%" name="triples-away-player-3-1" id="triples-away-player-3-1">
 								<option class="player_select" disabled selected>Away Player 3</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -284,10 +287,10 @@
 <table class="table table-striped">
 	<tr>
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
-					<select class="form-control" style="width:100%" name="score-name-{{ forloop.counter }}">
+					<select class="form-control" style="width:100%" name="score-name-1-{{ forloop.counter }}" id="score-name-1-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -296,7 +299,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="score-score-{{ forloop.counter }}" style="width:50%" placeholder="Score">
+					<input class="form-control" name="score-score-1-{{ forloop.counter }}" id="score-score-1-{{ forloop.counter }}" style="width:50%" placeholder="Score">
 				</div>
 				{% endfor %}
 			</div>
@@ -304,10 +307,10 @@
 	</tr>
 	<tr id="second-180s" style="display: none;">
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
-					<select class="form-control" style="width:100%" name="score-name-2-{{ forloop.counter }}">
+					<select class="form-control" style="width:100%" name="score-name-2-{{ forloop.counter }}" id="score-name-2-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -316,7 +319,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="score-score-2-{{ forloop.counter }}" style="width:50%" placeholder="Score">
+					<input class="form-control" name="score-score-2-{{ forloop.counter }}" id="score-score-2-{{ forloop.counter }}" style="width:50%" placeholder="Score">
 				</div>
 				{% endfor %}
 			</div>
@@ -331,10 +334,10 @@
 <table class="table table-striped">
 	<tr>
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
-					<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
+					<select class="form-control" style="width:100%" name="finishes-name-1-{{ forloop.counter }}" id="finishes-name-1-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -343,7 +346,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="finishes-amount-{{ forloop.counter }}" style="width:50%" placeholder="Checkout">
+					<input class="form-control" name="finishes-amount-1-{{ forloop.counter }}" id="finishes-amount-1-{{ forloop.counter }}" style="width:50%" placeholder="Checkout" min="100" max="170">
 				</div>
 				{% endfor %}
 			</div>
@@ -351,10 +354,10 @@
 	</tr>
 	<tr id="second-checkouts" style="display: none;">
 		<td>
-			<div class="row">
+			<div class="row scores-row">
 				{% for i in "xxxxxx" %}
 				<div class="col-md-2">
-					<select class="form-control" style="width:100%" name="finishes-name-2-{{ forloop.counter }}">
+					<select class="form-control" style="width:100%" name="finishes-name-2-{{ forloop.counter }}" id="finishes-name-2-{{ forloop.counter }}">
 						<option class="player_select" selected value="">Player</option>
 						{% for player in home_team_players %}
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
@@ -363,7 +366,7 @@
 						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 						{% endfor %}
 					</select>
-					<input class="form-control" name="finishes-amount-2-{{ forloop.counter }}" style="width:50%" placeholder="Checkout">
+					<input class="form-control" name="finishes-amount-2-{{ forloop.counter }}" id="finishes-amount-2-{{ forloop.counter }}" style="width:50%" placeholder="Checkout" min="100" max="170">
 				</div>
 				{% endfor %}
 			</div>
@@ -373,7 +376,7 @@
 
 <p><a class="admin-a-link" id="show-second-checkouts" onclick="showCheckouts()">+ Additional Checkouts</a></p>
 
-<button class="form-control btn btn-primary" type="submit" style="margin-top:20px;">Submit Results</button>
+<button class="form-control btn btn-primary" type="submit" style="margin-top:20px;" onsubmit="submitFixture();">Submit Results</button>
 </form>
 
 {% else %} <!-- any other scenario -->
@@ -388,11 +391,11 @@
 		<table class="table">
 		{% for match in single_matches %}
 			<tr>
-				<td style="width:40%;"><span style="display:block;">{{ match.homeplayer.firstname }} {{ match.homeplayer.surname }}</span></td>
+				<td style="width:40%;"><span style="display:block;">{% if match.homeplayer %}{{ match.homeplayer.firstname }} {{ match.homeplayer.surname }}{% else %}WALKOVER{% endif %}</span></td>
 				<td><span style="display:block;text-align:center;">{{ match.homescore }}</span></td>
 				<td><span style="display:block;text-align:center;">-</span></td>
 				<td><span style="display:block;text-align:center;">{{ match.awayscore }}</span></td>
-				<td style="width:40%;"><span style="display:block; text-align:right;">{{ match.awayplayer.firstname }} {{ match.awayplayer.surname }}</span></td>
+				<td style="width:40%;"><span style="display:block; text-align:right;">{% if match.awayplayer %}{{ match.awayplayer.firstname }} {{ match.awayplayer.surname }}{% else %}WALKOVER{% endif %}</span></td>
 			</tr>
 		{% endfor %}
 		</table>
@@ -488,7 +491,303 @@
 
 {% block scripts %}
 <script>
+var noOfErrors = 0;
 window.onload = updateScore;
+
+function homeTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.hometeam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("home-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
+
+function awayTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.awayteam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("away-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
+
+function checkScore(gameType, gameNo) {
+	var homeScore = document.getElementById("home_score_"+gameType+gameNo);
+	var awayScore = document.getElementById("away_score_"+gameType+gameNo);
+	homeScore.style.border = "1px solid #ccc";
+	awayScore.style.border = "1px solid #ccc";
+	if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ singleslegstowin }}) {
+		homeScore.style.border = "2px solid red";
+		noOfErrors++;
+	} 
+	if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ singleslegstowin }}) {
+		awayScore.style.border = "2px solid red";
+		noOfErrors++;
+	}
+	if (parseInt(homeScore.value) != {{ singleslegstowin }} && parseInt(awayScore.value) != {{ singleslegstowin }}) {
+		homeScore.style.border = "2px solid red";
+		awayScore.style.border = "2px solid red";
+		noOfErrors++;
+	} 
+	
+	if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
+		homeScore.style.border = "2px solid red";
+		awayScore.style.border = "2px solid red";
+		noOfErrors++;
+	} 
+	
+	if (gameType == "s") {
+		var homePlayer = document.getElementById("singles-home-player-"+gameNo);
+		var homePlayer1 = ((gameNo == 1) ? "" : document.getElementById("singles-home-player-1").value);
+		var homePlayer2 = ((gameNo == 2) ? "" : document.getElementById("singles-home-player-2").value);
+		var homePlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-home-player-3").value);
+		var homePlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-home-player-4").value);
+		homePlayer.style.border = "1px solid #ccc";
+		
+		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
+			if (homePlayer.value != 0) {
+				homePlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		} 
+		
+		if (homePlayer.value == 0) {
+			if (awayScore.value != 0) {
+				document.getElementById("form-errors-bottom").style.display = "block";
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+				
+			}
+		}
+			
+		var awayPlayer = document.getElementById("singles-away-player-"+gameNo);
+		var awayPlayer1 = ((gameNo == 1) ? "" : document.getElementById("singles-away-player-1").value);
+		var awayPlayer2 = ((gameNo == 2) ? "" : document.getElementById("singles-away-player-2").value);
+		var awayPlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-away-player-3").value);
+		var awayPlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-away-player-4").value);
+		awayPlayer.style.border = "1px solid #ccc";
+		
+		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
+			if (awayPlayer.value != 0) {
+				awayPlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		} 
+		
+		if (homePlayer.value == 0) {
+			if (awayScore.value != 0) {
+				document.getElementById("form-errors-bottom").style.display = "block";
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+				
+			}
+		}
+		
+		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {
+			homeScore.style.border = "2px solid red";
+			noOfErrors++;
+		}
+		
+		if (awayPlayer.value == 0 && parseInt(awayScore.value) != 0) {
+			awayScore.style.border = "2px solid red";
+			noOfErrors;
+		}
+		
+	} 
+	
+}
+
+
+function submitFixture() {
+	event.preventDefault();
+	
+	noOfErrors = 0;
+	
+	for (i = 1; i < 5; i++) {
+		checkScore("s", i);
+	}
+	
+	
+	for (i = 1; i < 3; i++) {
+		for (j = 1; j < 3; j++) {
+			var homePlayer = document.getElementById("doubles-home-player-"+i+"-"+j);
+			var homePlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-home-player-1-1").value);
+			var homePlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-home-player-2-1").value);
+			var homePlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-home-player-1-2").value);
+			var homePlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-home-player-2-2").value);
+			homePlayer.style.border = "1px solid #ccc";
+			
+			if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
+				homePlayer.style.border = "2px solid red";
+				noOfErrors++;
+			} 
+			
+			var awayPlayer = document.getElementById("doubles-away-player-"+i+"-"+j);
+			var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-away-player-1-1").value);
+			var awayPlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-away-player-2-1").value);
+			var awayPlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-away-player-1-2").value);
+			var awayPlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-away-player-2-2").value);
+			awayPlayer.style.border = "1px solid #ccc";
+			
+			if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
+				awayPlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+			
+			var homeScore = document.getElementById("home_score_d"+i);
+			var awayScore = document.getElementById("away_score_d"+i);
+			homeScore.style.border = "1px solid #ccc";
+			awayScore.style.border = "1px solid #ccc";
+			
+			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ doubleslegstowin }}) {
+				homeScore.style.border = "2px solid red";
+				noOfErrors++;
+			} 
+			if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ doubleslegstowin }}) {
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+			} 
+			if (parseInt(homeScore.value) != {{ doubleslegstowin }} && parseInt(awayScore.value) != {{ doubleslegstowin }}) {
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+			} 
+			if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+			} 
+		}
+	}
+	
+	for (i = 1; i < 4; i++) {
+		var homePlayer = document.getElementById("triples-home-player-"+i+"-1");
+		var homePlayer1 = ((i == 1) ? "" : document.getElementById("triples-home-player-1-1").value);
+		var homePlayer2 = ((i == 2) ? "" : document.getElementById("triples-home-player-2-1").value);
+		var homePlayer3 = ((i == 3) ? "" : document.getElementById("triples-home-player-3-1").value);
+		homePlayer.style.border = "1px solid #ccc";
+		
+		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value) {
+			homePlayer.style.border = "2px solid red";
+			noOfErrors++;
+		} 
+		
+		var awayPlayer = document.getElementById("triples-away-player-"+i+"-1");
+		var awayPlayer1 = ((i == 1) ? "" : document.getElementById("triples-away-player-1-1").value);
+		var awayPlayer2 = ((i == 2) ? "" : document.getElementById("triples-away-player-2-1").value);
+		var awayPlayer3 = ((i == 3) ? "" : document.getElementById("triples-away-player-3-1").value);
+		awayPlayer.style.border = "1px solid #ccc";
+		
+		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value) {
+			awayPlayer.style.border = "2px solid red";
+			noOfErrors++;
+		}
+		
+		var homeScore = document.getElementById("home_score_t1");
+		var awayScore = document.getElementById("away_score_t1");
+		homeScore.style.border = "1px solid #ccc";
+		awayScore.style.border = "1px solid #ccc";
+		
+		if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ tripleslegstowin }}) {
+			homeScore.style.border = "2px solid red";
+			noOfErrors++;
+		} 
+		if (awayScore.value == "" || parseInt(awayScore.value) < 0 || parseInt(awayScore.value) > {{ tripleslegstowin }}) {
+			awayScore.style.border = "2px solid red";
+			noOfErrors++;
+		} 
+		if (parseInt(homeScore.value) != {{ tripleslegstowin }} && parseInt(awayScore.value) != {{ tripleslegstowin }}) {
+			homeScore.style.border = "2px solid red";
+			awayScore.style.border = "2px solid red";
+			noOfErrors++;
+		} 
+		if (parseInt(homeScore.value) == parseInt(awayScore.value) || parseInt(homeScore.value) == parseInt(awayScore.value)) {
+			homeScore.style.border = "2px solid red";
+			awayScore.style.border = "2px solid red";
+			noOfErrors++;
+		} 
+	}
+	
+	for (i = 1; i < 3; i++) {
+		for (j = 1; j < 7; j++) {
+			var scoreplayer = document.getElementById("score-name-"+i+"-"+j);
+			var scorescore = document.getElementById("score-score-"+i+"-"+j);
+			var finishPlayer = document.getElementById("finishes-name-"+i+"-"+j);
+			var finishScore = document.getElementById("finishes-amount-"+i+"-"+j);
+			var Player1 = document.getElementById("singles-home-player-1").value;
+			var Player2 = document.getElementById("singles-home-player-2").value;
+			var Player3 = document.getElementById("singles-home-player-3").value;
+			var Player4 = document.getElementById("singles-home-player-4").value;
+			var Player5 = document.getElementById("singles-away-player-1").value;
+			var Player6 = document.getElementById("singles-away-player-2").value;
+			var Player7 = document.getElementById("singles-away-player-3").value;
+			var Player8 = document.getElementById("singles-away-player-4").value;
+			var Player9 = document.getElementById("doubles-home-player-1-1").value;
+			var Player10 = document.getElementById("doubles-home-player-2-1").value;
+			var Player11 = document.getElementById("doubles-home-player-1-2").value;
+			var Player12 = document.getElementById("doubles-home-player-2-2").value;
+			var Player13 = document.getElementById("doubles-away-player-1-1").value;
+			var Player14 = document.getElementById("doubles-away-player-2-1").value;
+			var Player15 = document.getElementById("doubles-away-player-1-2").value;
+			var Player16 = document.getElementById("doubles-away-player-2-2").value;
+			var Player17 = document.getElementById("triples-home-player-1-1").value;
+			var Player18 = document.getElementById("triples-home-player-2-1").value;
+			var Player19 = document.getElementById("triples-home-player-3-1").value;
+			var Player20 = document.getElementById("triples-away-player-1-1").value;
+			var Player21 = document.getElementById("triples-away-player-2-1").value;
+			var Player22 = document.getElementById("triples-away-player-3-1").value;
+			
+			if (scoreplayer.value == "" || scoreplayer.value == Player1 || scoreplayer.value == Player2 || scoreplayer.value == Player3 || scoreplayer.value == Player4 || scoreplayer.value == Player5 || scoreplayer.value == Player6 || scoreplayer.value == Player7 || scoreplayer.value == Player8 || scoreplayer.value == Player9 || scoreplayer.value == Player10 || scoreplayer.value == Player11 || scoreplayer.value == Player12 || scoreplayer.value == Player13 || scoreplayer.value == Player14 || scoreplayer.value == Player15 || scoreplayer.value == Player16 || scoreplayer.value == Player17 || scoreplayer.value == Player18 || scoreplayer.value == Player19 || scoreplayer.value == Player20 || scoreplayer.value == Player21 || scoreplayer.value == Player22) {
+				scoreplayer.style.border = "1px solid #ccc";
+			} else {
+				scoreplayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+			
+			if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18 || finishPlayer.value == Player19 || finishPlayer.value == Player20 || finishPlayer.value == Player21 || finishPlayer.value == Player22) {
+				finishPlayer.style.border = "1px solid #ccc";
+			} else {
+				finishPlayer.style.border = "2px solid red";
+				noOfErrors++;
+			}
+			
+			if (scoreplayer.value != "" && scorescore.value == "") {
+				scorescore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				scorescore.style.border = "1px solid #ccc";
+			}
+			
+			if (parseInt(scorescore.value) < 100 || parseInt(scorescore.value) > 180) {
+				scorescore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				scorescore.style.border = "1px solid #ccc";
+			}
+			
+			if (finishPlayer.value != "" && finishScore.value == "") {
+				finishScore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				finishScore.style.border = "1px solid #ccc";
+			}
+			
+			if (parseInt(finishScore.value) < 100 || parseInt(finishScore.value) > 180) {
+				finishScore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				finishScore.style.border = "1px solid #ccc";
+			}
+		}
+	}
+	if (noOfErrors > 0) {
+		document.getElementById("form-errors").style.display = "block";
+		document.getElementById("form-errors-bottom").style.display = "block";
+	} else {
+		document.getElementById("results-entered").value = true;
+		document.getElementById("result-entry-form").submit();
+	}
+	
+}
 
 function rejectResult() {
 	if (confirm("Please confirm that you wish to reject the result input for this fixture, as a result the fixture will be reset. Do you wish to continue?")) {
@@ -511,34 +810,6 @@ function awayTeamConcede() {
 	}
 }
 
-function showHomeFormResult(number){
-	if (number == 0) {
-		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.0.fixture.date }}</strong> {{ hometeamlast5games.0.fixture.hometeam.name }} {{ hometeamlast5games.0.fixture.homescore }} - {{ hometeamlast5games.0.fixture.awayscore }} {{ hometeamlast5games.0.fixture.awayteam.name }}";
-	} else if (number == 1) {
-		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.1.fixture.date }}</strong> {{ hometeamlast5games.1.fixture.hometeam.name }} {{ hometeamlast5games.1.fixture.homescore }} - {{ hometeamlast5games.1.fixture.awayscore }} {{ hometeamlast5games.1.fixture.awayteam.name }}";
-	} else if (number == 2) {
-		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.2.fixture.date }}</strong> {{ hometeamlast5games.2.fixture.hometeam.name }} {{ hometeamlast5games.2.fixture.homescore }} - {{ hometeamlast5games.2.fixture.awayscore }} {{ hometeamlast5games.2.fixture.awayteam.name }}";
-	} else if (number == 3) {
-		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.3.fixture.date }}</strong> {{ hometeamlast5games.3.fixture.hometeam.name }} {{ hometeamlast5games.3.fixture.homescore }} - {{ hometeamlast5games.3.fixture.awayscore }} {{ hometeamlast5games.3.fixture.awayteam.name }}";
-	} else if (number == 4) {
-		document.getElementById('home-form-result').innerHTML = "<strong>{{ hometeamlast5games.4.fixture.date }}</strong> {{ hometeamlast5games.4.fixture.hometeam.name }} {{ hometeamlast5games.4.fixture.homescore }} - {{ hometeamlast5games.4.fixture.awayscore }} {{ hometeamlast5games.4.fixture.awayteam.name }}";
-	}
-}
-
-function showAwayFormResult(number){
-	if (number == 0) {
-		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.0.fixture.date }}</strong> {{ awayteamlast5games.0.fixture.hometeam.name }} {{ awayteamlast5games.0.fixture.homescore }} - {{ awayteamlast5games.0.fixture.awayscore }} {{ awayteamlast5games.0.fixture.awayteam.name }}";
-	} else if (number == 1) {
-		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.1.fixture.date }}</strong> {{ awayteamlast5games.1.fixture.hometeam.name }} {{ awayteamlast5games.1.fixture.homescore }} - {{ awayteamlast5games.1.fixture.awayscore }} {{ awayteamlast5games.1.fixture.awayteam.name }}";
-	} else if (number == 2) {
-		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.2.fixture.date }}</strong> {{ awayteamlast5games.2.fixture.hometeam.name }} {{ awayteamlast5games.2.fixture.homescore }} - {{ awayteamlast5games.2.fixture.awayscore }} {{ awayteamlast5games.2.fixture.awayteam.name }}";
-	} else if (number == 3) {
-		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.3.fixture.date }}</strong> {{ awayteamlast5games.3.fixture.hometeam.name }} {{ awayteamlast5games.3.fixture.homescore }} - {{ awayteamlast5games.3.fixture.awayscore }} {{ awayteamlast5games.3.fixture.awayteam.name }}";
-	} else if (number == 4) {
-		document.getElementById('away-form-result').innerHTML = "<strong>{{ awayteamlast5games.4.fixture.date }}</strong> {{ awayteamlast5games.4.fixture.hometeam.name }} {{ awayteamlast5games.4.fixture.homescore }} - {{ awayteamlast5games.4.fixture.awayscore }} {{ awayteamlast5games.4.fixture.awayteam.name }}";
-	}
-}
-
 function updateScore() {
 	var homeScore = 0;
 	var awayScore = 0;
@@ -552,13 +823,13 @@ function updateScore() {
 	var singles4home = parseInt(document.getElementById("home_score_s4").value);
 	var singles4away = parseInt(document.getElementById("away_score_s4").value);
 	
-	var triples1home = parseInt(document.getElementById("home_score_t1").value);
-	var triples1away = parseInt(document.getElementById("away_score_t1").value);
-	
 	var doubles1home = parseInt(document.getElementById("home_score_d1").value);
 	var doubles1away = parseInt(document.getElementById("away_score_d1").value);
 	var doubles2home = parseInt(document.getElementById("home_score_d2").value);
 	var doubles2away = parseInt(document.getElementById("away_score_d2").value);
+	
+	var triples1home = parseInt(document.getElementById("home_score_t1").value);
+	var triples1away = parseInt(document.getElementById("away_score_t1").value);
 	
 	if (singles1home > singles1away) {
 		homeScore = homeScore + 1;
@@ -601,8 +872,6 @@ function updateScore() {
 	} else if (doubles2home < doubles2away) {
 		awayScore = awayScore + 1;
 	}
-	console.log(homeScore);
-	console.log(awayScore);
 	document.getElementById("total_home_score").innerHTML = homeScore;
 	document.getElementById("home-team-score").value = homeScore;
 	document.getElementById("total_away_score").innerHTML = awayScore;

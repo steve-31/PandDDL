@@ -5,6 +5,10 @@
 
 <h1>{{ fixture.hometeam.name }} <span id="total_home_score">{{ fixture.homescore }}</span> - <span id="total_away_score">{{ fixture.awayscore }}</span> {{ fixture.awayteam.name }}</h1>
 
+<div class="alert alert-danger" id="form-errors" style="display:none;">
+  <strong>Submit Failed!</strong> There were errors in the form highlighted, please correct and try again.
+</div>
+
 {% if request.user == fixture.hometeam.admin or request.user == fixture.awayteam.admin %}<button class="btn btn-danger concede-button" id="user-concede" onclick="{% if request.user == fixture.hometeam.admin %}homeTeamConcede{% else %}awayTeamConcede{% endif %}()">Concede Game</button>{% endif %}
 {% if request.user.is_staff %}<button class="btn btn-danger concede-button" id="home-concede" onclick="homeTeamConcede()">{{ fixture.hometeam.name }} Concede Game</button>
 <button class="btn btn-danger concede-button" id="away-concede" onclick="awayTeamConcede()">{{ fixture.awayteam.name }} Concede Game</button>{% endif %}
@@ -12,8 +16,9 @@
 	<input type="hidden" id="home-team-concede" name="home-team-concede">
 	<input type="hidden" id="away-team-concede" name="away-team-concede"> 
 </form>
-<form class="form-inline" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
-<p>Fixture Date: <input class="form-control" type="date" name="fixture-date" value="{{ fixture.date|date:'Y-m-d' }}"></p>
+<form class="form-inline" id="result-entry-form" method="post" action="." enctype="multipart/form-data" onsubmit="submitFixture(event);">{% csrf_token %}
+<input type="hidden" id="results-entered" name="results-entered">
+<!-- <p>Fixture Date: <input class="form-control" type="date" name="fixture-date" value="{{ fixture.date|date:'Y-m-d' }}"></p> -->
 <p>Upload Result Sheet: <input type="file" id="result-sheet" name="result-sheet"></p>
 
 <input type="hidden" id="home-team-score" name="home-team-score" value="">
@@ -29,8 +34,9 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="singles-home-player-{{ forloop.counter }}" name="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" selected disabled>Home Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -38,14 +44,15 @@
 						</div>
 						
 						<div class="col-md-4">
-							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ singleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ singleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="singles-away-player-{{ forloop.counter }}" name="singles-away-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -61,8 +68,9 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-home-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="singles-home-player-{{ forloop.counter }}" name="singles-home-player-{{ forloop.counter }}">
 								<option class="player_select" selected disabled>Home Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -70,14 +78,15 @@
 						</div>
 						
 						<div class="col-md-4">
-							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_s{{ forloop.counter }}" style="width:45%" name="singles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ singleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_s{{ forloop.counter }}" style="width:45%" name="singles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ singleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="singles-away-player-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="singles-away-player-{{ forloop.counter }}" name="singles-away-player-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -101,14 +110,14 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-home-player-1-{{ forloop.counter }}" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-home-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-home-player-2-{{ forloop.counter }}" name="doubles-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -117,20 +126,20 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 97px;">
-							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ doubleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ doubleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-away-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-away-player-1-{{ forloop.counter }}" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-away-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-away-player-2-{{ forloop.counter }}" name="doubles-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -148,14 +157,14 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-home-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-home-player-1-{{ forloop.counter }}" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-home-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-home-player-2-{{ forloop.counter }}" name="doubles-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -164,20 +173,20 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 97px;">
-							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_d{{ forloop.counter }}" style="width:45%" name="doubles-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ doubleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_d{{ forloop.counter }}" style="width:45%" name="doubles-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ doubleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="doubles-away-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-away-player-1-{{ forloop.counter }}" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="doubles-away-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="doubles-away-player-2-{{ forloop.counter }}" name="doubles-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -203,21 +212,21 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-home-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-1-{{ forloop.counter }}" name="triples-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-2-{{ forloop.counter }}" name="triples-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-3-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-3-{{ forloop.counter }}" name="triples-home-player-3-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 3</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -226,27 +235,27 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 165px;">
-							<input class="form-control" id="home_score_t{{ forloop.counter }}" style="width:45%" name="triples-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_t{{ forloop.counter }}" style="width:45%" name="triples-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ tripleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_t{{ forloop.counter }}" style="width:45%" name="triples-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_t{{ forloop.counter }}" style="width:45%" name="triples-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ tripleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-away-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-1-{{ forloop.counter }}" name="triples-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-2-{{ forloop.counter }}" name="triples-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-3-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-3-{{ forloop.counter }}" name="triples-away-player-3-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 3</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -264,21 +273,21 @@
 				<td class="fixture-table-row">
 					<div class="row" style="margin:10px 0 10px 0;">
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-home-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-1-{{ forloop.counter }}" name="triples-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-2-{{ forloop.counter }}" name="triples-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-home-player-3-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-home-player-3-{{ forloop.counter }}" name="triples-home-player-3-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 3</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -287,27 +296,27 @@
 						</div>
 						
 						<div class="col-md-4" style="line-height: 165px;">
-							<input class="form-control" id="home_score_t{{ forloop.counter }}" style="width:45%" name="triples-home-score-{{ forloop.counter }}"onchange="updateScore()" type=number value="{{ match.homescore }}">
+							<input class="form-control" id="home_score_t{{ forloop.counter }}" style="width:45%" name="triples-home-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.homescore }}" min="0" max="{{ tripleslegstowin }}">
 							<div style="display:inline-block;width:5%;text-align:center">-</div> 
-							<input class="form-control" id="away_score_t{{ forloop.counter }}" style="width:45%" name="triples-away-score-{{ forloop.counter }}" onchange="updateScore(this)" type=number value="{{ match.awayscore }}">
+							<input class="form-control" id="away_score_t{{ forloop.counter }}" style="width:45%" name="triples-away-score-{{ forloop.counter }}" onchange="updateScore()" type=number value="{{ match.awayscore }}" min="0" max="{{ tripleslegstowin }}">
 						</div>
 						
 						<div class="col-md-4">
-							<select class="form-control" style="width:100%" name="triples-away-player-1-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-1-{{ forloop.counter }}" name="triples-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-2-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-2-{{ forloop.counter }}" name="triples-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
 							</select>
 							<p style="margin: 5px;text-align: center;">&amp;</p>
-							<select class="form-control" style="width:100%" name="triples-away-player-3-{{ forloop.counter }}">
+							<select class="form-control" style="width:100%" id="triples-away-player-3-{{ forloop.counter }}" name="triples-away-player-3-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 3</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer3.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -326,44 +335,54 @@
 
 <h2>100+ Scores</h2>
 
-<div class="row">
+<div class="row scores-row">
 	{% for top in top_scores %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" name="maximums-{{ forloop.counter }}">
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% else %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
-			<option class="player_select" value="{{ player.pk }}" {% if max.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }} {{ top_scores.forloop.parentloop.counter0 }}</option> 
+			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 			{% for player in away_team_players %}
-			<option class="player_select" value="{{ player.pk }}" {% if max.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
+			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% else %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
 	</div>
+	{% if forloop.counter == 6 %}
+</div>
+<div class="row scores-row">
+	{% endif %}
 	{% endfor %}
 	
-	{% for i in "xxxxxx" %}
+	{% for i in "xxxxxxxxxxxx" %}
 	{% if forloop.counter > top_scores|length %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" name="maximums-{{ forloop.counter }}">
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% else %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
-			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }} {{ top_scores.forloop.parentloop.counter0 }}</option> 
+			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 			{% for player in away_team_players %}
-			<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% else %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Score" min=100 max=180>
 	</div>
+	{% if forloop.counter == 6 %}
+</div>
+<div class="row scores-row">
+	{% endif %}
 	{% endif %}
 	{% endfor %}
 </div>
 
 <h2>100+ Checkouts</h2>
 
-<div class="row">
+<div class="row scores-row">
 	{% for top in top_finishes %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="finishes-name-1-{{ forloop.counter }}" name="finishes-name-1-{{ forloop.counter }}"{% else %}id="finishes-name-2-{{ forloop.counter|add:-6 }}" name="finishes-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -372,14 +391,18 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" type="number" name="finishes-amount-{{ forloop.counter }}" style="width:50%" placeholder="Checkout" value="{{ top.finish }}">
+		<input class="form-control" type="number" {% if forloop.counter <= 6 %}id="finishes-amount-1-{{ forloop.counter }}" name="finishes-amount-1-{{ forloop.counter }}"{% else %}id="finishes-amount-2-{{ forloop.counter|add:-6 }}" name="finishes-amount-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Checkout" value="{{ top.finish }}" min=100 max=170>
 	</div>
+	{% if forloop.counter == 6 %}
+</div>
+<div class="row scores-row">
+	{% endif %}
 	{% endfor %}
 	
-	{% for i in "xxxxxx" %}
+	{% for i in "xxxxxxxxxxxx" %}
 	{% if forloop.counter > top_finishes|length %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" name="finishes-name-{{ forloop.counter }}">
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="finishes-name-1-{{ forloop.counter }}" name="finishes-name-1-{{ forloop.counter }}"{% else %}id="finishes-name-2-{{ forloop.counter|add:-6 }}" name="finishes-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top_finishes.i.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -388,13 +411,21 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top_finishes.i.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" name="finishes-amount-{{ forloop.counter }}" style="width:50%" placeholder="Checkout">
+		<input class="form-control" type="number" {% if forloop.counter <= 6 %}id="finishes-amount-1-{{ forloop.counter }}" name="finishes-amount-1-{{ forloop.counter }}"{% else %}id="finishes-amount-2-{{ forloop.counter|add:-6 }}" name="finishes-amount-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Checkout" min=100 max=170>
 	</div>
+	{% if forloop.counter == 6 %}
+</div>
+<div class="row scores-row">
+	{% endif %}
 	{% endif %}
 	{% endfor %}
 </div>
 
-<button class="form-control btn btn-primary" type="submit" style="margin-top:20px;">Submit Results</button>
+<div class="alert alert-danger" id="form-errors-bottom" style="display:none;">
+  <strong>Submit Failed!</strong> There were errors in the form highlighted, please correct and try again.
+</div>
+
+<button class="form-control btn btn-primary" type="submit" style="margin-top:20px;" onsubmit="submitFixture();">Submit Results</button>
 </form>
 
 
@@ -415,6 +446,20 @@
 <script>
 var noOfErrors = 0;
 window.onload = updateScore;
+
+function homeTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.hometeam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("home-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
+
+function awayTeamConcede() {
+	if (confirm("Please confirm that you wish to concede the game on behalf of {{ fixture.awayteam.name }}, an automatic 7-0 will be applied for the opposing team")) {
+		document.getElementById("away-team-concede").value = true;
+		document.getElementById("concede-form").submit();
+	}
+}
 
 function checkScore(gameType, gameNo) {
 	var homeScore = document.getElementById("home_score_"+gameType+gameNo);
@@ -447,10 +492,9 @@ function checkScore(gameType, gameNo) {
 		var homePlayer2 = ((gameNo == 2) ? "" : document.getElementById("singles-home-player-2").value);
 		var homePlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-home-player-3").value);
 		var homePlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-home-player-4").value);
-		var homePlayer5 = ((gameNo == 5) ? "" : document.getElementById("singles-home-player-5").value);
 		homePlayer.style.border = "1px solid #ccc";
 		
-		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value || homePlayer5 == homePlayer.value) {
+		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
 			if (homePlayer.value != 0) {
 				homePlayer.style.border = "2px solid red";
 				noOfErrors++;
@@ -462,10 +506,9 @@ function checkScore(gameType, gameNo) {
 		var awayPlayer2 = ((gameNo == 2) ? "" : document.getElementById("singles-away-player-2").value);
 		var awayPlayer3 = ((gameNo == 3) ? "" : document.getElementById("singles-away-player-3").value);
 		var awayPlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-away-player-4").value);
-		var awayPlayer5 = ((gameNo == 5) ? "" : document.getElementById("singles-away-player-5").value);
 		awayPlayer.style.border = "1px solid #ccc";
 		
-		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value || awayPlayer5 == awayPlayer.value) {
+		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
 			if (awayPlayer.value != 0) {
 				awayPlayer.style.border = "2px solid red";
 				noOfErrors++;
@@ -492,7 +535,7 @@ function submitFixture() {
 	
 	noOfErrors = 0;
 	
-	for (i = 1; i < 6; i++) {
+	for (i = 1; i < 5; i++) {
 		checkScore("s", i);
 	}
 	
@@ -511,6 +554,16 @@ function submitFixture() {
 				noOfErrors++;
 			} 
 			
+			if (homePlayer.value == 0) {
+				if (awayScore.value != 0) {
+					document.getElementById("form-errors-bottom").style.display = "block";
+					homeScore.style.border = "2px solid red";
+					awayScore.style.border = "2px solid red";
+					noOfErrors++;
+					
+				}
+			}
+			
 			var awayPlayer = document.getElementById("doubles-away-player-"+i+"-"+j);
 			var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-away-player-1-1").value);
 			var awayPlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-away-player-2-1").value);
@@ -521,6 +574,16 @@ function submitFixture() {
 			if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
 				awayPlayer.style.border = "2px solid red";
 				noOfErrors++;
+			}
+			
+			if (homePlayer.value == 0) {
+				if (awayScore.value != 0) {
+					document.getElementById("form-errors-bottom").style.display = "block";
+					homeScore.style.border = "2px solid red";
+					awayScore.style.border = "2px solid red";
+					noOfErrors++;
+					
+				}
 			}
 			
 			var homeScore = document.getElementById("home_score_d"+i);
@@ -549,11 +612,11 @@ function submitFixture() {
 		}
 	}
 	
-	for (j = 1; j < 4; j++) {
+	for (i = 1; i < 4; i++) {
 		var homePlayer = document.getElementById("triples-home-player-"+i+"-1");
-		var homePlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("triples-home-player-1-1").value);
-		var homePlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("triples-home-player-2-1").value);
-		var homePlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("triples-home-player-3-1").value);
+		var homePlayer1 = ((i == 1) ? "" : document.getElementById("triples-home-player-1-1").value);
+		var homePlayer2 = ((i == 2) ? "" : document.getElementById("triples-home-player-2-1").value);
+		var homePlayer3 = ((i == 3) ? "" : document.getElementById("triples-home-player-3-1").value);
 		homePlayer.style.border = "1px solid #ccc";
 		
 		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value) {
@@ -562,9 +625,9 @@ function submitFixture() {
 		} 
 		
 		var awayPlayer = document.getElementById("triples-away-player-"+i+"-1");
-		var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("triples-away-player-1-1").value);
-		var awayPlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("triples-away-player-2-1").value);
-		var awayPlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("triples-away-player-3-1").value);
+		var awayPlayer1 = ((i == 1) ? "" : document.getElementById("triples-away-player-1-1").value);
+		var awayPlayer2 = ((i == 2) ? "" : document.getElementById("triples-away-player-2-1").value);
+		var awayPlayer3 = ((i == 3) ? "" : document.getElementById("triples-away-player-3-1").value);
 		awayPlayer.style.border = "1px solid #ccc";
 		
 		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value) {
@@ -599,40 +662,59 @@ function submitFixture() {
 	
 	for (i = 1; i < 3; i++) {
 		for (j = 1; j < 7; j++) {
-			var maximum = document.getElementById("maximums-"+i+"-"+j);
+			var scoreplayer = document.getElementById("score-name-"+i+"-"+j);
+			var scorescore = document.getElementById("score-score-"+i+"-"+j);
 			var finishPlayer = document.getElementById("finishes-name-"+i+"-"+j);
 			var finishScore = document.getElementById("finishes-amount-"+i+"-"+j);
 			var Player1 = document.getElementById("singles-home-player-1").value;
 			var Player2 = document.getElementById("singles-home-player-2").value;
 			var Player3 = document.getElementById("singles-home-player-3").value;
 			var Player4 = document.getElementById("singles-home-player-4").value;
-			var Player5 = document.getElementById("singles-home-player-5").value;
-			var Player6 = document.getElementById("singles-away-player-1").value;
-			var Player7 = document.getElementById("singles-away-player-2").value;
-			var Player8 = document.getElementById("singles-away-player-3").value;
-			var Player9 = document.getElementById("singles-away-player-4").value;
-			var Player10 = document.getElementById("singles-away-player-5").value;
-			var Player11 = document.getElementById("doubles-home-player-1-1").value;
-			var Player12 = document.getElementById("doubles-home-player-2-1").value;
-			var Player13 = document.getElementById("doubles-home-player-1-2").value;
-			var Player14 = document.getElementById("doubles-home-player-2-2").value;
-			var Player15 = document.getElementById("doubles-away-player-1-1").value;
-			var Player16 = document.getElementById("doubles-away-player-2-1").value;
-			var Player17 = document.getElementById("doubles-away-player-1-2").value;
-			var Player18 = document.getElementById("doubles-away-player-2-2").value;
+			var Player5 = document.getElementById("singles-away-player-1").value;
+			var Player6 = document.getElementById("singles-away-player-2").value;
+			var Player7 = document.getElementById("singles-away-player-3").value;
+			var Player8 = document.getElementById("singles-away-player-4").value;
+			var Player9 = document.getElementById("doubles-home-player-1-1").value;
+			var Player10 = document.getElementById("doubles-home-player-2-1").value;
+			var Player11 = document.getElementById("doubles-home-player-1-2").value;
+			var Player12 = document.getElementById("doubles-home-player-2-2").value;
+			var Player13 = document.getElementById("doubles-away-player-1-1").value;
+			var Player14 = document.getElementById("doubles-away-player-2-1").value;
+			var Player15 = document.getElementById("doubles-away-player-1-2").value;
+			var Player16 = document.getElementById("doubles-away-player-2-2").value;
+			var Player17 = document.getElementById("triples-home-player-1-1").value;
+			var Player18 = document.getElementById("triples-home-player-2-1").value;
+			var Player19 = document.getElementById("triples-home-player-3-1").value;
+			var Player20 = document.getElementById("triples-away-player-1-1").value;
+			var Player21 = document.getElementById("triples-away-player-2-1").value;
+			var Player22 = document.getElementById("triples-away-player-3-1").value;
 			
-			if (maximum.value == "" || maximum.value == Player1 || maximum.value == Player2 || maximum.value == Player3 || maximum.value == Player4 || maximum.value == Player5 || maximum.value == Player6 || maximum.value == Player7 || maximum.value == Player8 || maximum.value == Player9 || maximum.value == Player10 || maximum.value == Player11 || maximum.value == Player12 || maximum.value == Player13 || maximum.value == Player14 || maximum.value == Player15 || maximum.value == Player16 || maximum.value == Player17 || maximum.value == Player18) {
-				maximum.style.border = "1px solid #ccc";
+			if (scoreplayer.value == "" || scoreplayer.value == Player1 || scoreplayer.value == Player2 || scoreplayer.value == Player3 || scoreplayer.value == Player4 || scoreplayer.value == Player5 || scoreplayer.value == Player6 || scoreplayer.value == Player7 || scoreplayer.value == Player8 || scoreplayer.value == Player9 || scoreplayer.value == Player10 || scoreplayer.value == Player11 || scoreplayer.value == Player12 || scoreplayer.value == Player13 || scoreplayer.value == Player14 || scoreplayer.value == Player15 || scoreplayer.value == Player16 || scoreplayer.value == Player17 || scoreplayer.value == Player18 || scoreplayer.value == Player19 || scoreplayer.value == Player20 || scoreplayer.value == Player21 || scoreplayer.value == Player22) {
+				scoreplayer.style.border = "1px solid #ccc";
 			} else {
-				maximum.style.border = "2px solid red";
+				scoreplayer.style.border = "2px solid red";
 				noOfErrors++;
 			}
 			
-			if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18) {
+			if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18 || finishPlayer.value == Player19 || finishPlayer.value == Player20 || finishPlayer.value == Player21 || finishPlayer.value == Player22) {
 				finishPlayer.style.border = "1px solid #ccc";
 			} else {
 				finishPlayer.style.border = "2px solid red";
 				noOfErrors++;
+			}
+			
+			if (scoreplayer.value != "" && scorescore.value == "") {
+				scorescore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				scorescore.style.border = "1px solid #ccc";
+			}
+			
+			if (parseInt(scorescore.value) < 100 || parseInt(scorescore.value) > 180) {
+				scorescore.style.border = "2px solid red";
+				noOfErrors++;
+			} else {
+				scorescore.style.border = "1px solid #ccc";
 			}
 			
 			if (finishPlayer.value != "" && finishScore.value == "") {
@@ -650,11 +732,11 @@ function submitFixture() {
 			}
 		}
 	}
-	
 	if (noOfErrors > 0) {
 		document.getElementById("form-errors").style.display = "block";
 		document.getElementById("form-errors-bottom").style.display = "block";
 	} else {
+		document.getElementById("results-entered").value = true;
 		document.getElementById("result-entry-form").submit();
 	}
 	

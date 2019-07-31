@@ -259,8 +259,9 @@ def fixture(request, fix_id):
     single_matches = SinglesMatch.objects.filter(fixture=fixture.pk)
     double_matches = DoublesMatch.objects.filter(fixture=fixture.pk)
     triple_matches = TriplesMatch.objects.filter(fixture=fixture.pk)
-    singleslegstowin = int(math.ceil(float(fixture.hometeam.division.singlesbestoflegs) / 2))
-    doubleslegstowin = int(math.ceil(float(fixture.hometeam.division.doublesbestoflegs) / 2))
+    singleslegstowin = 0 if not fixture.division.singlesbestoflegs else ((int(fixture.division.singlesbestoflegs) + 1) / 2)
+    doubleslegstowin = 0 if not fixture. division.doublesbestoflegs else ((int(fixture.division.doublesbestoflegs) + 1) / 2)
+    tripleslegstowin = 0 if not fixture.division.triplesbestoflegs else ((int(fixture.division.triplesbestoflegs) + 1) / 2)
     beforegame = True if datetime.date.today() < fixture.date else False
     hometeamlast5games = Result.objects.filter(team=fixture.hometeam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
     awayteamlast5games = Result.objects.filter(team=fixture.awayteam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
@@ -278,6 +279,7 @@ def fixture(request, fix_id):
         "triple_matches": triple_matches,
         "singleslegstowin": singleslegstowin,
         "doubleslegstowin": doubleslegstowin,
+        "tripleslegstowin": tripleslegstowin,
         "beforegame": beforegame,
         "hometeamlast5games": hometeamlast5games,
         "awayteamlast5games": awayteamlast5games,
@@ -287,397 +289,142 @@ def fixture(request, fix_id):
     }
     
     if request.method == "POST":
-        errors = False
         if request.POST.get('home-team-concede'):
-            if not fixture.resultentered:
-                fixture.homescore = 0
-                fixture.awayscore = 7
-                fixture.resultentered = True
-                fixture.resultenteredby = request.user
-                fixture.walkover = True
-                fixture.save()
-                
-                homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=0, lose=1, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=0)
-                homeresult.save()
-                awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=1, lose=0, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=2)
-                awayresult.save()
+            ConcedeFixture(fixture, "home", request.user)
             
         if request.POST.get('away-team-concede'): 
-            if not fixture.resultentered:
-                fixture.homescore = 7
-                fixture.awayscore = 0
-                fixture.resultentered = True
-                fixture.resultenteredby = request.user
-                fixture.walkover = True
-                fixture.save()
-                
-                homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=1, lose=0, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=2)
-                homeresult.save()
-                awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=0, lose=1, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=0)
-                awayresult.save()
+            ConcedeFixture(fixture, "away", request.user)
             
-        if not fixture.resultentered and not request.POST.get('home-team-concede') and not request.POST.get('away-team-concede'):
+        if request.POST.get('results-entered'):
+            errors = False
+            homescore = 0
+            awayscore = 0
+            singlesmatches = []
+            singlesresults = []
+            doublesmatches = []
+            doublesresults = []
+            triplesmatches = []
+            triplesresults = []
+            topscores = []
+            topfinishes = []
+            maximums = []
+            
             if fixture.division.leaguegrp.gender == "Men's":
-                homescore = 0
-                awayscore = 0
-                singlesmatches = []
-                singlesresults = []
-                #print "singles"
                 for i in range(1,6):
-                    #print i
-                    try:
-                        singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
-                        singlesHomePlayerObj = None if int(singlesHomePlayer) == 0 else Player.objects.get(pk=singlesHomePlayer)
-                        for s in singlesmatches:
-                            if singlesHomePlayerObj == s.homeplayer:
-                                errors = True
-                                #print "Home Player exists"
-                        singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
-                        singlesAwayPlayerObj = None if int(singlesAwayPlayer) == 0 else Player.objects.get(pk=singlesAwayPlayer)
-                        for s in singlesmatches:
-                            if singlesAwayPlayerObj == s.awayplayer:
-                                errors = True
-                                #print "away player exists"
-                        singlesHomeScore = int(request.POST.get('singles-home-score-'+str(i)))
-                        singlesAwayScore = int(request.POST.get('singles-away-score-'+str(i)))
-                        if singlesHomeScore < 0 or singlesHomeScore > singleslegstowin:
-                            errors = True
-                            #print "home legs greater than " + singleslegstowin
-                        if singlesAwayScore < 0 or singlesAwayScore > singleslegstowin:
-                            errors = True
-                            #print "away legs greater than " + singleslegstowin
-                        if singlesHomeScore != singleslegstowin and singlesAwayScore != singleslegstowin:
-                            errors = True
-                            #print "neither team wins max legs " + singleslegstowin
-
-                        if singlesHomePlayerObj and singlesAwayPlayerObj:
-                            match = SinglesMatch(fixture=fixture, homeplayer=singlesHomePlayerObj, awayplayer=singlesAwayPlayerObj, homescore=singlesHomeScore, awayscore=singlesAwayScore)
-                            singlesmatches.append(match)
-                        
-                            homewin = 1 if match.homescore > match.awayscore else 0
-                            homescore += homewin
-                            homelose = 0 if match.homescore > match.awayscore else 1
-                            awaywin = 1 if match.awayscore > match.homescore else 0
-                            awayscore += awaywin
-                            awaylose = 0 if match.awayscore > match.homescore else 1
-                        else:
-                            errors = True
-                            #print "one player obj does not exist" + singlesHomePlayerObj + ", " + singlesAwayPlayerObj
-                        
-                        if singlesHomePlayerObj:
-                            homeresult = SinglesResult(match=match, player=singlesHomePlayerObj, opposition=singlesAwayPlayerObj, win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
-                            singlesresults.append(homeresult)
-                        else:
-                            errors = True
-                            #print "home player obj does not exist"
-                        
-                        if singlesAwayPlayerObj:
-                            awayresult = SinglesResult(match=match, player=singlesAwayPlayerObj, opposition=singlesHomePlayerObj, win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
-                            singlesresults.append(awayresult)
-                        else: 
-                            errors = True
-                            #print "away player obj does not exist"
-                    except:
+                    singlesmatches, singlesresults, homescore, awayscore, singleserrors = SinglesFixture(fixture, request.POST.get('singles-home-player-'+str(i)), request.POST.get('singles-away-player-'+str(i)), request.POST.get('singles-home-score-'+str(i)), request.POST.get('singles-away-score-'+str(i)), homescore, awayscore, singlesmatches, singlesresults)
+                    if singleserrors:
                         errors = True
-                    
-                
-                doublesmatches = []
-                doublesresults = []
-                #print "doubles"
+                        
                 for i in range(1,3):
-                    #print i
-                    try:
-                        doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
-                        doublesHomePlayer1Obj = None if doublesHomePlayer1 == 0 else Player.objects.get(pk=doublesHomePlayer1)
-                        doublesHomePlayer2 = request.POST.get('doubles-home-player-2-'+str(i))
-                        doublesHomePlayer2Obj = None if doublesHomePlayer2 == 0 else Player.objects.get(pk=doublesHomePlayer2)
-                        for d in doublesmatches:
-                            if doublesHomePlayer1Obj == d.homeplayer1 or doublesHomePlayer1Obj == d.homeplayer2:
-                                errors = True
-                                #print "home player 1 already used"
-                            if doublesHomePlayer2Obj == d.homeplayer1 or doublesHomePlayer2Obj == d.homeplayer2:
-                                errors = True
-                                #print "home player 2 already used"
-                            
-                        doublesAwayPlayer1 = request.POST.get('doubles-away-player-1-'+str(i))
-                        doublesAwayPlayer1Obj = None if doublesAwayPlayer1 == 0 else Player.objects.get(pk=doublesAwayPlayer1)
-                        doublesAwayPlayer2 = request.POST.get('doubles-away-player-2-'+str(i))
-                        doublesAwayPlayer2Obj = None if doublesAwayPlayer2 == 0 else Player.objects.get(pk=doublesAwayPlayer2)
-                        for d in doublesmatches:
-                            if doublesAwayPlayer1Obj == d.awayplayer1 or doublesAwayPlayer1Obj == d.awayplayer2:
-                                errors = True
-                                #print "away player 1 already used"
-                            if doublesAwayPlayer2Obj == d.awayplayer1 or doublesAwayPlayer2Obj == d.awayplayer2:
-                                errors = True
-                                #print "away player 2 already used"
-                        doublesHomeScore = int(request.POST.get('doubles-home-score-'+str(i)))
-                        doublesAwayScore = int(request.POST.get('doubles-away-score-'+str(i)))
-                        if doublesHomeScore < 0 or doublesHomeScore > doubleslegstowin:
-                            errors = True
-                            #print "home score greater than " + str(doubleslegstowin)
-                        if doublesAwayScore < 0 or doublesAwayScore > doubleslegstowin:
-                            errors = True
-                            #print "away score greater than " + str(doubleslegstowin)
-                        if doublesHomeScore != doubleslegstowin and doublesAwayScore != doubleslegstowin:
-                            errors = True
-                            #print "neither score equals " + str(doubleslegstowin)
-                        #print "got to here"
-                        if doublesHomePlayer1Obj and doublesHomePlayer2Obj and doublesAwayPlayer1Obj and doublesAwayPlayer2Obj:
-                            match = DoublesMatch(fixture=fixture, homeplayer1=doublesHomePlayer1Obj, homeplayer2=doublesHomePlayer2Obj, awayplayer1=doublesAwayPlayer1Obj, awayplayer2=doublesAwayPlayer2Obj, homescore=doublesHomeScore, awayscore=doublesAwayScore)
-                            doublesmatches.append(match)
-                        
-                            homewin = 1 if match.homescore > match.awayscore else 0
-                            homescore += homewin
-                            homelose = 0 if match.homescore > match.awayscore else 1
-                            awaywin = 1 if match.awayscore > match.homescore else 0
-                            awayscore += awaywin
-                            awaylose = 0 if match.awayscore > match.homescore else 1
-                        else: 
-                            errors = True
-                            #print "not all player obj exist"
-                            
-                        if doublesHomePlayer1Obj:
-                            homeresult1 = DoublesResult(match=match, player=doublesHomePlayer1Obj, partner=doublesHomePlayer2Obj, opposition1=doublesAwayPlayer1Obj, opposition2=doublesAwayPlayer2Obj, win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                            doublesresults.append(homeresult1)
-                        else:
-                            errors = True
-                            #print "home player 1 doesnt exist"
-                            
-                        if doublesHomePlayer2Obj:
-                            homeresult2 = DoublesResult(match=match, player=doublesHomePlayer2Obj, partner=doublesHomePlayer1Obj, opposition1=doublesAwayPlayer1Obj, opposition2=doublesAwayPlayer2Obj, win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                            doublesresults.append(homeresult2)
-                        else:
-                            errors = True
-                            #print "home player 2 doesnt exist"
-                            
-                        if doublesAwayPlayer1Obj:
-                            awayresult1 = DoublesResult(match=match, player=doublesAwayPlayer1Obj, partner=doublesAwayPlayer2Obj, opposition1=doublesHomePlayer1Obj, opposition2=doublesHomePlayer2Obj, win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                            doublesresults.append(awayresult1)
-                        else: 
-                            errors = True
-                            #print "away player 1 doesnt exist"
-                            
-                        if doublesAwayPlayer2Obj:
-                            awayresult2 = DoublesResult(match=match, player=doublesAwayPlayer2Obj, partner=doublesAwayPlayer1Obj, opposition1=doublesHomePlayer1Obj, opposition2=doublesHomePlayer2Obj, win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                            doublesresults.append(awayresult2)
-                        else: 
-                            errors = True
-                            ##print "away player 2 doesnt exist"
-                        
-                    except:
+                    doublesmatches, doublesresults, homescore, awayscore, doubleserrors = DoublesFixture(fixture, request.POST.get('doubles-home-player-1-'+str(i)), request.POST.get('doubles-home-player-2-'+str(i)), request.POST.get('doubles-away-player-1-'+str(i)), request.POST.get('doubles-away-player-2-'+str(i)), request.POST.get('doubles-home-score-'+str(i)), request.POST.get('doubles-away-score-'+str(i)), homescore, awayscore, doublesmatches, doublesresults)
+                    if doubleserrors:
                         errors = True
-                        #print "some weird error (Please no)"
-                
-                if not errors:
-                    maximumslist = []
-                    topfinisheslist = []
-                    for i in range(1,7):
-                        player_ok = False
-                        maximum = request.POST.get('maximums-1-'+str(i))
-                        if maximum != None and maximum != "":
-                            maximumplayer = Player.objects.get(pk=maximum)
-                            for s in singlesresults:
-                                if maximumplayer == s.player:
-                                    player_ok = True
-                            for d in doublesresults:
-                                if maximumplayer == d.player:
-                                    player_ok = True
-                            if player_ok:
-                                maxi = Maximum(player=maximumplayer, fixture=fixture)
-                                maximumslist.append(maxi)
-                            else: 
-                                errors = True
                     
-                        player_ok = False
-                        maximum = request.POST.get('maximums-2-'+str(i))
-                        if maximum != None and maximum != "":
-                            maximumplayer = Player.objects.get(pk=maximum)
-                            for s in singlesresults:
-                                if maximumplayer == s.player:
-                                    player_ok = True
-                            for d in doublesresults:
-                                if maximumplayer == d.player:
-                                    player_ok = True
-                            if player_ok:
-                                maxi = Maximum(player=maximumplayer, fixture=fixture)
-                                maximumslist.append(maxi)
-                            else: 
-                                errors = True
+                for i in range(1,7):
+                    maximums, maximumerrors = CreateMaximum(fixture, request.POST.get('maximums-1-'+str(i)), maximums)
+                    if maximumerrors:
+                        errors = True
+                    maximums, maximumerrors = CreateMaximum(fixture, request.POST.get('maximums-2-'+str(i)), maximums)
+                    if maximumerrors:
+                        errors = True
+                    
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-2-'+str(i)), request.POST.get('finishes-amount-2-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    
                         
-                        player_ok = False
-                        top_finish_player = request.POST.get('finishes-name-1-'+str(i))
-                        top_finish_score = request.POST.get('finishes-amount-1-'+str(i))
-                        if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            topfinishplayer = Player.objects.get(pk=top_finish_player)
-                            for s in singlesresults:
-                                if topfinishplayer == s.player:
-                                    player_ok = True
-                            for d in doublesresults:
-                                if topfinishplayer == d.player:
-                                    player_ok = True
-                            if player_ok:
-                                finish = TopFinish(player=topfinishplayer, finish=top_finish_score, fixture=fixture)
-                                topfinisheslist.append(finish)
-                            else: 
-                                errors = True
-                        
-                        player_ok = False 
-                        top_finish_player = request.POST.get('finishes-name-2-'+str(i))
-                        top_finish_score = request.POST.get('finishes-amount-2-'+str(i))
-                        if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            topfinishplayer = Player.objects.get(pk=top_finish_player)
-                            for s in singlesresults:
-                                if topfinishplayer == s.player:
-                                    player_ok = True
-                            for d in doublesresults:
-                                if topfinishplayer == d.player:
-                                    player_ok = True
-                            if player_ok:
-                                finish = TopFinish(player=topfinishplayer, finish=top_finish_score, fixture=fixture)
-                                topfinisheslist.append(finish)
-                            else:
-                                errors = True
-                
-                if request.FILES:
-                    fixture.resultsheet = request.FILES['result-sheet']
-                
-                if not errors:
-                    for s in singlesmatches:
-                        s.save()
-                    for s in singlesresults:
-                        newmatch = SinglesMatch.objects.get(pk=s.match.id)
-                        s.match = newmatch
-                        s.save()
-                    for d in doublesmatches:
-                        d.save()
-                    for d in doublesresults:
-                        newmatch = DoublesMatch.objects.get(pk=d.match.id)
-                        d.match = newmatch
-                        d.save()
-                    for m in maximumslist:
-                        m.save()
-                    for t in topfinisheslist:
-                        t.save()
-                
-            else:
-                homescore = 0
-                awayscore = 0
+            else:           # Ladies Fixture
                 for i in range(1,5):
-                    singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
-                    singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
-                    singlesHomeScore = request.POST.get('singles-home-score-'+str(i))
-                    singlesAwayScore = request.POST.get('singles-away-score-'+str(i))
-                    match = SinglesMatch(fixture=fixture, homeplayer=Player.objects.get(pk=singlesHomePlayer), awayplayer=Player.objects.get(pk=singlesAwayPlayer), homescore=singlesHomeScore, awayscore=singlesAwayScore)
-                    match.save()
-                    
-                    homewin = 1 if match.homescore > match.awayscore else 0
-                    homescore += homewin
-                    homelose = 0 if match.homescore > match.awayscore else 1
-                    awaywin = 1 if match.awayscore > match.homescore else 0
-                    awayscore += awaywin
-                    awaylose = 0 if match.awayscore > match.homescore else 1
-                    
-                    homeresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesHomePlayer), opposition=Player.objects.get(pk=singlesAwayPlayer), win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
-                    homeresult.save()
-                    awayresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesAwayPlayer), opposition=Player.objects.get(pk=singlesHomePlayer), win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
-                    awayresult.save()
-                    
+                    singlesmatches, singlesresults, homescore, awayscore, singleserrors = SinglesFixture(fixture, request.POST.get('singles-home-player-'+str(i)), request.POST.get('singles-away-player-'+str(i)), request.POST.get('singles-home-score-'+str(i)), request.POST.get('singles-away-score-'+str(i)), homescore, awayscore, singlesmatches, singlesresults)
+                    if singleserrors:
+                        errors = True
+                        
                 for i in range(1,3):
-                    doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
-                    doublesHomePlayer2 = request.POST.get('doubles-home-player-2-'+str(i))
-                    doublesAwayPlayer1 = request.POST.get('doubles-away-player-1-'+str(i))
-                    doublesAwayPlayer2 = request.POST.get('doubles-away-player-2-'+str(i))
-                    doublesHomeScore = request.POST.get('doubles-home-score-'+str(i))
-                    doublesAwayScore = request.POST.get('doubles-away-score-'+str(i))
-                    match = DoublesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=doublesHomePlayer1), homeplayer2=Player.objects.get(pk=doublesHomePlayer2), awayplayer1=Player.objects.get(pk=doublesAwayPlayer1), awayplayer2=Player.objects.get(pk=doublesAwayPlayer2), homescore=doublesHomeScore, awayscore=doublesAwayScore)
-                    match.save()
-                    
-                    homewin = 1 if match.homescore > match.awayscore else 0
-                    homescore += homewin
-                    homelose = 0 if match.homescore > match.awayscore else 1
-                    awaywin = 1 if match.awayscore > match.homescore else 0
-                    awayscore += awaywin
-                    awaylose = 0 if match.awayscore > match.homescore else 1
-                    
-                    homeresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer1), partner=Player.objects.get(pk=doublesHomePlayer2), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                    homeresult1.save()
-                    homeresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer2), partner=Player.objects.get(pk=doublesHomePlayer1), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                    homeresult2.save()
-                    awayresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer1), partner=Player.objects.get(pk=doublesAwayPlayer2), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                    awayresult1.save()
-                    awayresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer2), partner=Player.objects.get(pk=doublesAwayPlayer1), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                    awayresult2.save()
-                    
-                triplesHomePlayer1 = request.POST.get('triples-home-player-1')
-                triplesHomePlayer2 = request.POST.get('triples-home-player-2')
-                triplesHomePlayer3 = request.POST.get('triples-home-player-3')
-                triplesAwayPlayer1 = request.POST.get('triples-away-player-1')
-                triplesAwayPlayer2 = request.POST.get('triples-away-player-2')
-                triplesAwayPlayer3 = request.POST.get('triples-away-player-3')
-                triplesHomeScore = request.POST.get('triples-home-score')
-                triplesAwayScore = request.POST.get('triples-away-score')
-                match = TriplesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=triplesHomePlayer1), homeplayer2=Player.objects.get(pk=triplesHomePlayer2), homeplayer3=Player.objects.get(pk=triplesHomePlayer3), awayplayer1=Player.objects.get(pk=triplesAwayPlayer1), awayplayer2=Player.objects.get(pk=triplesAwayPlayer2), awayplayer3=Player.objects.get(pk=triplesAwayPlayer3), homescore=triplesHomeScore, awayscore=triplesAwayScore)
-                match.save()
-                
-                homewin = 1 if match.homescore > match.awayscore else 0
-                homescore += homewin
-                homelose = 0 if match.homescore > match.awayscore else 1
-                awaywin = 1 if match.awayscore > match.homescore else 0
-                awayscore += awaywin
-                awaylose = 0 if match.awayscore > match.homescore else 1
-                
-                homeresult1 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer1), partner1=Player.objects.get(pk=triplesHomePlayer2), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                homeresult1.save()
-                homeresult2 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer2), partner1=Player.objects.get(pk=triplesHomePlayer1), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                homeresult2.save()
-                homeresult3 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer3), partner1=Player.objects.get(pk=triplesHomePlayer1), partner2=Player.objects.get(pk=triplesHomePlayer2), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                homeresult3.save()
-                awayresult1 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer1), partner1=Player.objects.get(pk=triplesAwayPlayer2), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                awayresult1.save()
-                awayresult2 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer2), partner1=Player.objects.get(pk=triplesAwayPlayer1), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                awayresult2.save()
-                awayresult3 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer3), partner1=Player.objects.get(pk=triplesAwayPlayer1), partner2=Player.objects.get(pk=triplesHomePlayer2), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                awayresult3.save()
+                    doublesmatches, doublesresults, homescore, awayscore, doubleserrors = DoublesFixture(fixture, request.POST.get('doubles-home-player-1-'+str(i)), request.POST.get('doubles-home-player-2-'+str(i)), request.POST.get('doubles-away-player-1-'+str(i)), request.POST.get('doubles-away-player-2-'+str(i)), request.POST.get('doubles-home-score-'+str(i)), request.POST.get('doubles-away-score-'+str(i)), homescore, awayscore, doublesmatches, doublesresults)
+                    if doubleserrors:
+                        errors = True
+                        
+                for i in range(1,2):
+                    triplesmatches, triplesresults, homescore, awayscore, tripleserrors = TriplesFixture(fixture, request.POST.get('triples-home-player-1-'+str(i)), request.POST.get('triples-home-player-2-'+str(i)), request.POST.get('triples-home-player-3-'+str(i)), request.POST.get('triples-away-player-1-'+str(i)), request.POST.get('triples-away-player-2-'+str(i)), request.POST.get('triples-away-player-3-'+str(i)), request.POST.get('triples-home-score-'+str(i)), request.POST.get('triples-away-score-'+str(i)), homescore, awayscore, triplesmatches, triplesresults)
+                    if tripleserrors:
+                        errors = True
                 
                 for i in range(1,7):
-                    if request.POST.get('score-name-'+str(i)):
-                        top_score_name = request.POST.get('score-name-1-'+str(i))
-                        top_score = request.POST.get('score-score-1-'+str(i))
-                        if top_score_name != None and top_score_name != "" and top_score >= 100:
-                            ts = TopScore(player=Player.objects.get(pk=top_score_name), score=top_score, fixture=fixture)
-                            ts.save()
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-1-'+str(i)), request.POST.get('score-score-1-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-2-'+str(i)), request.POST.get('score-score-2-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
                     
-                    if request.POST.get('score-name-2-'+str(i)):
-                        top_score_name = request.POST.get('score-name-2-'+str(i))
-                        top_score = request.POST.get('score-score-2-'+str(i))
-                        if top_score_name != None and top_score_name != "" and top_score >= 100:
-                            ts = TopScore(player=Player.objects.get(pk=top_score_name), score=top_score, fixture=fixture)
-                            ts.save()
-                    
-                    if request.POST.get('finishes-name-'+str(i)):
-                        top_finish_player = request.POST.get('finishes-name-1-'+str(i))
-                        top_finish_score = request.POST.get('finishes-amount-1-'+str(i))
-                        if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            finish = TopFinish(player=Player.objects.get(pk=top_finish_player), finish=top_finish_score, fixture=fixture)
-                            finish.save()
-                            
-                    if request.POST.get('finishes-name-2-'+str(i)):
-                        top_finish_player = request.POST.get('finishes-name-2-'+str(i))
-                        top_finish_score = request.POST.get('finishes-amount-2-'+str(i))
-                        if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            finish = TopFinish(player=Player.objects.get(pk=top_finish_player), finish=top_finish_score, fixture=fixture)
-                            finish.save()
-                
-                if request.FILES:
-                    fixture.resultsheet = request.FILES['result-sheet']
-              
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-2-'+str(i)), request.POST.get('finishes-amount-2-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+            
             if not errors:
+                if fixture.resultentered:
+                    fixture.resultentered = False
+                    fixture.resultenteredby = None
+                    fixture.resultverified = False
+                    fixture.walkover = False
+                    results = Result.objects.filter(fixture__pk=fix_id)
+                    for r in results:
+                        r.delete()
+                    singles = SinglesMatch.objects.filter(fixture__pk=fix_id)
+                    for s in singles:
+                        s.delete()
+                    doubles = DoublesMatch.objects.filter(fixture__pk=fix_id)
+                    for d in doubles:
+                        d.delete()
+                    triples = TriplesMatch.objects.filter(fixture__pk=fix_id)
+                    for t in triples:
+                        t.delete()
+                    top_finishes = TopFinish.objects.filter(fixture__pk=fix_id)
+                    for tf in top_finishes:
+                        tf.delete()
+                    top_scores = TopScore.objects.filter(fixture__pk=fix_id)
+                    for ts in top_scores:
+                        ts.delete()
+                    maximums = Maximum.objects.filter(fixture__pk=fix_id)
+                    for m in maximums:
+                        m.delete()
+                        
+                for s in singlesmatches:
+                    s.save()
+                for s in singlesresults:
+                    newmatch = SinglesMatch.objects.get(pk=s.match.id)
+                    s.match = newmatch
+                    s.save()
+                for d in doublesmatches:
+                    d.save()
+                for d in doublesresults:
+                    newmatch = DoublesMatch.objects.get(pk=d.match.id)
+                    d.match = newmatch
+                    d.save()
+                for t in triplesmatches:
+                    t.save()
+                for t in triplesresults:
+                    newmatch = TriplesMatch.objects.get(pk=t.match.id)
+                    t.match = newmatch
+                    t.save()
+                for m in maximums:
+                    m.save()
+                for t in topfinishes:
+                    t.save()
+                for t in topscores:
+                    t.save()
+                
                 fixture.homescore = homescore
                 fixture.awayscore = awayscore
                 fixture.resultentered = True
                 fixture.resultenteredby = request.user
-                fixture.save()
-            
+                
                 homewin = 1 if fixture.homescore > fixture.awayscore else 0
                 homelose = 0 if fixture.homescore > fixture.awayscore else 1
                 homepoints = homewin * 2
@@ -689,7 +436,12 @@ def fixture(request, fix_id):
                 homeresult.save()
                 awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=awaywin, lose=awaylose, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=awaypoints)
                 awayresult.save()
+                
+                if request.FILES:
+                    fixture.resultsheet = request.FILES['result-sheet']
             
+                fixture.save()
+                
         if fixture.resultentered: 
             if request.POST.get('result-verified') or fixture.resultenteredby.is_staff: 
                 fixture.resultverified = True
@@ -724,6 +476,9 @@ def fixture(request, fix_id):
             top_finishes = TopFinish.objects.filter(fixture=fixture)
             for tf in top_finishes:
                 tf.delete()
+            top_scores = TopScore.objects.filter(fixture=fixture)
+            for ts in top_scores:
+                ts.delete()
             fixture.walkover = False
             fixture.homescore = 0
             fixture.awayscore = 0
@@ -753,8 +508,6 @@ def team(request, tid):
         seasonstartdate = 0
     else:
         seasonstartdate = fixture_dates[len(fixture_dates)/2]['date']
-    #range((len(fixture_dates)/2) - (1 if float(len(fixture_dates)) % 2 == 0 else 0), len(fixture_dates)/2+1)]['date']
-    #seasonstartdate = fixture_dates[0]['date']
     for player in players:
         playerafterstart = False
         if seasonstartdate != 0 and player.dateadded > seasonstartdate:
@@ -1435,13 +1188,20 @@ def AdminFixtureDelete(request, fid):
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminFixtureEdit(request, fid):
     fixture = Fixture.objects.get(pk=fid)
+    division = fixture.division
+    
+    singleslegstowin = 0 if not division.singlesbestoflegs else ((int(division.singlesbestoflegs) + 1) / 2)
+    doubleslegstowin = 0 if not division.doublesbestoflegs else ((int(division.doublesbestoflegs) + 1) / 2)
+    tripleslegstowin = 0 if not division.triplesbestoflegs else ((int(division.triplesbestoflegs) + 1) / 2)
     home_team_players = Player.objects.filter(team=Team.objects.get(pk=fixture.hometeam.pk))
     away_team_players = Player.objects.filter(team=Team.objects.get(pk=fixture.awayteam.pk))
     
     singles_matches = SinglesMatch.objects.filter(fixture=fixture)
     doubles_matches = DoublesMatch.objects.filter(fixture=fixture)
+    triples_matches = TriplesMatch.objects.filter(fixture=fixture)
     
     maximums = Maximum.objects.filter(fixture=fixture)
+    tonplus = TopScore.objects.filter(fixture=fixture)
     top_finishes = TopFinish.objects.filter(fixture=fixture)
     
     context = {
@@ -1450,240 +1210,123 @@ def AdminFixtureEdit(request, fid):
         "away_team_players": away_team_players,
         "singles_matches": singles_matches,
         "doubles_matches": doubles_matches,
+        "triples_matches": triples_matches,
+        "top_scores": tonplus,
         "maximums": maximums, 
         "top_finishes": top_finishes,
+        "singleslegstowin": singleslegstowin,
+        "doubleslegstowin": doubleslegstowin,
+        "tripleslegstowin": tripleslegstowin,
     } 
     
     if request.method == "POST":
-        entered = False
-        if fixture.resultentered:
-            fixture.resultentered = False
-            fixture.resultenteredby = None
-            fixture.resultverified = False
-            fixture.walkover = False
-            results = Result.objects.filter(fixture__pk=fid)
-            for r in results:
-                r.delete()
-            singles = SinglesMatch.objects.filter(fixture__pk=fid)
-            for s in singles:
-                s.delete()
-            doubles = DoublesMatch.objects.filter(fixture__pk=fid)
-            for d in doubles:
-                d.delete()
-            top_finishes = TopFinish.objects.filter(fixture__pk=fid)
-            for tf in top_finishes:
-                tf.delete()
-            top_scores = TopScore.objects.filter(fixture__pk=fid)
-            for ts in top_scores:
-                ts.delete()
-            maximums = Maximum.objects.filter(fixture__pk=fid)
-            for m in maximums:
-                m.delete()
-                
         if request.POST.get('home-team-concede'):
-            fixture.homescore = 0
-            fixture.awayscore = 7
-            fixture.resultentered = True
-            fixture.resultenteredby = request.user
-            fixture.walkover = True
-            #fixture.date = request.POST.get('fixture-date')
-            fixture.save()
-            
-            homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=0, lose=1, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=0)
-            homeresult.save()
-            awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=1, lose=0, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=2)
-            awayresult.save()
+            ConcedeFixture(fixture, "home", request.user)
             
         if request.POST.get('away-team-concede'): 
-            if not fixture.resultentered:
-                fixture.homescore = 7
-                fixture.awayscore = 0
-                fixture.resultentered = True
-                fixture.resultenteredby = request.user
-                fixture.walkover = True
-                #fixture.date = request.POST.get('fixture-date')
-                fixture.save()
-                
-                homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=1, lose=0, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=2)
-                homeresult.save()
-                awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=0, lose=1, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=0)
-                awayresult.save()
+            ConcedeFixture(fixture, "away", request.user)
             
-        if not request.POST.get('home-team-concede') and not request.POST.get('away-team-concede'):
+        if request.POST.get('results-entered'):
+            errors = False
+            homescore = 0
+            awayscore = 0
+            singlesmatches = []
+            singlesresults = []
+            doublesmatches = []
+            doublesresults = []
+            triplesmatches = []
+            triplesresults = []
+            topscores = []
+            topfinishes = []
+            maximums = []
+            
             if fixture.division.leaguegrp.gender == "Men's":
-                homescore = 0
-                awayscore = 0
                 for i in range(1,6):
-                    singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
-                    singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
-                    singlesHomeScore = request.POST.get('singles-home-score-'+str(i))
-                    singlesAwayScore = request.POST.get('singles-away-score-'+str(i))
-                    
-                    if singlesHomePlayer and singlesAwayPlayer and singlesHomeScore and singlesAwayScore:
-                        entered = True
-                        match = SinglesMatch(fixture=fixture, homeplayer=Player.objects.get(pk=singlesHomePlayer), awayplayer=Player.objects.get(pk=singlesAwayPlayer), homescore=singlesHomeScore, awayscore=singlesAwayScore)
-                        match.save()
+                    singlesmatches, singlesresults, homescore, awayscore, singleserrors = SinglesFixture(fixture, request.POST.get('singles-home-player-'+str(i)), request.POST.get('singles-away-player-'+str(i)), request.POST.get('singles-home-score-'+str(i)), request.POST.get('singles-away-score-'+str(i)), homescore, awayscore, singlesmatches, singlesresults)
+                    if singleserrors:
+                        errors = True
                         
-                        homewin = 1 if match.homescore > match.awayscore else 0
-                        homescore += homewin
-                        homelose = 0 if match.homescore > match.awayscore else 1
-                        awaywin = 1 if match.awayscore > match.homescore else 0
-                        awayscore += awaywin
-                        awaylose = 0 if match.awayscore > match.homescore else 1
-                        
-                        homeresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesHomePlayer), opposition=Player.objects.get(pk=singlesAwayPlayer), win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
-                        homeresult.save()
-                        awayresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesAwayPlayer), opposition=Player.objects.get(pk=singlesHomePlayer), win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
-                        awayresult.save()
-                    
                 for i in range(1,3):
-                    doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
-                    doublesHomePlayer2 = request.POST.get('doubles-home-player-2-'+str(i))
-                    doublesAwayPlayer1 = request.POST.get('doubles-away-player-1-'+str(i))
-                    doublesAwayPlayer2 = request.POST.get('doubles-away-player-2-'+str(i))
-                    doublesHomeScore = request.POST.get('doubles-home-score-'+str(i))
-                    doublesAwayScore = request.POST.get('doubles-away-score-'+str(i))
+                    doublesmatches, doublesresults, homescore, awayscore, doubleserrors = DoublesFixture(fixture, request.POST.get('doubles-home-player-1-'+str(i)), request.POST.get('doubles-home-player-2-'+str(i)), request.POST.get('doubles-away-player-1-'+str(i)), request.POST.get('doubles-away-player-2-'+str(i)), request.POST.get('doubles-home-score-'+str(i)), request.POST.get('doubles-away-score-'+str(i)), homescore, awayscore, doublesmatches, doublesresults)
+                    if doubleserrors:
+                        errors = True
                     
-                    if doublesHomePlayer1 and doublesHomePlayer2 and doublesAwayPlayer1 and doublesAwayPlayer2 and doublesHomeScore and doublesAwayScore:
-                        entered = True
-                        match = DoublesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=doublesHomePlayer1), homeplayer2=Player.objects.get(pk=doublesHomePlayer2), awayplayer1=Player.objects.get(pk=doublesAwayPlayer1), awayplayer2=Player.objects.get(pk=doublesAwayPlayer2), homescore=doublesHomeScore, awayscore=doublesAwayScore)
-                        match.save()
-                        
-                        homewin = 1 if match.homescore > match.awayscore else 0
-                        homescore += homewin
-                        homelose = 0 if match.homescore > match.awayscore else 1
-                        awaywin = 1 if match.awayscore > match.homescore else 0
-                        awayscore += awaywin
-                        awaylose = 0 if match.awayscore > match.homescore else 1
-                        
-                        homeresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer1), partner=Player.objects.get(pk=doublesHomePlayer2), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                        homeresult1.save()
-                        homeresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer2), partner=Player.objects.get(pk=doublesHomePlayer1), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                        homeresult2.save()
-                        awayresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer1), partner=Player.objects.get(pk=doublesAwayPlayer2), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                        awayresult1.save()
-                        awayresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer2), partner=Player.objects.get(pk=doublesAwayPlayer1), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                        awayresult2.save()
-                
                 for i in range(1,7):
-                    maximum = request.POST.get('maximums-'+str(i))
-                    if maximum != None and maximum != "":
-                        maxi = Maximum(player=Player.objects.get(pk=maximum), fixture=fixture)
-                        maxi.save()
+                    maximums, maximumerrors = CreateMaximum(fixture, request.POST.get('maximums-1-'+str(i)), maximums)
+                    if maximumerrors:
+                        errors = True
+                    maximums, maximumerrors = CreateMaximum(fixture, request.POST.get('maximums-2-'+str(i)), maximums)
+                    if maximumerrors:
+                        errors = True
                     
-                    top_finish_player = request.POST.get('finishes-name-'+str(i))
-                    top_finish_score = request.POST.get('finishes-amount-'+str(i))
-                    if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                        finish = TopFinish(player=Player.objects.get(pk=top_finish_player), finish=top_finish_score, fixture=fixture)
-                        finish.save()
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-2-'+str(i)), request.POST.get('finishes-amount-2-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    
                         
-            else:
-                homescore = 0
-                awayscore = 0
+            else:           # Ladies Fixture
                 for i in range(1,5):
-                    singlesHomePlayer = request.POST.get('singles-home-player-'+str(i))
-                    singlesAwayPlayer = request.POST.get('singles-away-player-'+str(i))
-                    singlesHomeScore = request.POST.get('singles-home-score-'+str(i))
-                    singlesAwayScore = request.POST.get('singles-away-score-'+str(i))
-                    
-                    if singlesHomePlayer and singlesAwayPlayer and singlesHomeScore and singlesAwayScore:
-                        entered = True
-                        match = SinglesMatch(fixture=fixture, homeplayer=Player.objects.get(pk=singlesHomePlayer), awayplayer=Player.objects.get(pk=singlesAwayPlayer), homescore=singlesHomeScore, awayscore=singlesAwayScore)
-                        match.save()
-                    
-                        homewin = 1 if match.homescore > match.awayscore else 0
-                        homescore += homewin
-                        homelose = 0 if match.homescore > match.awayscore else 1
-                        awaywin = 1 if match.awayscore > match.homescore else 0
-                        awayscore += awaywin
-                        awaylose = 0 if match.awayscore > match.homescore else 1
+                    singlesmatches, singlesresults, homescore, awayscore, singleserrors = SinglesFixture(fixture, request.POST.get('singles-home-player-'+str(i)), request.POST.get('singles-away-player-'+str(i)), request.POST.get('singles-home-score-'+str(i)), request.POST.get('singles-away-score-'+str(i)), homescore, awayscore, singlesmatches, singlesresults)
+                    if singleserrors:
+                        errors = True
                         
-                        homeresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesHomePlayer), opposition=Player.objects.get(pk=singlesAwayPlayer), win=homewin, lose=homelose, legs_for=singlesHomeScore, legs_against=singlesAwayScore)
-                        homeresult.save()
-                        awayresult = SinglesResult(match=match, player=Player.objects.get(pk=singlesAwayPlayer), opposition=Player.objects.get(pk=singlesHomePlayer), win=awaywin, lose=awaylose, legs_for=singlesAwayScore, legs_against=singlesHomeScore)
-                        awayresult.save()
-                    
                 for i in range(1,3):
-                    doublesHomePlayer1 = request.POST.get('doubles-home-player-1-'+str(i))
-                    doublesHomePlayer2 = request.POST.get('doubles-home-player-2-'+str(i))
-                    doublesAwayPlayer1 = request.POST.get('doubles-away-player-1-'+str(i))
-                    doublesAwayPlayer2 = request.POST.get('doubles-away-player-2-'+str(i))
-                    doublesHomeScore = request.POST.get('doubles-home-score-'+str(i))
-                    doublesAwayScore = request.POST.get('doubles-away-score-'+str(i))
-                    
-                    if doublesHomePlayer1 and doublesHomePlayer2 and doublesAwayPlayer1 and doublesAwayPlayer2 and doublesHomeScore and doublesAwayScore:
-                        entered = True
-                        match = DoublesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=doublesHomePlayer1), homeplayer2=Player.objects.get(pk=doublesHomePlayer2), awayplayer1=Player.objects.get(pk=doublesAwayPlayer1), awayplayer2=Player.objects.get(pk=doublesAwayPlayer2), homescore=doublesHomeScore, awayscore=doublesAwayScore)
-                        match.save()
+                    doublesmatches, doublesresults, homescore, awayscore, doubleserrors = DoublesFixture(fixture, request.POST.get('doubles-home-player-1-'+str(i)), request.POST.get('doubles-home-player-2-'+str(i)), request.POST.get('doubles-away-player-1-'+str(i)), request.POST.get('doubles-away-player-2-'+str(i)), request.POST.get('doubles-home-score-'+str(i)), request.POST.get('doubles-away-score-'+str(i)), homescore, awayscore, doublesmatches, doublesresults)
+                    if doubleserrors:
+                        errors = True
                         
-                        homewin = 1 if match.homescore > match.awayscore else 0
-                        homescore += homewin
-                        homelose = 0 if match.homescore > match.awayscore else 1
-                        awaywin = 1 if match.awayscore > match.homescore else 0
-                        awayscore += awaywin
-                        awaylose = 0 if match.awayscore > match.homescore else 1
-                        
-                        homeresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer1), partner=Player.objects.get(pk=doublesHomePlayer2), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                        homeresult1.save()
-                        homeresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesHomePlayer2), partner=Player.objects.get(pk=doublesHomePlayer1), opposition1=Player.objects.get(pk=doublesAwayPlayer1), opposition2=Player.objects.get(pk=doublesAwayPlayer2), win=homewin, lose=homelose, legs_for=doublesHomeScore, legs_against=doublesAwayScore)
-                        homeresult2.save()
-                        awayresult1 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer1), partner=Player.objects.get(pk=doublesAwayPlayer2), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                        awayresult1.save()
-                        awayresult2 = DoublesResult(match=match, player=Player.objects.get(pk=doublesAwayPlayer2), partner=Player.objects.get(pk=doublesAwayPlayer1), opposition1=Player.objects.get(pk=doublesHomePlayer1), opposition2=Player.objects.get(pk=doublesHomePlayer2), win=awaywin, lose=awaylose, legs_for=doublesAwayScore, legs_against=doublesHomeScore)
-                        awayresult2.save()
-                
-                triplesHomePlayer1 = request.POST.get('triples-home-player-1')
-                triplesHomePlayer2 = request.POST.get('triples-home-player-2')
-                triplesHomePlayer3 = request.POST.get('triples-home-player-3')
-                triplesAwayPlayer1 = request.POST.get('triples-away-player-1')
-                triplesAwayPlayer2 = request.POST.get('triples-away-player-2')
-                triplesAwayPlayer3 = request.POST.get('triples-away-player-3')
-                triplesHomeScore = request.POST.get('triples-home-score')
-                triplesAwayScore = request.POST.get('triples-away-score')
-                
-                if triplesHomePlayer1 and triplesHomePlayer2 and triplesHomePlayer3 and triplesAwayPlayer1 and triplesAwayPlayer2 and triplesAwayPlayer3 and triplesHomeScore and triplesAwayScore: 
-                    match = TriplesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=triplesHomePlayer1), homeplayer2=Player.objects.get(pk=triplesHomePlayer2), homeplayer3=Player.objects.get(pk=triplesHomePlayer3), awayplayer1=Player.objects.get(pk=triplesAwayPlayer1), awayplayer2=Player.objects.get(pk=triplesAwayPlayer2), awayplayer3=Player.objects.get(pk=triplesAwayPlayer3), homescore=triplesHomeScore, awayscore=triplesAwayScore)
-                    match.save()
-                    
-                    homewin = 1 if match.homescore > match.awayscore else 0
-                    homescore += homewin
-                    homelose = 0 if match.homescore > match.awayscore else 1
-                    awaywin = 1 if match.awayscore > match.homescore else 0
-                    awayscore += awaywin
-                    awaylose = 0 if match.awayscore > match.homescore else 1
-                    
-                    homeresult1 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer1), partner1=Player.objects.get(pk=triplesHomePlayer2), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                    homeresult1.save()
-                    homeresult2 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer2), partner1=Player.objects.get(pk=triplesHomePlayer1), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                    homeresult2.save()
-                    homeresult3 = TriplesResult(match=match, player=Player.objects.get(pk=triplesHomePlayer3), partner1=Player.objects.get(pk=triplesHomePlayer1), partner2=Player.objects.get(pk=triplesHomePlayer2), opposition1=Player.objects.get(pk=triplesAwayPlayer1), opposition2=Player.objects.get(pk=triplesAwayPlayer2), opposition3=Player.objects.get(pk=triplesAwayPlayer3), win=homewin, lose=homelose, legs_for=triplesHomeScore, legs_against=triplesAwayScore)
-                    homeresult3.save()
-                    awayresult1 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer1), partner1=Player.objects.get(pk=triplesAwayPlayer2), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                    awayresult1.save()
-                    awayresult2 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer2), partner1=Player.objects.get(pk=triplesAwayPlayer1), partner2=Player.objects.get(pk=triplesHomePlayer3), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                    awayresult2.save()
-                    awayresult3 = TriplesResult(match=match, player=Player.objects.get(pk=triplesAwayPlayer3), partner1=Player.objects.get(pk=triplesAwayPlayer1), partner2=Player.objects.get(pk=triplesHomePlayer2), opposition1=Player.objects.get(pk=triplesHomePlayer1), opposition2=Player.objects.get(pk=triplesHomePlayer2), opposition3=Player.objects.get(pk=triplesHomePlayer3), win=awaywin, lose=awaylose, legs_for=triplesAwayScore, legs_against=triplesHomeScore)
-                    awayresult3.save()
+                for i in range(1,2):
+                    triplesmatches, triplesresults, homescore, awayscore, tripleserrors = TriplesFixture(fixture, request.POST.get('triples-home-player-1-'+str(i)), request.POST.get('triples-home-player-2-'+str(i)), request.POST.get('triples-home-player-3-'+str(i)), request.POST.get('triples-away-player-1-'+str(i)), request.POST.get('triples-away-player-2-'+str(i)), request.POST.get('triples-away-player-3-'+str(i)), request.POST.get('triples-home-score-'+str(i)), request.POST.get('triples-away-score-'+str(i)), homescore, awayscore, triplesmatches, triplesresults)
+                    if tripleserrors:
+                        errors = True
                 
                 for i in range(1,7):
-                    if request.POST.get('score-name-'+str(i)):
-                        top_score_name = request.POST.get('score-name-'+str(i))
-                        top_score = request.POST.get('score-score-'+str(i))
-                        if top_score_name != None and top_score_name != "" and top_score >= 100:
-                            ts = TopScore(player=Player.objects.get(pk=top_score_name), score=top_score, fixture=fixture)
-                            ts.save()
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-1-'+str(i)), request.POST.get('score-score-1-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-2-'+str(i)), request.POST.get('score-score-2-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
                     
-                    if request.POST.get('finishes-name-'+str(i)):
-                        top_finish_player = request.POST.get('finishes-name-'+str(i))
-                        top_finish_score = request.POST.get('finishes-amount-'+str(i))
-                        if top_finish_player != None and top_finish_player != "" and top_finish_score >= 100:
-                            finish = TopFinish(player=Player.objects.get(pk=top_finish_player), finish=top_finish_score, fixture=fixture)
-                            finish.save()
-                
-            if request.FILES:
-                fixture.resultsheet = request.FILES['result-sheet']
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
+                    topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-2-'+str(i)), request.POST.get('finishes-amount-2-'+str(i)), topfinishes)
+                    if topfinisherrors:
+                        errors = True
             
-            if entered:
+            if not errors:
+                if fixture.resultentered:
+                    ResetFixture(fixture)
+                        
+                for s in singlesmatches:
+                    s.save()
+                for s in singlesresults:
+                    newmatch = SinglesMatch.objects.get(pk=s.match.id)
+                    s.match = newmatch
+                    s.save()
+                for d in doublesmatches:
+                    d.save()
+                for d in doublesresults:
+                    newmatch = DoublesMatch.objects.get(pk=d.match.id)
+                    d.match = newmatch
+                    d.save()
+                for t in triplesmatches:
+                    t.save()
+                for t in triplesresults:
+                    newmatch = TriplesMatch.objects.get(pk=t.match.id)
+                    t.match = newmatch
+                    t.save()
+                for m in maximums:
+                    m.save()
+                for t in topfinishes:
+                    t.save()
+                for t in topscores:
+                    t.save()
+                
                 fixture.homescore = homescore
                 fixture.awayscore = awayscore
                 fixture.resultentered = True
@@ -1700,15 +1343,17 @@ def AdminFixtureEdit(request, fid):
                 homeresult.save()
                 awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=awaywin, lose=awaylose, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=awaypoints)
                 awayresult.save()
+                
+                if request.FILES:
+                    fixture.resultsheet = request.FILES['result-sheet']
             
-            fixture.date = request.POST.get('fixture-date')
-            fixture.save()
+                fixture.save()
             
         if request.POST.get('result-verified') or fixture.resultenteredby and fixture.resultenteredby.is_staff: 
             fixture.resultverified = True
             fixture.save()
         
-        return redirect('PandDDL:adminFixture')
+        return redirect('PandDDL:fixture', fixture.pk)
     
     
     if fixture.division.leaguegrp.gender == "Men's":
@@ -2032,3 +1677,303 @@ def FileDelete(request, fid):
     file.delete()
     
     return redirect('PandDDL:adminAGMminutes')
+
+def ConcedeFixture(fixture, team, user):
+    ResetFixture(fixture)
+    fixture.resultentered = True
+    fixture.resultenteredby = user
+    fixture.walkover = True
+    
+    if team == "home":
+        fixture.homescore = 0
+        fixture.awayscore = 7
+        homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=0, lose=1, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=0)
+        awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=1, lose=0, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=2)
+        
+    if team == "away": 
+        fixture.homescore = 7
+        fixture.awayscore = 0
+        homeresult = Result(team=fixture.hometeam, opposition=fixture.awayteam, fixture=fixture, win=1, lose=0, legs_for=fixture.homescore, legs_against=fixture.awayscore, points=2)
+        awayresult = Result(team=fixture.awayteam, opposition=fixture.hometeam, fixture=fixture, win=0, lose=1, legs_for=fixture.awayscore, legs_against=fixture.homescore, points=0)
+    
+    homeresult.save()
+    awayresult.save()
+    fixture.save()
+    return
+
+def SinglesFixture(fixture, homePlayer, awayPlayer, homeScore, awayScore, homeTotal, awayTotal, singlesmatches, singlesresults):
+    errors = False
+    singleslegstowin = (fixture.division.singlesbestoflegs + 1) / 2
+    try:
+        homeWalkover = True if int(homePlayer) == 0 else False
+        homePlayerObj = None if homeWalkover else Player.objects.get(pk=homePlayer)
+        for s in singlesmatches:
+            if homePlayerObj == s.homeplayer:
+                errors = True
+                print "Home Player exists"
+        awayWalkover = True if int(awayPlayer) == 0 else False
+        awayPlayerObj = None if awayWalkover else Player.objects.get(pk=awayPlayer)
+        for s in singlesmatches:
+            if awayPlayerObj == s.awayplayer:
+                errors = True
+                print "away player exists"
+        if int(homeScore) < 0 or int(homeScore) > singleslegstowin:
+            errors = True
+            print "home legs " + str(homeScore) + " greater than " + str(singleslegstowin)
+        if int(awayScore) < 0 or int(awayScore) > singleslegstowin:
+            errors = True
+            print "away legs " + str(awayScore) + " greater than " + str(singleslegstowin)
+        if int(homeScore) != singleslegstowin and int(awayScore) != singleslegstowin:
+            errors = True
+            print "neither team wins max legs " + str(singleslegstowin)
+    
+        if homeWalkover:
+            if awayPlayerObj:
+                match = SinglesMatch(fixture=fixture, homeplayer=homePlayerObj, awayplayer=awayPlayerObj, homescore=homeScore, awayscore=awayScore)
+                singlesmatches.append(match)
+                
+                homewin = 1 if match.homescore > match.awayscore else 0
+                homeTotal += homewin
+                homelose = 0 if match.homescore > match.awayscore else 1
+                awaywin = 1 if match.awayscore > match.homescore else 0
+                awayTotal += awaywin
+                awaylose = 0 if match.awayscore > match.homescore else 1
+                
+                awayresult = SinglesResult(match=match, player=awayPlayerObj, opposition=homePlayerObj, win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+                singlesresults.append(awayresult)
+            else: 
+                errors = True
+                print "away player obj does not exist"
+        
+        elif awayWalkover:
+            if homePlayerObj:
+                match = SinglesMatch(fixture=fixture, homeplayer=homePlayerObj, awayplayer=awayPlayerObj, homescore=homeScore, awayscore=awayScore)
+                singlesmatches.append(match)
+            
+                homewin = 1 if match.homescore > match.awayscore else 0
+                homeTotal += homewin
+                homelose = 0 if match.homescore > match.awayscore else 1
+                awaywin = 1 if match.awayscore > match.homescore else 0
+                awayTotal += awaywin
+                awaylose = 0 if match.awayscore > match.homescore else 1
+                
+                homeresult = SinglesResult(match=match, player=homePlayerObj, opposition=awayPlayerObj, win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+                singlesresults.append(homeresult)
+            else:
+                errors = True
+                print "home player obj does not exist"
+                
+        else:
+            if homePlayerObj and awayPlayerObj:
+                match = SinglesMatch(fixture=fixture, homeplayer=homePlayerObj, awayplayer=awayPlayerObj, homescore=homeScore, awayscore=awayScore)
+                singlesmatches.append(match)
+            
+                homewin = 1 if match.homescore > match.awayscore else 0
+                homeTotal += homewin
+                homelose = 0 if match.homescore > match.awayscore else 1
+                awaywin = 1 if match.awayscore > match.homescore else 0
+                awayTotal += awaywin
+                awaylose = 0 if match.awayscore > match.homescore else 1
+            else:
+                errors = True
+                print "one player obj does not exist" + homePlayerObj + ", " + awayPlayerObj
+            
+            if homePlayerObj:
+                homeresult = SinglesResult(match=match, player=homePlayerObj, opposition=awayPlayerObj, win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+                singlesresults.append(homeresult)
+            else:
+                errors = True
+                print "home player obj does not exist"
+            
+            if awayPlayerObj:
+                awayresult = SinglesResult(match=match, player=awayPlayerObj, opposition=homePlayerObj, win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+                singlesresults.append(awayresult)
+            else: 
+                errors = True
+                print "away player obj does not exist"
+    except:
+        errors = True
+        print "singles exception error"
+    
+    return singlesmatches, singlesresults, homeTotal, awayTotal, errors
+
+def DoublesFixture(fixture, homePlayer1, homePlayer2, awayPlayer1, awayPlayer2, homeScore, awayScore, homeTotal, awayTotal, doublesmatches, doublesresults):
+    errors = False
+    doubleslegstowin = (fixture.division.doublesbestoflegs + 1) / 2
+    try:
+        homePlayer1Obj = None if homePlayer1 == 0 else Player.objects.get(pk=homePlayer1)
+        homePlayer2Obj = None if homePlayer2 == 0 else Player.objects.get(pk=homePlayer2)
+        for d in doublesmatches:
+            if homePlayer1Obj == d.homeplayer1 or homePlayer1Obj == d.homeplayer2:
+                errors = True
+                print "home player 1 already used"
+            if homePlayer2Obj == d.homeplayer1 or homePlayer2Obj == d.homeplayer2:
+                errors = True
+                print "home player 2 already used"
+            
+        awayPlayer1Obj = None if awayPlayer1 == 0 else Player.objects.get(pk=awayPlayer1)
+        awayPlayer2Obj = None if awayPlayer2 == 0 else Player.objects.get(pk=awayPlayer2)
+        for d in doublesmatches:
+            if awayPlayer1Obj == d.awayplayer1 or awayPlayer1Obj == d.awayplayer2:
+                errors = True
+                print "away player 1 already used"
+            if awayPlayer2Obj == d.awayplayer1 or awayPlayer2Obj == d.awayplayer2:
+                errors = True
+                print "away player 2 already used"
+                
+        if int(homeScore) < 0 or int(homeScore) > doubleslegstowin:
+            errors = True
+            print "home score greater than " + str(doubleslegstowin)
+        if int(awayScore) < 0 or int(awayScore) > doubleslegstowin:
+            errors = True
+            print "away score greater than " + str(doubleslegstowin)
+        if int(homeScore) != doubleslegstowin and int(awayScore) != doubleslegstowin:
+            errors = True
+            print "neither score equals " + str(doubleslegstowin)
+        
+        if homePlayer1Obj and homePlayer2Obj and awayPlayer1Obj and awayPlayer2Obj:
+            match = DoublesMatch(fixture=fixture, homeplayer1=homePlayer1Obj, homeplayer2=homePlayer2Obj, awayplayer1=awayPlayer1Obj, awayplayer2=awayPlayer2Obj, homescore=homeScore, awayscore=awayScore)
+            doublesmatches.append(match)
+        
+            homewin = 1 if match.homescore > match.awayscore else 0
+            homeTotal += homewin
+            homelose = 0 if match.homescore > match.awayscore else 1
+            awaywin = 1 if match.awayscore > match.homescore else 0
+            awayTotal += awaywin
+            awaylose = 0 if match.awayscore > match.homescore else 1
+            
+            homeresult1 = DoublesResult(match=match, player=homePlayer1Obj, partner=homePlayer2Obj, opposition1=awayPlayer1Obj, opposition2=awayPlayer2Obj, win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+            doublesresults.append(homeresult1)
+            homeresult2 = DoublesResult(match=match, player=homePlayer2Obj, partner=homePlayer1Obj, opposition1=awayPlayer1Obj, opposition2=awayPlayer2Obj, win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+            doublesresults.append(homeresult2)
+            awayresult1 = DoublesResult(match=match, player=awayPlayer1Obj, partner=awayPlayer2Obj, opposition1=homePlayer1Obj, opposition2=homePlayer2Obj, win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+            doublesresults.append(awayresult1)
+            awayresult2 = DoublesResult(match=match, player=awayPlayer2Obj, partner=awayPlayer1Obj, opposition1=homePlayer1Obj, opposition2=homePlayer2Obj, win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+            doublesresults.append(awayresult2)
+        else: 
+            errors = True
+            print "not all player obj exist"
+            
+    except:
+        errors = True
+        print "doubles exception error"
+    
+    return doublesmatches, doublesresults, homeTotal, awayTotal, errors
+
+def TriplesFixture(fixture, homePlayer1, homePlayer2, homePlayer3, awayPlayer1, awayPlayer2, awayPlayer3, homeScore, awayScore, homeTotal, awayTotal, triplesmatches, triplesresults):
+    errors = False
+    tripleslegstowin = (fixture.division.triplesbestoflegs + 1) / 2
+    try:
+        homePlayer1Obj = None if homePlayer1 == 0 else Player.objects.get(pk=homePlayer1)
+        homePlayer2Obj = None if homePlayer2 == 0 else Player.objects.get(pk=homePlayer2)
+        homePlayer3Obj = None if homePlayer3 == 0 else Player.objects.get(pk=homePlayer3)
+        if homePlayer2Obj == homePlayer1Obj:
+            errors = True
+            print "home player 2 already used"
+        if homePlayer3Obj == homePlayer1Obj or homePlayer3Obj == homePlayer2Obj:
+            errors = True
+            print "home player 3 already used"
+            
+        awayPlayer1Obj = None if awayPlayer1 == 0 else Player.objects.get(pk=awayPlayer1)
+        awayPlayer2Obj = None if awayPlayer2 == 0 else Player.objects.get(pk=awayPlayer2)
+        awayPlayer3Obj = None if awayPlayer3 == 0 else Player.objects.get(pk=awayPlayer3)
+        if awayPlayer2Obj == awayPlayer1Obj:
+            errors = True
+            print "away player 2 already used"
+        if awayPlayer3Obj == awayPlayer1Obj or awayPlayer3Obj == awayPlayer2Obj:
+            errors = True
+            print "away player 3 already used"
+    
+        if int(homeScore) < 0 or int(homeScore) > tripleslegstowin:
+            errors = True
+            print "home score greater than " + str(tripleslegstowin)
+        if int(awayScore) < 0 or int(awayScore) > tripleslegstowin:
+            errors = True
+            print "away score greater than " + str(tripleslegstowin)
+        if int(homeScore) != tripleslegstowin and int(awayScore) != tripleslegstowin:
+            errors = True
+            print "neither score equals " + str(tripleslegstowin)
+    
+        if homePlayer1Obj and homePlayer2Obj and homePlayer3Obj and awayPlayer1Obj and awayPlayer2Obj and awayPlayer3Obj:
+            match = TriplesMatch(fixture=fixture, homeplayer1=Player.objects.get(pk=homePlayer1), homeplayer2=Player.objects.get(pk=homePlayer2), homeplayer3=Player.objects.get(pk=homePlayer3), awayplayer1=Player.objects.get(pk=awayPlayer1), awayplayer2=Player.objects.get(pk=awayPlayer2), awayplayer3=Player.objects.get(pk=awayPlayer3), homescore=homeScore, awayscore=awayScore)
+            triplesmatches.append(match)
+                
+            homewin = 1 if match.homescore > match.awayscore else 0
+            homeTotal += homewin
+            homelose = 0 if match.homescore > match.awayscore else 1
+            awaywin = 1 if match.awayscore > match.homescore else 0
+            awayTotal += awaywin
+            awaylose = 0 if match.awayscore > match.homescore else 1
+                
+            homeresult1 = TriplesResult(match=match, player=Player.objects.get(pk=homePlayer1), partner1=Player.objects.get(pk=homePlayer2), partner2=Player.objects.get(pk=homePlayer3), opposition1=Player.objects.get(pk=awayPlayer1), opposition2=Player.objects.get(pk=awayPlayer2), opposition3=Player.objects.get(pk=awayPlayer3), win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+            triplesresults.append(homeresult1)
+            homeresult2 = TriplesResult(match=match, player=Player.objects.get(pk=homePlayer2), partner1=Player.objects.get(pk=homePlayer1), partner2=Player.objects.get(pk=homePlayer3), opposition1=Player.objects.get(pk=awayPlayer1), opposition2=Player.objects.get(pk=awayPlayer2), opposition3=Player.objects.get(pk=awayPlayer3), win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+            triplesresults.append(homeresult2)
+            homeresult3 = TriplesResult(match=match, player=Player.objects.get(pk=homePlayer3), partner1=Player.objects.get(pk=homePlayer1), partner2=Player.objects.get(pk=homePlayer2), opposition1=Player.objects.get(pk=awayPlayer1), opposition2=Player.objects.get(pk=awayPlayer2), opposition3=Player.objects.get(pk=awayPlayer3), win=homewin, lose=homelose, legs_for=homeScore, legs_against=awayScore)
+            triplesresults.append(homeresult3)
+            awayresult1 = TriplesResult(match=match, player=Player.objects.get(pk=awayPlayer1), partner1=Player.objects.get(pk=awayPlayer2), partner2=Player.objects.get(pk=awayPlayer3), opposition1=Player.objects.get(pk=homePlayer1), opposition2=Player.objects.get(pk=homePlayer2), opposition3=Player.objects.get(pk=homePlayer3), win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+            triplesresults.append(awayresult1)
+            awayresult2 = TriplesResult(match=match, player=Player.objects.get(pk=awayPlayer2), partner1=Player.objects.get(pk=awayPlayer1), partner2=Player.objects.get(pk=awayPlayer3), opposition1=Player.objects.get(pk=homePlayer1), opposition2=Player.objects.get(pk=homePlayer2), opposition3=Player.objects.get(pk=homePlayer3), win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+            triplesresults.append(awayresult2)
+            awayresult3 = TriplesResult(match=match, player=Player.objects.get(pk=awayPlayer3), partner1=Player.objects.get(pk=awayPlayer1), partner2=Player.objects.get(pk=awayPlayer2), opposition1=Player.objects.get(pk=homePlayer1), opposition2=Player.objects.get(pk=homePlayer2), opposition3=Player.objects.get(pk=homePlayer3), win=awaywin, lose=awaylose, legs_for=awayScore, legs_against=homeScore)
+            triplesresults.append(awayresult3)
+        else:
+            errors = True
+            print "not all player objs exist"
+
+    except:
+        errors = True
+        print "triples exception error"
+    
+    return triplesmatches, triplesresults, homeTotal, awayTotal, errors
+
+def CreateTopScore(fixture, scorename, score, topscores):
+    errors = False
+    if scorename != None and scorename != "" and score >= 100:
+        ts = TopScore(player=Player.objects.get(pk=scorename), score=score, fixture=fixture)
+        topscores.append(ts)
+    
+    return topscores, errors
+
+def CreateTopFinish(fixture, finishname, score, topfinishes):
+    errors = False
+    if finishname != None and finishname != "" and score >= 100:
+        tf = TopFinish(player=Player.objects.get(pk=finishname), finish=score, fixture=fixture)
+        topfinishes.append(tf)
+    
+    return topfinishes, errors
+
+def CreateMaximum(fixture, maximumname, maximums):
+    errors = False
+    if maximumname != None and maximumname != "":
+        m = Maximum(player=Player.objects.get(pk=maximumname), fixture=fixture)
+        maximums.append(m)
+    
+    return maximums, errors
+
+def ResetFixture(fixture):
+    fixture.resultentered = False
+    fixture.resultenteredby = None
+    fixture.resultverified = False
+    fixture.walkover = False
+    results = Result.objects.filter(fixture__pk=fixture.pk)
+    for r in results:
+        r.delete()
+    singles = SinglesMatch.objects.filter(fixture__pk=fixture.pk)
+    for s in singles:
+        s.delete()
+    doubles = DoublesMatch.objects.filter(fixture__pk=fixture.pk)
+    for d in doubles:
+        d.delete()
+    triples = TriplesMatch.objects.filter(fixture__pk=fixture.pk)
+    for t in triples:
+        t.delete()
+    top_finishes = TopFinish.objects.filter(fixture__pk=fixture.pk)
+    for tf in top_finishes:
+        tf.delete()
+    top_scores = TopScore.objects.filter(fixture__pk=fixture.pk)
+    for ts in top_scores:
+        ts.delete()
+    maximums = Maximum.objects.filter(fixture__pk=fixture.pk)
+    for m in maximums:
+        m.delete()
