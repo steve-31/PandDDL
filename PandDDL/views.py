@@ -199,7 +199,8 @@ def division(request, lge_gender, lge_season, lge_year, div_id):
     div_players = Player.objects.filter(team__in=div_teams)
     maximum_table= Maximum.objects.filter(player__team__division=div.pk, fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Count("id")).order_by('-id__count', 'player__surname')
     finishes_table = TopFinish.objects.filter(player__in=div_players, fixture__resultverified=True).order_by('-finish', 'fixture__date')
-    scores_table = TopScore.objects.filter(player__in=div_players, fixture__resultverified=True).order_by('-score', 'fixture__date')
+    scores_table = TopScore.objects.filter(player__in=div_players, fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Count("id")).order_by('-id__count', 'player__surname')
+    print scores_table
     fixture_dates = Fixture.objects.filter(division=div).values('date').order_by('date').distinct()
     fixtures = Fixture.objects.filter(hometeam__in=div_teams).order_by('date')
     teams_with_bye = []
