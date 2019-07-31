@@ -549,8 +549,7 @@ function checkScore(gameType, gameNo) {
 		} 
 		
 		if (homePlayer.value == 0) {
-			if (awayScore.value != 0) {
-				document.getElementById("form-errors-bottom").style.display = "block";
+			if (homeScore.value != 0) {
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
 				noOfErrors++;
@@ -572,9 +571,8 @@ function checkScore(gameType, gameNo) {
 			}
 		} 
 		
-		if (homePlayer.value == 0) {
+		if (awayPlayer.value == 0) {
 			if (awayScore.value != 0) {
-				document.getElementById("form-errors-bottom").style.display = "block";
 				homeScore.style.border = "2px solid red";
 				awayScore.style.border = "2px solid red";
 				noOfErrors++;
