@@ -48,6 +48,7 @@
 	
 </div>
 
+{% if div.leaguegrp.gender == "Men's" %}
 <div class="row">
 	<div class="col-md-6">
 		<h2>Top 10 Singles</h2>
@@ -101,8 +102,9 @@
 		</table>
 	</div>
 </div>
+{% endif %}
 
-{% if div.leaguegrp.gender == "Ladies" %}
+<!-- {% if div.leaguegrp.gender == "Ladies" %}
 <div class="row">
 	<div class="col-md-6">
 		<h2>Top 10 Triples</h2>
@@ -130,7 +132,7 @@
 		</table>
 	</div>
 </div>
-{% endif %}
+{% endif %} -->
 
 <div class="row">
 	<div class="col-md-6">
@@ -156,13 +158,13 @@
 			<tr>
 				<th>Player</th>
 				<th>Team</th>
-				<th>No.</th>
+				<th>Score.</th>
 			</tr>
 			{% for p in scores_table %}
 			<tr>
 				<td>{{ p.player__firstname }} {{ p.player__surname }}</td>
 				<td>{{ p.player__team__name }}</td>
-				<td>{{ p.id__count }}</td>
+				<td>{{ p.score__sum }}</td>
 			</tr>
 			{% endfor %}
 		</table>

@@ -338,7 +338,7 @@
 <div class="row scores-row">
 	{% for top in top_scores %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% else %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -347,18 +347,18 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% else %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
 	</div>
-	{% if forloop.counter == 6 %}
+	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 %}
 </div>
 <div class="row scores-row">
 	{% endif %}
 	{% endfor %}
 	
-	{% for i in "xxxxxxxxxxxx" %}
+	{% for i in "xxxxxxxxxxxxxxxxxxxxxxxx" %}
 	{% if forloop.counter > top_scores|length %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% else %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% endif %}>
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -367,9 +367,9 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% else %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% endif %} style="width:100%" placeholder="Score" min=100 max=180>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% endif %} style="width:100%" placeholder="Score" min=100 max=180>
 	</div>
-	{% if forloop.counter == 6 %}
+	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 %}
 </div>
 <div class="row scores-row">
 	{% endif %}
@@ -539,7 +539,6 @@ function submitFixture() {
 		checkScore("s", i);
 	}
 	
-	
 	for (i = 1; i < 3; i++) {
 		for (j = 1; j < 3; j++) {
 			var homePlayer = document.getElementById("doubles-home-player-"+i+"-"+j);
@@ -658,12 +657,14 @@ function submitFixture() {
 		} 
 	}
 	
-	for (i = 1; i < 3; i++) {
+	for (i = 1; i < 5; i++) {
 		for (j = 1; j < 7; j++) {
 			var scoreplayer = document.getElementById("score-name-"+i+"-"+j);
 			var scorescore = document.getElementById("score-score-"+i+"-"+j);
-			var finishPlayer = document.getElementById("finishes-name-"+i+"-"+j);
-			var finishScore = document.getElementById("finishes-amount-"+i+"-"+j);
+			if (i < 3) {
+				var finishPlayer = document.getElementById("finishes-name-"+i+"-"+j);
+				var finishScore = document.getElementById("finishes-amount-"+i+"-"+j);
+			}
 			var Player1 = document.getElementById("singles-home-player-1").value;
 			var Player2 = document.getElementById("singles-home-player-2").value;
 			var Player3 = document.getElementById("singles-home-player-3").value;
@@ -693,12 +694,14 @@ function submitFixture() {
 				scoreplayer.style.border = "2px solid red";
 				noOfErrors++;
 			}
-			
-			if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18 || finishPlayer.value == Player19 || finishPlayer.value == Player20 || finishPlayer.value == Player21 || finishPlayer.value == Player22) {
-				finishPlayer.style.border = "1px solid #ccc";
-			} else {
-				finishPlayer.style.border = "2px solid red";
-				noOfErrors++;
+
+			if (i < 3) {
+				if (finishPlayer.value == "" || finishPlayer.value == Player1 || finishPlayer.value == Player2 || finishPlayer.value == Player3 || finishPlayer.value == Player4 || finishPlayer.value == Player5 || finishPlayer.value == Player6 || finishPlayer.value == Player7 || finishPlayer.value == Player8 || finishPlayer.value == Player9 || finishPlayer.value == Player10 || finishPlayer.value == Player11 || finishPlayer.value == Player12 || finishPlayer.value == Player13 || finishPlayer.value == Player14 || finishPlayer.value == Player15 || finishPlayer.value == Player16 || finishPlayer.value == Player17 || finishPlayer.value == Player18 || finishPlayer.value == Player19 || finishPlayer.value == Player20 || finishPlayer.value == Player21 || finishPlayer.value == Player22) {
+					finishPlayer.style.border = "1px solid #ccc";
+				} else {
+					finishPlayer.style.border = "2px solid red";
+					noOfErrors++;
+				}
 			}
 			
 			if (scoreplayer.value != "" && scorescore.value == "") {
@@ -715,18 +718,20 @@ function submitFixture() {
 				scorescore.style.border = "1px solid #ccc";
 			}
 			
-			if (finishPlayer.value != "" && finishScore.value == "") {
-				finishScore.style.border = "2px solid red";
-				noOfErrors++;
-			} else {
-				finishScore.style.border = "1px solid #ccc";
-			}
-			
-			if (parseInt(finishScore.value) < 100 || parseInt(finishScore.value) > 180) {
-				finishScore.style.border = "2px solid red";
-				noOfErrors++;
-			} else {
-				finishScore.style.border = "1px solid #ccc";
+			if (i < 3) {
+				if (finishPlayer.value != "" && finishScore.value == "") {
+					finishScore.style.border = "2px solid red";
+					noOfErrors++;
+				} else {
+					finishScore.style.border = "1px solid #ccc";
+				}
+				
+				if (parseInt(finishScore.value) < 100 || parseInt(finishScore.value) > 180) {
+					finishScore.style.border = "2px solid red";
+					noOfErrors++;
+				} else {
+					finishScore.style.border = "1px solid #ccc";
+				}
 			}
 		}
 	}

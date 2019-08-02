@@ -199,8 +199,7 @@ def division(request, lge_gender, lge_season, lge_year, div_id):
     div_players = Player.objects.filter(team__in=div_teams)
     maximum_table= Maximum.objects.filter(player__team__division=div.pk, fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Count("id")).order_by('-id__count', 'player__surname')
     finishes_table = TopFinish.objects.filter(player__in=div_players, fixture__resultverified=True).order_by('-finish', 'fixture__date')
-    scores_table = TopScore.objects.filter(player__in=div_players, fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Count("id")).order_by('-id__count', 'player__surname')
-    print scores_table
+    scores_table = TopScore.objects.filter(player__in=div_players, fixture__resultverified=True).values('player', 'player__firstname', 'player__surname', 'player__team__name').annotate(Sum("score")).order_by('-score__sum', 'player__surname')
     fixture_dates = Fixture.objects.filter(division=div).values('date').order_by('date').distinct()
     fixtures = Fixture.objects.filter(hometeam__in=div_teams).order_by('date')
     teams_with_bye = []
@@ -266,9 +265,9 @@ def fixture(request, fix_id):
     beforegame = True if datetime.date.today() < fixture.date else False
     hometeamlast5games = Result.objects.filter(team=fixture.hometeam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
     awayteamlast5games = Result.objects.filter(team=fixture.awayteam.pk, fixture__resultverified=True).order_by('fixture__date')[:5]
-    maximums = Maximum.objects.filter(fixture=fixture.pk)
-    top_finishes = TopFinish.objects.filter(fixture=fixture.pk)
-    top_scores = TopScore.objects.filter(fixture=fixture.pk)
+    maximums = Maximum.objects.filter(fixture=fixture.pk).order_by('player__team__name', 'player__surname')
+    top_finishes = TopFinish.objects.filter(fixture=fixture.pk).order_by('player__team__name', 'player__surname')
+    top_scores = TopScore.objects.filter(fixture=fixture.pk).order_by('player__team__name', 'player__surname')
     
     context = {
         "fixture": fixture,
@@ -360,6 +359,12 @@ def fixture(request, fix_id):
                     topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-2-'+str(i)), request.POST.get('score-score-2-'+str(i)), topscores)
                     if topscoreerrors:
                         errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-3-'+str(i)), request.POST.get('score-score-3-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-4-'+str(i)), request.POST.get('score-score-4-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
                     
                     topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes)
                     if topfinisherrors:
@@ -370,31 +375,7 @@ def fixture(request, fix_id):
             
             if not errors:
                 if fixture.resultentered:
-                    fixture.resultentered = False
-                    fixture.resultenteredby = None
-                    fixture.resultverified = False
-                    fixture.walkover = False
-                    results = Result.objects.filter(fixture__pk=fix_id)
-                    for r in results:
-                        r.delete()
-                    singles = SinglesMatch.objects.filter(fixture__pk=fix_id)
-                    for s in singles:
-                        s.delete()
-                    doubles = DoublesMatch.objects.filter(fixture__pk=fix_id)
-                    for d in doubles:
-                        d.delete()
-                    triples = TriplesMatch.objects.filter(fixture__pk=fix_id)
-                    for t in triples:
-                        t.delete()
-                    top_finishes = TopFinish.objects.filter(fixture__pk=fix_id)
-                    for tf in top_finishes:
-                        tf.delete()
-                    top_scores = TopScore.objects.filter(fixture__pk=fix_id)
-                    for ts in top_scores:
-                        ts.delete()
-                    maximums = Maximum.objects.filter(fixture__pk=fix_id)
-                    for m in maximums:
-                        m.delete()
+                    ResetFixture(fixture)
                         
                 for s in singlesmatches:
                     s.save()
@@ -1201,9 +1182,9 @@ def AdminFixtureEdit(request, fid):
     doubles_matches = DoublesMatch.objects.filter(fixture=fixture)
     triples_matches = TriplesMatch.objects.filter(fixture=fixture)
     
-    maximums = Maximum.objects.filter(fixture=fixture)
-    tonplus = TopScore.objects.filter(fixture=fixture)
-    top_finishes = TopFinish.objects.filter(fixture=fixture)
+    maximums = Maximum.objects.filter(fixture=fixture).order_by('player__team__name', 'player__surname')
+    tonplus = TopScore.objects.filter(fixture=fixture).order_by('player__team__name', 'player__surname')
+    top_finishes = TopFinish.objects.filter(fixture=fixture).order_by('player__team__name', 'player__surname')
     
     context = {
         "fixture": fixture,
@@ -1289,6 +1270,12 @@ def AdminFixtureEdit(request, fid):
                     if topscoreerrors:
                         errors = True
                     topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-2-'+str(i)), request.POST.get('score-score-2-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-3-'+str(i)), request.POST.get('score-score-3-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-4-'+str(i)), request.POST.get('score-score-4-'+str(i)), topscores)
                     if topscoreerrors:
                         errors = True
                     
