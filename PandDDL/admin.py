@@ -291,7 +291,7 @@ admin.site.register(DoublesMatch, DoublesMatchAdmin)
 
 
 class DoublesResultAdminForm(forms.ModelForm):
-    match = MatchModelNameField(queryset=SinglesMatch.objects.all())
+    match = MatchModelNameField(queryset=DoublesMatch.objects.all())
     player = PlayerModelNameField(queryset=Player.objects.all())
     partner = PlayerModelNameField(queryset=Player.objects.all())
     opposition1 = PlayerModelNameField(queryset=Player.objects.all())
