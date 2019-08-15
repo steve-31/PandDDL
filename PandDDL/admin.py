@@ -237,13 +237,26 @@ class FixtureModelNameField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return ("%s - %s" % (obj.hometeam.name, obj.awayteam.name))
     
-class MatchModelNameField(forms.ModelChoiceField):
+class SinglesMatchModelNameField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         homeplayer_firstname = "WALKOVER" if obj.homeplayer == None else obj.homeplayer.firstname
         homeplayer_surname = "" if obj.homeplayer == None else obj.homeplayer.surname
         awayplayer_firstname = "WALKOVER" if obj.awayplayer == None else obj.awayplayer.firstname
         awayplayer_surname = "" if obj.awayplayer == None else obj.awayplayer.surname
         return ("%s - %s -- %s %s - %s %s" % (obj.fixture.hometeam.name, obj.fixture.awayteam.name, homeplayer_firstname, homeplayer_surname, awayplayer_firstname, awayplayer_surname))
+
+class DoublesMatchModelNameField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        homeplayer_firstname1 = "WALKOVER" if obj.homeplayer1 == None else obj.homeplayer1.firstname
+        homeplayer_surname1 = "" if obj.homeplayer1 == None else obj.homeplayer1.surname
+        homeplayer_firstname2 = "WALKOVER" if obj.homeplayer2 == None else obj.homeplayer2.firstname
+        homeplayer_surname2 = "" if obj.homeplayer2 == None else obj.homeplayer2.surname
+        awayplayer_firstname1 = "WALKOVER" if obj.awayplayer1 == None else obj.awayplayer1.firstname
+        awayplayer_surname1 = "" if obj.awayplayer1 == None else obj.awayplayer1.surname
+        awayplayer_firstname2 = "WALKOVER" if obj.awayplayer2 == None else obj.awayplayer2.firstname
+        awayplayer_surname2 = "" if obj.awayplayer2 == None else obj.awayplayer2.surname
+        return ("%s - %s -- %s %s & %s %s - %s %s & %s %s" % (obj.fixture.hometeam.name, obj.fixture.awayteam.name, homeplayer_firstname1, homeplayer_surname1, homeplayer_firstname2, homeplayer_surname2, awayplayer_firstname1, awayplayer_surname1, awayplayer_firstname2, awayplayer_surname2))
+
 
 class SinglesMatchAdminForm(forms.ModelForm):
     fixture = FixtureModelNameField(queryset=Fixture.objects.all())
@@ -281,7 +294,15 @@ class DoublesMatchAdmin(admin.ModelAdmin):
     form = DoublesMatchAdminForm
     
     def matchName(self, obj):
-        return ("%s %s & %s %s %s - %s %s %s & %s %s" % (obj.homeplayer1.firstname, obj.homeplayer1.surname, obj.homeplayer2.firstname, obj.homeplayer2.surname, obj.homescore, obj.awayscore, obj.awayplayer1.firstname, obj.awayplayer1.surname, obj.awayplayer2.firstname, obj.awayplayer2.surname))
+        homeplayer_firstname1 = "WALKOVER" if obj.homeplayer1 == None else obj.homeplayer1.firstname
+        homeplayer_surname1 = "" if obj.homeplayer1 == None else obj.homeplayer1.surname
+        homeplayer_firstname2 = "WALKOVER" if obj.homeplayer2 == None else obj.homeplayer2.firstname
+        homeplayer_surname2 = "" if obj.homeplayer2 == None else obj.homeplayer2.surname
+        awayplayer_firstname1 = "WALKOVER" if obj.awayplayer1 == None else obj.awayplayer1.firstname
+        awayplayer_surname1 = "" if obj.awayplayer1 == None else obj.awayplayer1.surname
+        awayplayer_firstname2 = "WALKOVER" if obj.awayplayer2 == None else obj.awayplayer2.firstname
+        awayplayer_surname2 = "" if obj.awayplayer2 == None else obj.awayplayer2.surname
+        return ("%s %s & %s %s %s - %s %s %s & %s %s" % (homeplayer_firstname1, homeplayer_surname1, homeplayer_firstname2, homeplayer_surname2, obj.homescore, obj.awayscore, awayplayer_firstname1, awayplayer_surname1, awayplayer_firstname2, awayplayer_surname2))
     matchName.short_description = "Match"
     
     def fixtureName(self, obj):
@@ -291,7 +312,7 @@ admin.site.register(DoublesMatch, DoublesMatchAdmin)
 
 
 class DoublesResultAdminForm(forms.ModelForm):
-    match = MatchModelNameField(queryset=DoublesMatch.objects.all())
+    match = DoublesMatchModelNameField(queryset=DoublesMatch.objects.all())
     player = PlayerModelNameField(queryset=Player.objects.all())
     partner = PlayerModelNameField(queryset=Player.objects.all())
     opposition1 = PlayerModelNameField(queryset=Player.objects.all())
@@ -305,7 +326,15 @@ class DoublesResultAdmin(admin.ModelAdmin):
         return ("%s %s" % (obj.player.firstname, obj.player.surname)) 
     
     def matchName(self, obj):
-        return ("%s %s & %s %s %s - %s %s %s & %s %s" % (obj.match.homeplayer1.firstname, obj.match.homeplayer1.surname, obj.match.homeplayer2.firstname, obj.match.homeplayer2.surname, obj.match.homescore, obj.match.awayscore, obj.match.awayplayer1.firstname, obj.match.awayplayer1.surname, obj.match.awayplayer2.firstname, obj.match.awayplayer2.surname))
+        homeplayer_firstname1 = "WALKOVER" if obj.match.homeplayer1 == None else obj.match.homeplayer1.firstname
+        homeplayer_surname1 = "" if obj.match.homeplayer1 == None else obj.match.homeplayer1.surname
+        homeplayer_firstname2 = "WALKOVER" if obj.match.homeplayer2 == None else obj.match.homeplayer2.firstname
+        homeplayer_surname2 = "" if obj.match.homeplayer2 == None else obj.match.homeplayer2.surname
+        awayplayer_firstname1 = "WALKOVER" if obj.match.awayplayer1 == None else obj.match.awayplayer1.firstname
+        awayplayer_surname1 = "" if obj.match.awayplayer1 == None else obj.match.awayplayer1.surname
+        awayplayer_firstname2 = "WALKOVER" if obj.match.awayplayer2 == None else obj.match.awayplayer2.firstname
+        awayplayer_surname2 = "" if obj.match.awayplayer2 == None else obj.match.awayplayer2.surname
+        return ("%s %s & %s %s %s - %s %s %s & %s %s" % (homeplayer_firstname1, homeplayer_surname1, homeplayer_firstname2, homeplayer_surname2, obj.match.homescore, obj.match.awayscore, awayplayer_firstname1, awayplayer_surname1, awayplayer_firstname2, awayplayer_surname2))
     matchName.short_description = "Match"
     
     def fixtureName(self, obj):
@@ -343,7 +372,7 @@ admin.site.register(TriplesResult, TriplesResultAdmin)
 
 
 class SinglesResultAdminForm(forms.ModelForm):
-    match = MatchModelNameField(queryset=SinglesMatch.objects.all())
+    match = SinglesMatchModelNameField(queryset=SinglesMatch.objects.all())
     player = PlayerModelNameField(queryset=Player.objects.all())
     opposition = PlayerModelNameField(queryset=Player.objects.all())
 
