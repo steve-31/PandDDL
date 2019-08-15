@@ -393,8 +393,15 @@ class SinglesResultAdmin(admin.ModelAdmin):
 admin.site.register(SinglesResult, SinglesResultAdmin)
 
 
+class ResultAdminForm(forms.ModelForm):
+    team = TeamModelNameField(queryset=Team.objects.all())
+    opposition = TeamModelNameField(queryset=Team.objects.all())
+    fixture = FixtureModelNameField(queryset=Fixture.objects.all())
+
 class ResultAdmin(admin.ModelAdmin):
     list_display = ('fixtureName',)
+    form = ResultAdminForm
+    
     def fixtureName(self, obj):
         return ("%s %s - %s %s" % (obj.fixture.hometeam.name, obj.fixture.homescore, obj.fixture.awayscore, obj.fixture.awayteam.name))
     fixtureName.short_description = "Fixture"
