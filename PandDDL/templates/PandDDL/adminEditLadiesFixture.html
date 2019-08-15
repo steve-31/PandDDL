@@ -112,6 +112,7 @@
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" id="doubles-home-player-1-{{ forloop.counter }}" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer1 %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -119,6 +120,7 @@
 							<p style="margin: 5px;text-align: center;">&amp;</p>
 							<select class="form-control" style="width:100%" id="doubles-home-player-2-{{ forloop.counter }}" name="doubles-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer2 %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -134,6 +136,7 @@
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" id="doubles-away-player-1-{{ forloop.counter }}" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer1 %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -141,6 +144,7 @@
 							<p style="margin: 5px;text-align: center;">&amp;</p>
 							<select class="form-control" style="width:100%" id="doubles-away-player-2-{{ forloop.counter }}" name="doubles-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer2 %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -159,6 +163,7 @@
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" id="doubles-home-player-1-{{ forloop.counter }}" name="doubles-home-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 1</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer1 %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -166,6 +171,7 @@
 							<p style="margin: 5px;text-align: center;">&amp;</p>
 							<select class="form-control" style="width:100%" id="doubles-home-player-2-{{ forloop.counter }}" name="doubles-home-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Home Player 2</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.homeplayer2 %}selected{% endif %}>WALKOVER</option>
 								{% for player in home_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.homeplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -181,6 +187,7 @@
 						<div class="col-md-4">
 							<select class="form-control" style="width:100%" id="doubles-away-player-1-{{ forloop.counter }}" name="doubles-away-player-1-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 1</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer1 %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer1.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -188,6 +195,7 @@
 							<p style="margin: 5px;text-align: center;">&amp;</p>
 							<select class="form-control" style="width:100%" id="doubles-away-player-2-{{ forloop.counter }}" name="doubles-away-player-2-{{ forloop.counter }}">
 								<option class="player_select" disabled selected>Away Player 2</option>
+								<option class="player_select" value="0" {% if not fixture.walkover and not match.awayplayer2 %}selected{% endif %}>WALKOVER</option>
 								{% for player in away_team_players %}
 								<option class="player_select" value="{{ player.pk }}" {% if match.awayplayer2.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 								{% endfor %}
@@ -494,12 +502,21 @@ function checkScore(gameType, gameNo) {
 		var homePlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-home-player-4").value);
 		homePlayer.style.border = "1px solid #ccc";
 		
-		if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
+		/* if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
 			if (homePlayer.value != 0) {
 				homePlayer.style.border = "2px solid red";
 				noOfErrors++;
 			}
-		} 
+		}  */
+		
+		if (homePlayer.value == 0) {
+			if (homeScore.value != 0) {
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+				
+			}
+		}
 			
 		var awayPlayer = document.getElementById("singles-away-player-"+gameNo);
 		var awayPlayer1 = ((gameNo == 1) ? "" : document.getElementById("singles-away-player-1").value);
@@ -508,12 +525,20 @@ function checkScore(gameType, gameNo) {
 		var awayPlayer4 = ((gameNo == 4) ? "" : document.getElementById("singles-away-player-4").value);
 		awayPlayer.style.border = "1px solid #ccc";
 		
-		if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
+		/* if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
 			if (awayPlayer.value != 0) {
 				awayPlayer.style.border = "2px solid red";
 				noOfErrors++;
 			}
-		} 
+		}  */
+		
+		if (awayPlayer.value == 0) {
+			if (awayScore.value != 0) {
+				homeScore.style.border = "2px solid red";
+				awayScore.style.border = "2px solid red";
+				noOfErrors++;
+			}
+		}
 		
 		if (homePlayer.value == 0 && parseInt(homeScore.value) != 0) {
 			homeScore.style.border = "2px solid red";
@@ -539,54 +564,59 @@ function submitFixture() {
 		checkScore("s", i);
 	}
 	
+	
 	for (i = 1; i < 3; i++) {
+		console.log("i: " + i);
 		for (j = 1; j < 3; j++) {
-			var homePlayer = document.getElementById("doubles-home-player-"+i+"-"+j);
-			var homePlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-home-player-1-1").value);
-			var homePlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-home-player-2-1").value);
-			var homePlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-home-player-1-2").value);
-			var homePlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-home-player-2-2").value);
-			homePlayer.style.border = "1px solid #ccc";
-			
-			if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
-				homePlayer.style.border = "2px solid red";
-				noOfErrors++;
-			} 
-			
-			if (homePlayer.value == 0) {
-				if (homeScore.value != 0) {
-					homeScore.style.border = "2px solid red";
-					awayScore.style.border = "2px solid red";
-					noOfErrors++;
-					
-				}
-			}
-			
-			var awayPlayer = document.getElementById("doubles-away-player-"+i+"-"+j);
-			var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-away-player-1-1").value);
-			var awayPlayer2 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-away-player-2-1").value);
-			var awayPlayer3 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-away-player-1-2").value);
-			var awayPlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-away-player-2-2").value);
-			awayPlayer.style.border = "1px solid #ccc";
-			
-			if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
-				awayPlayer.style.border = "2px solid red";
-				noOfErrors++;
-			}
-			
-			if (awayPlayer.value == 0) {
-				if (awayScore.value != 0) {
-					homeScore.style.border = "2px solid red";
-					awayScore.style.border = "2px solid red";
-					noOfErrors++;
-					
-				}
-			}
-			
+			console.log("j: " + j);
 			var homeScore = document.getElementById("home_score_d"+i);
 			var awayScore = document.getElementById("away_score_d"+i);
 			homeScore.style.border = "1px solid #ccc";
 			awayScore.style.border = "1px solid #ccc";
+			
+			var homePlayer = document.getElementById("doubles-home-player-"+j+"-"+i);
+			var homePlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-home-player-1-1").value);
+			var homePlayer2 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-home-player-2-1").value);
+			var homePlayer3 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-home-player-1-2").value);
+			var homePlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-home-player-2-2").value);
+			homePlayer.style.border = "1px solid #ccc";
+			
+			if (homePlayer.value != 0){
+				if (homePlayer1 == homePlayer.value || homePlayer2 == homePlayer.value || homePlayer3 == homePlayer.value || homePlayer4 == homePlayer.value) {
+					console.log("Player: " + homePlayer.value);
+					console.log("Score: " + homeScore.value);
+					homePlayer.style.border = "2px solid red";
+					noOfErrors++;
+				} 
+			} else {
+				if (homeScore.value != 0) {
+					homeScore.style.border = "2px solid red";
+					awayScore.style.border = "2px solid red";
+					noOfErrors++;
+				}
+			}
+			
+			var awayPlayer = document.getElementById("doubles-away-player-"+j+"-"+i);
+			var awayPlayer1 = ((i == 1 && j == 1) ? "" : document.getElementById("doubles-away-player-1-1").value);
+			var awayPlayer2 = ((i == 1 && j == 2) ? "" : document.getElementById("doubles-away-player-2-1").value);
+			var awayPlayer3 = ((i == 2 && j == 1) ? "" : document.getElementById("doubles-away-player-1-2").value);
+			var awayPlayer4 = ((i == 2 && j == 2) ? "" : document.getElementById("doubles-away-player-2-2").value);
+			awayPlayer.style.border = "1px solid #ccc";
+			
+			if (awayPlayer.value != 0) {
+				if (awayPlayer1 == awayPlayer.value || awayPlayer2 == awayPlayer.value || awayPlayer3 == awayPlayer.value || awayPlayer4 == awayPlayer.value) {
+					console.log("Player: " + awayPlayer.value);
+					console.log("Score: " + awayScore.value);
+					awayPlayer.style.border = "2px solid red";
+					noOfErrors++;
+				}
+			} else {
+				if (awayScore.value != 0) {
+					homeScore.style.border = "2px solid red";
+					awayScore.style.border = "2px solid red";
+					noOfErrors++;
+				}
+			}
 			
 			if (homeScore.value == "" || parseInt(homeScore.value) < 0 || parseInt(homeScore.value) > {{ doubleslegstowin }}) {
 				homeScore.style.border = "2px solid red";
@@ -840,6 +870,8 @@ $(document).ready(function(){
 
 function show180s() {
 	document.getElementById("second-180s").style.display = 'table-row';
+	document.getElementById("third-180s").style.display = 'table-row';
+	document.getElementById("fourth-180s").style.display = 'table-row';
 	document.getElementById("show-second-180s").style.display = 'none';
 }
 

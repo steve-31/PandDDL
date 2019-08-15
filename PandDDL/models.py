@@ -105,10 +105,10 @@ class SinglesResult(models.Model):
     
 class DoublesMatch(models.Model):
     fixture=models.ForeignKey(Fixture)
-    homeplayer1=models.ForeignKey(Player, related_name="home1")
-    homeplayer2=models.ForeignKey(Player, related_name="home2")
-    awayplayer1=models.ForeignKey(Player, related_name="away1")
-    awayplayer2=models.ForeignKey(Player, related_name="away2")
+    homeplayer1=models.ForeignKey(Player, related_name="home1", null=True, blank=True)
+    homeplayer2=models.ForeignKey(Player, related_name="home2", null=True, blank=True)
+    awayplayer1=models.ForeignKey(Player, related_name="away1", null=True, blank=True)
+    awayplayer2=models.ForeignKey(Player, related_name="away2", null=True, blank=True)
     homescore=models.IntegerField(default=0)
     awayscore=models.IntegerField(default=0)
     class Meta:
@@ -119,8 +119,8 @@ class DoublesResult(models.Model):
     match=models.ForeignKey(DoublesMatch)
     player=models.ForeignKey(Player, related_name='doublesplayer')
     partner=models.ForeignKey(Player, related_name='partner')
-    opposition1=models.ForeignKey(Player, related_name='opposition1')
-    opposition2=models.ForeignKey(Player, related_name='opposition2')
+    opposition1=models.ForeignKey(Player, related_name='opposition1', null=True, blank=True)
+    opposition2=models.ForeignKey(Player, related_name='opposition2', null=True, blank=True)
     played=models.IntegerField(default=1)
     win=models.IntegerField()
     lose=models.IntegerField()

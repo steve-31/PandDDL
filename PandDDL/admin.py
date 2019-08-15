@@ -236,6 +236,14 @@ admin.site.register(CupFixture, CupFixtureAdmin)
 class FixtureModelNameField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return ("%s - %s" % (obj.hometeam.name, obj.awayteam.name))
+    
+class MatchModelNameField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        homeplayer_firstname = "WALKOVER" if obj.homeplayer == None else obj.homeplayer.firstname
+        homeplayer_surname = "" if obj.homeplayer == None else obj.homeplayer.surname
+        awayplayer_firstname = "WALKOVER" if obj.awayplayer == None else obj.awayplayer.firstname
+        awayplayer_surname = "" if obj.awayplayer == None else obj.awayplayer.surname
+        return ("%s - %s -- %s %s - %s %s" % (obj.fixture.hometeam.name, obj.fixture.awayteam.name, homeplayer_firstname, homeplayer_surname, awayplayer_firstname, awayplayer_surname))
 
 class SinglesMatchAdminForm(forms.ModelForm):
     fixture = FixtureModelNameField(queryset=Fixture.objects.all())
@@ -282,8 +290,16 @@ class DoublesMatchAdmin(admin.ModelAdmin):
 admin.site.register(DoublesMatch, DoublesMatchAdmin)
 
 
+class DoublesResultAdminForm(forms.ModelForm):
+    match = MatchModelNameField(queryset=SinglesMatch.objects.all())
+    player = PlayerModelNameField(queryset=Player.objects.all())
+    partner = PlayerModelNameField(queryset=Player.objects.all())
+    opposition1 = PlayerModelNameField(queryset=Player.objects.all())
+    opposition2 = PlayerModelNameField(queryset=Player.objects.all())
+
 class DoublesResultAdmin(admin.ModelAdmin):
     list_display = ('playerName','matchName', 'fixtureName', 'played', 'win', 'lose', 'legs_for', 'legs_against')
+    form = DoublesResultAdminForm
     
     def playerName(self, obj):
         return ("%s %s" % (obj.player.firstname, obj.player.surname)) 
@@ -326,8 +342,14 @@ class TriplesResultAdmin(admin.ModelAdmin):
 admin.site.register(TriplesResult, TriplesResultAdmin)
 
 
+class SinglesResultAdminForm(forms.ModelForm):
+    match = MatchModelNameField(queryset=SinglesMatch.objects.all())
+    player = PlayerModelNameField(queryset=Player.objects.all())
+    opposition = PlayerModelNameField(queryset=Player.objects.all())
+
 class SinglesResultAdmin(admin.ModelAdmin):
     list_display = ('playerName','matchName', 'fixtureName', 'played', 'win', 'lose', 'legs_for', 'legs_against')
+    form = SinglesResultAdminForm
     
     def playerName(self, obj):
         return ("%s %s" % (obj.player.firstname, obj.player.surname)) 
