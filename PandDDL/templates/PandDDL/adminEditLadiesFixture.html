@@ -346,7 +346,7 @@
 <div class="row scores-row">
 	{% for top in top_scores %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% endif %}>
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% elif forloop.counter <= 24 %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% else %}id="score-name-5-{{ forloop.counter|add:-24 }}" name="score-name-5-{{ forloop.counter|add:-24 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -355,18 +355,18 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% elif forloop.counter <= 24 %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% else %}id="score-score-5-{{ forloop.counter|add:-24 }}" name="score-score-5-{{ forloop.counter|add:-24 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
 	</div>
-	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 %}
+	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 or forloop.counter == 24 %}
 </div>
 <div class="row scores-row">
 	{% endif %}
 	{% endfor %}
 	
-	{% for i in "xxxxxxxxxxxxxxxxxxxxxxxx" %}
+	{% for i in "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" %}
 	{% if forloop.counter > top_scores|length %}
 	<div class="col-md-2">
-		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% endif %}>
+		<select class="form-control" style="width:100%" {% if forloop.counter <= 6 %}id="score-name-1-{{ forloop.counter }}" name="score-name-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-name-2-{{ forloop.counter|add:-6 }}" name="score-name-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-name-3-{{ forloop.counter|add:-12 }}" name="score-name-3-{{ forloop.counter|add:-12 }}"{% elif forloop.counter <= 24 %}id="score-name-4-{{ forloop.counter|add:-18 }}" name="score-name-4-{{ forloop.counter|add:-18 }}"{% else %}id="score-name-5-{{ forloop.counter|add:-24 }}" name="score-name-5-{{ forloop.counter|add:-24 }}"{% endif %}>
 			<option class="player_select" selected value="">Player</option>
 			{% for player in home_team_players %}
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
@@ -375,9 +375,9 @@
 			<option class="player_select" value="{{ player.pk }}" {% if top.player.pk == player.pk %}selected{% endif %}>{{ player.firstname }} {{ player.surname }}</option> 
 			{% endfor %}
 		</select>
-		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% else %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% endif %} style="width:100%" placeholder="Score" min=100 max=180>
+		<input class="form-control" {% if forloop.counter <= 6 %}id="score-score-1-{{ forloop.counter }}" name="score-score-1-{{ forloop.counter }}"{% elif forloop.counter <= 12 %}id="score-score-2-{{ forloop.counter|add:-6 }}" name="score-score-2-{{ forloop.counter|add:-6 }}"{% elif forloop.counter <= 18 %}id="score-score-3-{{ forloop.counter|add:-12 }}" name="score-score-3-{{ forloop.counter|add:-12 }}"{% elif forloop.counter <= 24 %}id="score-score-4-{{ forloop.counter|add:-18 }}" name="score-score-4-{{ forloop.counter|add:-18 }}"{% else %}id="score-score-5-{{ forloop.counter|add:-24 }}" name="score-score-5-{{ forloop.counter|add:-24 }}"{% endif %} style="width:100%" placeholder="Score" value="{{ top.score }}" min=100 max=180>
 	</div>
-	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 %}
+	{% if forloop.counter == 6 or forloop.counter == 12 or forloop.counter == 18 or forloop.counter == 24 %}
 </div>
 <div class="row scores-row">
 	{% endif %}

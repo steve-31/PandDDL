@@ -372,6 +372,26 @@
 			</div>
 		</td>
 	</tr>
+	<tr id="fifth-180s" style="display: none;">
+		<td>
+			<div class="row scores-row">
+				{% for i in "xxxxxx" %}
+				<div class="col-md-2">
+					<select class="form-control" style="width:100%" name="score-name-5-{{ forloop.counter }}" id="score-name-5-{{ forloop.counter }}">
+						<option class="player_select" selected value="">Player</option>
+						{% for player in home_team_players %}
+						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+						{% endfor %}
+						{% for player in away_team_players %}
+						<option class="player_select" value="{{ player.pk }}">{{ player.firstname }} {{ player.surname }}</option> 
+						{% endfor %}
+					</select>
+					<input class="form-control" name="score-score-5-{{ forloop.counter }}" id="score-score-5-{{ forloop.counter }}" style="width:100%" placeholder="Score">
+				</div>
+				{% endfor %}
+			</div>
+		</td>
+	</tr>
 </table>
 
 <p><a class="admin-a-link" id="show-second-180s" onclick="show180s()">+ Additional Scores</a></p>
@@ -777,7 +797,7 @@ function submitFixture() {
 		} 
 	}
 	
-	for (i = 1; i < 5; i++) {
+	for (i = 1; i < 6; i++) {
 		for (j = 1; j < 7; j++) {
 			var scoreplayer = document.getElementById("score-name-"+i+"-"+j);
 			var scorescore = document.getElementById("score-score-"+i+"-"+j);
@@ -962,6 +982,7 @@ function show180s() {
 	document.getElementById("second-180s").style.display = 'table-row';
 	document.getElementById("third-180s").style.display = 'table-row';
 	document.getElementById("fourth-180s").style.display = 'table-row';
+	document.getElementById("fifth-180s").style.display = 'table-row';
 	document.getElementById("show-second-180s").style.display = 'none';
 }
 

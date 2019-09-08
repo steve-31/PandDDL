@@ -365,6 +365,9 @@ def fixture(request, fix_id):
                     topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-4-'+str(i)), request.POST.get('score-score-4-'+str(i)), topscores)
                     if topscoreerrors:
                         errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-5-'+str(i)), request.POST.get('score-score-5-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
                     
                     topfinishes, topfinisherrors = CreateTopFinish(fixture, request.POST.get('finishes-name-1-'+str(i)), request.POST.get('finishes-amount-1-'+str(i)), topfinishes, topscores)
                     if topfinisherrors:
@@ -1276,6 +1279,9 @@ def AdminFixtureEdit(request, fid):
                     if topscoreerrors:
                         errors = True
                     topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-4-'+str(i)), request.POST.get('score-score-4-'+str(i)), topscores)
+                    if topscoreerrors:
+                        errors = True
+                    topscores, topscoreerrors = CreateTopScore(fixture, request.POST.get('score-name-5-'+str(i)), request.POST.get('score-score-5-'+str(i)), topscores)
                     if topscoreerrors:
                         errors = True
                     
