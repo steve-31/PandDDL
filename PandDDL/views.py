@@ -922,7 +922,27 @@ def LeagueDelete(request, lge_id):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminDivision(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+    
+    
     active_divs = Division.objects.filter(leaguegrp__in=active_leagues).order_by('name')
     mens_divs = active_divs.filter(leaguegrp__gender="Men's")
     ladies_divs = active_divs.filter(leaguegrp__gender="Ladies")
@@ -951,6 +971,9 @@ def AdminDivision(request):
         "active_divs": active_divs,
         "mens_divs": mens_divs,
         "ladies_divs": ladies_divs,
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminDivision.html', context)
@@ -963,7 +986,26 @@ def AdminDivisionDelete(request, div_id):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminTeam(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+    
     active_divs = Division.objects.filter(leaguegrp__in=active_leagues).order_by('leaguegrp__gender','name')
     mens_divs = active_divs.filter(leaguegrp__gender="Men's")
     ladies_divs = active_divs.filter(leaguegrp__gender="Ladies")
@@ -1007,6 +1049,9 @@ def AdminTeam(request):
         "points_deductions": points_deductions,
         "points_deductions_teams": points_deductions_teams,
         "all_users": all_users,
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminTeam.html', context)
@@ -1046,7 +1091,26 @@ def AdminTeamPointsDeductionDelete(request, pd_id):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminPlayer(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+    
     active_divs = Division.objects.filter(leaguegrp__in=active_leagues).order_by('leaguegrp__gender','name')
     mens_divs = active_divs.filter(leaguegrp__gender="Men's")
     ladies_divs = active_divs.filter(leaguegrp__gender="Ladies")
@@ -1086,6 +1150,9 @@ def AdminPlayer(request):
         "ladies_divs": ladies_divs,
         "active_players": active_players,
         "today": datetime.datetime.today(),
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminPlayer.html', context)
@@ -1128,11 +1195,29 @@ def AdminPlayerDelete(request, pid):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminFixture(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+    
     active_divs = Division.objects.filter(leaguegrp__in=active_leagues).order_by('leaguegrp__gender','name')
     mens_divs = active_divs.filter(leaguegrp__gender="Men's")
     ladies_divs = active_divs.filter(leaguegrp__gender="Ladies")
-    print ladies_divs
     mens_fixtures = Fixture.objects.filter(division__in=mens_divs).order_by('date', 'hometeam__name')
     ladies_fixtures = Fixture.objects.filter(division__in=ladies_divs).order_by('date', 'hometeam__name')
     mens_teams = Team.objects.filter(division__in=mens_divs)
@@ -1159,6 +1244,9 @@ def AdminFixture(request):
         "ladies_fixtures": ladies_fixtures,
         "mens_teams": mens_teams,
         "ladies_teams": ladies_teams,
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminFixture.html', context)
@@ -1357,7 +1445,26 @@ def AdminFixtureEdit(request, fid):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminKeyDates(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+    
     mens_key_dates = KeyDate.objects.filter(league__in=active_leagues, league__gender="Men's").order_by('date')
     ladies_key_dates = KeyDate.objects.filter(league__in=active_leagues, league__gender="Ladies").order_by('date')
     
@@ -1379,6 +1486,9 @@ def AdminKeyDates(request):
     context = {
         "mens_key_dates": mens_key_dates,
         "ladies_key_dates": ladies_key_dates, 
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminKeyDates.html', context)
@@ -1492,9 +1602,28 @@ def AdminCupComps(request):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminPlayerComps(request):
-    active_leagues = LeagueGrp.objects.filter(active=True)
+    lg_season = ''
+    lg_year = ''
+    if request.GET.get('league-group'):
+        result = request.GET.get('league-group').split()
+        lg_season = result[0]
+        lg_year = result[1]
+        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    else:
+        active_leagues = LeagueGrp.objects.filter(active=True)
+        
+    lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
+    lg_options = []
+    for options in lg_options_obj:
+        season_exists = False
+        for existing in lg_options:
+            if existing['season'] == options.season and existing['year'] == options.year and existing['displayyear'] == options.displayyear:
+                season_exists = True
+        if not season_exists:
+            lg_options.append({'season': options.season, 'year': options.year, 'displayyear': options.displayyear})
+
     active_teams = Team.objects.filter(division__leaguegrp__in=active_leagues)
-    active_comps = Competition.objects.filter(keydate__league__active=True).order_by('keydate__date')
+    active_comps = Competition.objects.filter(keydate__league__in=active_leagues).order_by('keydate__date')
     all_players = Player.objects.filter(team__in=active_teams).order_by('firstname')
     mens_comps = active_comps.filter(keydate__league__gender="Men's")
     mens_players = all_players.filter(team__division__leaguegrp__gender="Men's")
@@ -1540,6 +1669,9 @@ def AdminPlayerComps(request):
         "all_players": all_players,
         "mens_players": mens_players,
         "ladies_players": ladies_players,
+        "lg_options": lg_options,
+        'lg_season': lg_season,
+        'lg_year': lg_year,
     }
     
     return render(request, 'PandDDL/adminPlayerComps.html', context)
