@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 import os
 import re
 from django.conf import settings
@@ -19,6 +20,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, JsonResponse, Http404
 from operator import itemgetter 
 from .models import *
+from django.http.response import JsonResponse
 
 
 # Create your views here.
@@ -93,6 +95,7 @@ def completeIssue(request, pid):
 def authlogin(request):
     
     if request.method == "POST":
+        active_leagues = LeagueGrp.objects.filter(active=True).order_by('-gender')
         postusername = request.POST.get('username')
         postpassword = request.POST.get('password')
         user = authenticate(username=postusername, password=postpassword)
@@ -100,7 +103,7 @@ def authlogin(request):
             # A backend authenticated the credentials
             login(request, user)
             if not user.is_staff:
-                user_team = Team.objects.get(admin__pk=user.pk)
+                user_team = Team.objects.get(admin__pk=user.pk, division__leaguegrp__in=active_leagues)
                 if user_team.newpassword:
                     return redirect('PandDDL:changePassword', user.pk)
             return redirect('PandDDL:home')
@@ -119,11 +122,10 @@ def changePassword(request, uid):
     if request.user != user_test:
         raise PermissionDenied
     if request.method == "POST":
-        
         user = authenticate(username=user_test.username, password=request.POST.get('old-password'))
         if user is not None and request.POST.get('change-password') and request.POST.get('change-password') == request.POST.get('change-password-confirm'):
             user.set_password(request.POST.get('change-password'))
-            team = Team.objects.get(admin=user)
+            team = Team.objects.get(admin=user, division__leaguegrp__active=True)
             team.newpassword = False
             team.save()
             user.save()
@@ -692,18 +694,45 @@ def adminPage(request):
     
     return render(request, 'PandDDL/adminPage.html', context)
 
+def fixtureListGenerate(request):
+    newfixtureslist = []
+    oldfixtureslist = []
+    fixturefile = FixtureFile(file=request.FILES['fixtures-file'])
+    fixturefile.save()
+    league = LeagueGrp.objects.get(pk=request.POST.get('fixture-file-league'))
+    df = pandas.read_excel(fixturefile.file.path)
+    counter = 0
+    for fix in range(0,len(df['Home Team'])):
+        same_fixture = Fixture.objects.filter(Q(date=df['Date'][fix]), Q(hometeam__name__iexact=df['Home Team'][fix]) | Q(awayteam__name__iexact=df['Home Team'][fix]) | Q(hometeam__name__iexact=df['Away Team'][fix]) | Q(awayteam__name__iexact=df['Away Team']))
+        for f in same_fixture:
+            oldfixtureslist.append({'id':f.id, 'deleted':'true', 'entered':f.resultentered, 'hometeam':f.hometeam.name, 'awayteam':f.awayteam.name, 'homescore':f.homescore, 'awayscore':f.awayscore, 'date':str(f.date), 'division':f.division.name})
+        fixture = Fixture(hometeam=Team.objects.get(name__iexact=df['Home Team'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league)), awayteam=Team.objects.get(name__iexact=df['Away Team'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league)), date=df['Date'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league))
+        newfixtureslist.append({'id':counter, 'deleted':'false', 'hometeam':fixture.hometeam.name, 'awayteam':fixture.awayteam.name, 'homescore':fixture.homescore, 'awayscore':fixture.awayscore, 'date':str(fixture.date.date()), 'division':fixture.division.name})
+        counter += 1
+    
+    result = { "newfixtures": newfixtureslist, "oldfixtures": oldfixtureslist, "league":league.pk }
+    
+    return JsonResponse(result)
+
 def fixtureUpload(request):
-    if request.method == 'POST':
-        fixturefile = FixtureFile(file=request.FILES['fixtures-file'])
-        fixturefile.save()
-        league = LeagueGrp.objects.get(pk=request.POST.get('fixture-file-league'))
-        df = pandas.read_excel(fixturefile.file.path)
-        for fix in range(0,len(df['Home Team'])):
-            same_fixture = Fixture.objects.filter(Q(date=df['Date'][fix]), Q(hometeam__name__iexact=df['Home Team'][fix]) | Q(awayteam__name__iexact=df['Home Team'][fix]) | Q(hometeam__name__iexact=df['Away Team'][fix]) | Q(awayteam__name__iexact=df['Away Team']))
-            for f in same_fixture:
-                f.delete()
-            fixture = Fixture(hometeam=Team.objects.get(name__iexact=df['Home Team'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league)), awayteam=Team.objects.get(name__iexact=df['Away Team'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league)), date=df['Date'][fix], division=Division.objects.get(name__iexact=df['Division'][fix], leaguegrp=league))
+    newFix = json.loads(request.POST.get('new-fixtures-added'))['newfixtures']
+    oldFix = json.loads(request.POST.get('new-fixtures-added'))['oldfixtures']
+    league = request.POST.get('new-fixtures-league')
+    
+    for f in newFix:
+        if f['deleted'] == 'false':
+            newleague=LeagueGrp.objects.filter(pk=league)
+            newdivision=Division.objects.get(name__iexact=f['division'], leaguegrp=newleague)
+            newhometeam=Team.objects.get(name__iexact=f['hometeam'], division=newdivision)
+            newawayteam=Team.objects.get(name__iexact=f['awayteam'], division=newdivision)
+            fixture = Fixture(hometeam=newhometeam, awayteam=newawayteam, date=f['date'], division=newdivision)
             fixture.save()
+            
+    for f in oldFix:
+        if f['deleted'] == 'true':
+            oldfixture = Fixture.objects.get(id=f['id'])
+            oldfixture.delete()
+            
     return redirect('PandDDL:adminFixture')
 
 def photoGalleries(request):
@@ -727,20 +756,43 @@ def gallery(request, gid):
     return render(request, 'PandDDL/photoGallery.html', context)
 
 def archive(request):
+    mens_archive_seasons_data = []
     mens_archive_leagues = ArchiveSeason.objects.filter(gender="Men's").order_by('-year', '-season')
-    mens_archive_divs = ArchiveDivision.objects.filter(season__in=mens_archive_leagues).order_by('division_name')
-    mens_player_comps = ArchiveComp.objects.filter(season__in=mens_archive_leagues)
+    for lg in mens_archive_leagues:
+        lgdata = {'league':lg.display_name, 'divisions':[], 'comps':[]}
+        mens_archive_divs = ArchiveDivision.objects.filter(season=lg).order_by('division_name')
+        for div in mens_archive_divs:
+            divdata = {'name':div.division_name, 'winner':div.winner, 'runnerup':div.runner_up}
+            lgdata['divisions'].append(divdata)
+        
+        mens_archive_comps = ArchiveComp.objects.filter(season=lg).order_by('comp_name')
+        for comp in mens_archive_comps:
+            if comp.winner1:
+                compdata = {'name':comp.comp_name, 'winner1':comp.winner1, 'winner2':comp.winner2, 'winner3':comp.winner3, 'runnerup1':comp.runnerup1, 'runnerup2':comp.runnerup2, 'runnerup3':comp.runnerup3}
+                lgdata['comps'].append(compdata)
+        mens_archive_seasons_data.append(lgdata)
+        
+    ladies_archive_seasons_data = []
     ladies_archive_leagues = ArchiveSeason.objects.filter(gender="Ladies").order_by('-year', '-season')
-    ladies_archive_divs = ArchiveDivision.objects.filter(season__in=ladies_archive_leagues).order_by('division_name')
-    ladies_player_comps = ArchiveComp.objects.filter(season__in=ladies_archive_leagues)
+    for lg in ladies_archive_leagues:
+        lgdata = {'league':lg.display_name, 'divisions':[], 'comps':[]}
+        ladies_archive_divs = ArchiveDivision.objects.filter(season=lg).order_by('division_name')
+        for div in ladies_archive_divs:
+            divdata = {'name':div.division_name, 'winner':div.winner, 'runnerup':div.runner_up}
+            lgdata['divisions'].append(divdata)
+        
+        ladies_archive_comps = ArchiveComp.objects.filter(season=lg).order_by('comp_name')
+        for comp in ladies_archive_comps:
+            if comp.winner1:
+                print comp.winner1
+                compdata = {'name':comp.comp_name, 'winner1':comp.winner1, 'winner2':comp.winner2, 'winner3':comp.winner3, 'runnerup1':comp.runnerup1, 'runnerup2':comp.runnerup2, 'runnerup3':comp.runnerup3}
+                lgdata['comps'].append(compdata)
+        ladies_archive_seasons_data.append(lgdata)
+    print ladies_archive_seasons_data
     
     context = {
-        "mens_archive_leagues": mens_archive_leagues,
-        "mens_archive_divs": mens_archive_divs,
-        "mens_player_comps": mens_player_comps,
-        "ladies_archive_leagues": ladies_archive_leagues,
-        "ladies_archive_divs": ladies_archive_divs,
-        "ladies_player_comps": ladies_player_comps,
+        "mens_archive_leagues": mens_archive_seasons_data,
+        "ladies_archive_leagues": ladies_archive_seasons_data,
     }
     
     return render(request, 'PandDDL/archive.html', context)
@@ -853,8 +905,8 @@ def FinishSeason(request, lge_id):
     newleague.active = True
     if request.POST.get('new-league-season') == "Winter":
         year = int(request.POST.get('new-league-year'))
-        year = year - 2000
-        next_year = year + 1
+        year = year
+        next_year = year - 1999
         newleague.displayyear = str(year) + "-" + str(next_year)
     else:
         newleague.displayyear = request.POST.get('new-league-year')
@@ -922,16 +974,15 @@ def LeagueDelete(request, lge_id):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminDivision(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
-        
+        lg_season = ''
+        lg_year = ''    
+    
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
     for options in lg_options_obj:
@@ -948,10 +999,19 @@ def AdminDivision(request):
     ladies_divs = active_divs.filter(leaguegrp__gender="Ladies")
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('new-div-name'):
             stripped_div_name = re.sub(r'[Dd]ivision|[Dd]iv| ','',request.POST.get('new-div-name'))
             if not request.POST.get('new-div-legs-triples'):
                 tripleslegs = None
+            else:
+                tripleslegs = request.POST.get('new-div-legs-triples')
             new_div = Division(name=stripped_div_name, leaguegrp=LeagueGrp.objects.get(pk=request.POST.get('new-div-league')), singlesbestoflegs=request.POST.get('new-div-legs-singles'), doublesbestoflegs=request.POST.get('new-div-legs-doubles'), triplesbestoflegs=tripleslegs)
             new_div.save()
         
@@ -986,15 +1046,14 @@ def AdminDivisionDelete(request, div_id):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminTeam(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
+        lg_season = ''
+        lg_year = ''    
         
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
@@ -1015,6 +1074,13 @@ def AdminTeam(request):
     points_deductions_teams = points_deductions.values_list('team__pk', flat=True)
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('points-deduction-team'):
             deduction = PointsDeduction(team=Team.objects.get(pk=request.POST.get('points-deduction-team')), points=request.POST.get('points-deducted'), reason=request.POST.get('points-deduction-reason'), date=datetime.datetime.today())
             deduction.save()
@@ -1073,8 +1139,8 @@ def AdminTeamDelete(request, tid):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminTeamPasswordChange(request, uid):
-    team = Team.objects.get(admin__pk=uid)
-    user = User.objects.get(pk=uid)
+    team = Team.objects.get(pk=uid)
+    user = team.admin
     user.set_password('Pandddl180')
     user.save()
     team.newpassword = True
@@ -1089,17 +1155,17 @@ def AdminTeamPointsDeductionDelete(request, pd_id):
     
     return redirect('PandDDL:adminTeam')
 
+
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminPlayer(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
+        lg_season = ''
+        lg_year = ''    
         
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
@@ -1118,6 +1184,13 @@ def AdminPlayer(request):
     active_players = Player.objects.filter(team__in=active_teams).order_by('firstname')
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('new-player-firstname'):
             player_team = Team.objects.get(pk=request.POST.get('new-player-team'))
             iscap = True if request.POST.get('new-player-iscaptain') else False
@@ -1195,15 +1268,14 @@ def AdminPlayerDelete(request, pid):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminFixture(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
+        lg_season = ''
+        lg_year = ''    
         
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
@@ -1224,6 +1296,13 @@ def AdminFixture(request):
     ladies_teams = Team.objects.filter(division__in=ladies_divs)
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('fixture-home-team'):
             hometeam = Team.objects.get(pk=request.POST.get('fixture-home-team'))
             awayteam = Team.objects.get(pk=request.POST.get('fixture-away-team'))
@@ -1445,15 +1524,14 @@ def AdminFixtureEdit(request, fid):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminKeyDates(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
+        lg_season = ''
+        lg_year = '' 
         
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
@@ -1469,9 +1547,17 @@ def AdminKeyDates(request):
     ladies_key_dates = KeyDate.objects.filter(league__in=active_leagues, league__gender="Ladies").order_by('date')
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('key-date-name'):
             newdate = KeyDate(name=request.POST.get('key-date-name'), location=request.POST.get('key-date-location'), date=request.POST.get('key-date-date'), time=request.POST.get('key-date-time'), league=LeagueGrp.objects.get(pk=request.POST.get('key-date-league')))
             newdate.save()
+            
         if request.POST.get('edit-key-date-id'):
             date = KeyDate.objects.get(pk=request.POST.get('edit-key-date-id'))
             date.name = request.POST.get('edit-key-date-name')
@@ -1602,15 +1688,14 @@ def AdminCupComps(request):
 
 @permission_required('request.user.is_staff', raise_exception=True)
 def AdminPlayerComps(request):
-    lg_season = ''
-    lg_year = ''
-    if request.GET.get('league-group'):
-        result = request.GET.get('league-group').split()
-        lg_season = result[0]
-        lg_year = result[1]
-        active_leagues = LeagueGrp.objects.filter(season__iexact=lg_season, year=lg_year)
+    if 'edit_season_year' in request.session:
+        active_leagues = LeagueGrp.objects.filter(season__iexact=request.session['edit_season_season'], year=request.session['edit_season_year'])
+        lg_season = request.session['edit_season_season']
+        lg_year = request.session['edit_season_year']
     else:
         active_leagues = LeagueGrp.objects.filter(active=True)
+        lg_season = ''
+        lg_year = '' 
         
     lg_options_obj = LeagueGrp.objects.all().order_by('year','season')
     lg_options = []
@@ -1631,11 +1716,19 @@ def AdminPlayerComps(request):
     ladies_players = all_players.filter(team__division__leaguegrp__gender="Ladies")
     
     if request.method == "POST":
+        if request.POST.get('league-group'):
+            result = request.POST.get('league-group').split()
+            lg_season = result[0]
+            lg_year = result[1]
+            request.session['edit_season_season'] = lg_season
+            request.session['edit_season_year'] = lg_year
+            
         if request.POST.get('player-comp-name'):
             newdate = KeyDate(date=request.POST.get('player-comp-date'), time=request.POST.get('player-comp-time'), name=request.POST.get('player-comp-name'), location=request.POST.get('player-comp-location'), league=LeagueGrp.objects.get(pk=request.POST.get('player-comp-league')))
             newdate.save()
             comp = Competition(keydate=newdate, comptype=request.POST.get('player-comp-type'))
             comp.save()
+            
         if request.POST.get('comp-winner1'):
             comp = Competition.objects.get(pk=request.POST.get('comp-id'))
             comp.winner1 = Player.objects.get(pk=request.POST.get('comp-winner1'))
@@ -1647,6 +1740,7 @@ def AdminPlayerComps(request):
                 comp.winner3 = Player.objects.get(pk=request.POST.get('comp-winner3'))
                 comp.runnerup3 = Player.objects.get(pk=request.POST.get('comp-runnerup3'))
             comp.save()
+            
         if request.POST.get('edit-comp-id'):
             comp = Competition.objects.get(pk=request.POST.get('edit-comp-id'))
             key_date = comp.keydate

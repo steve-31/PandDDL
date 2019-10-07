@@ -22,43 +22,43 @@
 			<tbody>
 				{% for league in mens_archive_leagues %}
 				<tr>
-					<td {% if mens_player_comps|length != 0 %}rowspan="2"{% endif %}>{{ league.display_name }}</td>
+					<td {% if league.comps|length != 0 %}rowspan="2"{% endif %}>{{ league.league }}</td>
 					
 					<td>
-						{% for div in mens_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.division_name }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.name }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for div in mens_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.winner }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.winner }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for div in mens_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.runner_up }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.runnerup }}<br>
 						{% endfor %}
 					</td>
 				</tr>
-				{% if mens_player_comps|length != 0 %}
+				{% if league.comps|length != 0 %}
 				<tr>
 					<td>
-						{% for comp in mens_player_comps %}
-							{{ comp.comp_name }}<br>
+						{% for comp in league.comps %}
+							{{ comp.name }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for comp in mens_player_comps %}
+						{% for comp in league.comps %}
 							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %}<br>{{ comp.winner2 }}{% endif %}{% if comp.winner3 %}<br>{{ comp.winner3 }}{% endif %}</td>
 						{% endfor %}
 					</td>
 					<td>
-						{% for comp in mens_player_comps %}
+						{% for comp in league.comps %}
 							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %}<br>{{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %}<br>{{ comp.runnerup3 }}{% endif %}</td>
 						{% endfor %}
 					</td>
-				{% endif %}
 				</tr>
+				{% endif %}
 				{% endfor %}
 			</tbody>
 		</table>
@@ -79,44 +79,44 @@
 			<tbody>
 				{% for league in ladies_archive_leagues %}
 				<tr>
-					<td {% if ladies_player_comps|length != 0 %}rowspan="2"{% endif %}>{{ league.display_name }}</td>
+					<td {% if league.comps|length != 0 %}rowspan="2"{% endif %}>{{ league.league }}</td>
 					
 					<td>
-						{% for div in ladies_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.division_name }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.name }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for div in ladies_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.winner }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.winner }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for div in ladies_archive_divs %}
-							{% if div.season.pk == league.pk %}{{ div.runner_up }}<br>{% endif %}
+						{% for div in league.divisions %}
+							{{ div.runnerup }}<br>
 						{% endfor %}
 					</td>
 				</tr>
-				{% if ladies_player_comps|length != 0 %}
+				{% if league.comps|length != 0 %}
 				<tr>
 					<td>
-						{% for comp in ladies_player_comps %}
-							{{ comp.keydate.name }}<br>
+						{% for comp in league.comps %}
+							{{ comp.name }}<br>
 						{% endfor %}
 					</td>
 					<td>
-						{% for comp in ladies_player_comps %}
-							{{ comp.winner1 }} {{ comp.winner1 }}{% if comp.comptype != "singles" %}<br>{{ comp.winner2 }} {{ comp.winner2 }}{% if comp.comptype == "trebles" %}{{ comp.winner3 }} {{ comp.winner3 }}{% endif %}{% endif %}</td>
+						{% for comp in league.comps %}
+							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %}<br>{{ comp.winner2 }}{% endif %}{% if comp.winner3 %}<br>{{ comp.winner3 }}{% endif %}</td>
 						{% endfor %}
 					</td>
 					<td>
-						{% for comp in ladies_player_comps %}
-							{{ comp.runnerup1 }} {{ comp.runnerup1 }}{% if comp.comptype != "singles" %}<br>{{ comp.runnerup2 }} {{ comp.runnerup2 }}{% if comp.comptype == "trebles" %}{{ comp.runnerup3 }} {{ comp.runnerup3 }}{% endif %}{% endif %}</td>
+						{% for comp in league.comps %}
+							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %}<br>{{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %}<br>{{ comp.runnerup3 }}{% endif %}</td>
 						{% endfor %}
 					</td>
-					{% endif %}
-				{% endfor %}
 				</tr>
+				{% endif %}
+				{% endfor %}
 			</tbody>
 		</table>
 		{% endif %}
