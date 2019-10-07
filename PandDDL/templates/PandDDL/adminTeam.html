@@ -22,10 +22,10 @@
 <button class="admin-function-button btn btn-primary" data-toggle="modal" data-target="#add-new-team">Add Team</button>
 </h1>
 
-<form method="GET" action="." class="form-inline" id="season-select-form">
+<form method="POST" action="." class="form-inline" id="season-select-form">{% csrf_token %}
 	<select class="form-control" name="league-group" style="width: 250px;margin-bottom: 20px;">
 		{% for options in lg_options %}
-		<option value="{{ options.season }} {{ options.year }}" {% if lg_season == options.season and lg_year == lg_year %}selected{% endif %}>{{ options.season }} {{ options.displayyear }}</option>
+		<option value="{{ options.season }} {{ options.year }}" {% if lg_season == options.season and lg_year == options.year|stringformat:"i" %}selected{% endif %}>{{ options.season }} {{ options.displayyear }}</option>
 		{% endfor %}
 	</select>
 	<input class="btn btn-primary" type="submit" style="margin-bottom:20px;">
@@ -96,7 +96,7 @@
 							</div>
 						{% else %}None{% endif %}</td>
 						<td>{% if team.paidleaguefee %}Paid{% else %}<a href="{% url 'PandDDL:adminTeamLeagueFee' team.pk %}">Pay</a>{% endif %}</td>
-						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.admin.pk }}')">Reset</span></td>
+						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.pk }}')">Reset</span></td>
 						<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-team-{{ team.pk }}">Edit</a>
 						<div class="modal fade" id="edit-team-{{ team.pk }}" role="dialog">
 							<div class="modal-dialog">
@@ -207,7 +207,7 @@
 							</div>
 						{% else %}None{% endif %}</td>
 						<td>{% if team.paidleaguefee %}Paid{% else %}<a href="{% url 'PandDDL:adminTeamLeagueFee' team.pk %}">Pay</a>{% endif %}</td>
-						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.admin.pk }}')">Reset</span></td>
+						<td><span class="admin-a-link" onclick="resetPasswordAlert('{{ team.admin.username }}', '{{ team.pk }}')">Reset</span></td>
 						<td><a class="admin-a-link" data-toggle="modal" data-target="#edit-team-{{ team.pk }}">Edit</a>
 						<div class="modal fade" id="edit-team-{{ team.pk }}" role="dialog">
 							<div class="modal-dialog">
@@ -352,9 +352,9 @@ function deletededuction(item) {
 </script>
 
 <script>
-function resetPasswordAlert(uname, uid) {
+function resetPasswordAlert(uname, tid) {
 	if (confirm('Are you sure? Password for user ' + uname + ' will be reset to Pandddl180. Please inform the user of this change.')) {
-		window.location.replace("password_change/" + uid)
+		window.location.replace("password_change/" + tid)
 	}
 }
 

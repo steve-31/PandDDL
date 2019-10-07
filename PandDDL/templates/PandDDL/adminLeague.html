@@ -38,10 +38,10 @@
 			<tr>
 				<td> {{ league.gender }} {{ league.season }} League {{ league.displayyear }}</td>
 				<td>{% if league.active %}Yes{% else %}<a href="{% url 'PandDDL:setActiveLeague' league.pk %}">Set Active</a>{% endif %}</td>
-				<td>{% if league.active %}<span class="admin-a-link" data-toggle="modal" data-target="#new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
+				<td>{% if league.active %}<span class="admin-a-link" data-toggle="modal" data-target="#mens-new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
 				<td>{% if league.active %}Delete{% else %}<a class="admin-a-link" onclick="deleteitem({{ league.pk }});">Delete</a>{% endif %}</td>
 				{% if league.active %}
-				<div class="modal fade" id="new-season-{{ forloop.counter }}" role="dialog">
+				<div class="modal fade" id="mens-new-season-{{ forloop.counter }}" role="dialog">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<form id="new-season-form" action="{% url 'PandDDL:FinishSeason' league.pk %}" method="POST">{% csrf_token %}
@@ -95,10 +95,10 @@
 			<tr>
 				<td> {{ league.gender }} {{ league.season }} League {{ league.displayyear }}</td>
 				<td>{% if league.active %}Yes{% else %}<a href="{% url 'PandDDL:setActiveLeague' league.pk %}">Set Active</a>{% endif %}</td>
-				<td>{% if league.active %}<span class="admin-a-link" data-toggle="modal" data-target="#new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
+				<td>{% if league.active %}<span class="admin-a-link" data-toggle="modal" data-target="#ladies-new-season-{{ forloop.counter }}">Finish Season</span>{% elif league.finished %}Finished{% else %}Not Finished{% endif %}</td>
 				<td>{% if league.active %}Delete{% else %}<a class="admin-a-link" onclick="deleteitem({{ league.pk }});">Delete</a>{% endif %}</td>
 				{% if league.active %}
-				<div class="modal fade" id="new-season-{{ forloop.counter }}" role="dialog">
+				<div class="modal fade" id="ladies-new-season-{{ forloop.counter }}" role="dialog">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<form id="new-season-form" action="{% url 'PandDDL:FinishSeason' league.pk %}" method="POST">{% csrf_token %}

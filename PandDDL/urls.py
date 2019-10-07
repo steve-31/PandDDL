@@ -46,6 +46,7 @@ urlpatterns = [
     url(r'^admin/player/delete/(?P<pid>[0-9]+)/$', views.AdminPlayerDelete, name='adminPlayerDelete'),
     url(r'^admin/fixture/$', views.AdminFixture, name='adminFixture'),
     url(r'^admin/fixture/upload/$', views.fixtureUpload, name='fixtureUpload'),
+    url(r'^admin/fixture/generate/$', views.fixtureListGenerate, name='fixtureListGenerate'),
     url(r'^admin/fixture/delete/(?P<fid>[0-9]+)/$', views.AdminFixtureDelete, name='adminFixtureDelete'),
     url(r'^admin/fixture/edit/(?P<fid>[0-9]+)/$', views.AdminFixtureEdit, name='adminFixtureEdit'),
     url(r'^admin/KeyDates/$', views.AdminKeyDates, name='adminKeyDates'),

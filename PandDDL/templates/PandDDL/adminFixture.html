@@ -21,10 +21,10 @@
 <button class="btn btn-primary admin-function-button" data-toggle="modal" data-target="#upload-fixtures">Bulk Upload Fixtures</button>
 </h1>
 
-<form method="GET" action="." class="form-inline" id="season-select-form">
+<form method="POST" action="." class="form-inline" id="season-select-form">{% csrf_token %}
 	<select class="form-control" name="league-group" style="width: 250px;margin-bottom: 20px;">
 		{% for options in lg_options %}
-		<option value="{{ options.season }} {{ options.year }}" {% if lg_season == options.season and lg_year == lg_year %}selected{% endif %}>{{ options.season }} {{ options.displayyear }}</option>
+		<option value="{{ options.season }} {{ options.year }}" {% if lg_season == options.season and lg_year == options.year|stringformat:"i" %}selected{% endif %}>{{ options.season }} {{ options.displayyear }}</option>
 		{% endfor %}
 	</select>
 	<input class="btn btn-primary" type="submit" style="margin-bottom:20px;">
@@ -199,7 +199,7 @@
 <div class="modal fade" id="upload-fixtures" role="dialog">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<form id="upload-fixtures-form" action="{% url 'PandDDL:fixtureUpload' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+			<form id="upload-fixtures-file-form" action="{% url 'PandDDL:fixtureListGenerate' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 					<h4 class="modal-title">Upload Fixtures File</h4>
@@ -214,10 +214,37 @@
 							{% endfor %}
 						</select>
 					</p>
-					<p>Upload Fixtures File: <input type="file" name="fixtures-file"></p>
+					<p>Upload Fixtures File: <input type="file" name="fixtures-file" id="upload-fixtures-file"></p>
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary">Upload Fixtures</button>
+					<button class="btn btn-primary" onclick="upload_fixtures(event)">Upload Fixtures</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="new-fixtures-list" role="dialog">
+	<div class="modal-dialog" style="width:80%; margin:auto; margin-top:5%;">
+		<div class="modal-content">
+			<form id="new-fixtures-form" action="{% url 'PandDDL:fixtureUpload' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Uploaded Fixtures</h4>
+					<input type="hidden" id="new-fixtures-league" name="new-fixtures-league" value="">
+				</div>
+				<div class="modal-body">
+					<h4><b>Fixtures To Be Added</b></h4>
+					<input type="hidden" name="new-fixtures-added" id="new-fixtures-added-list" value="">
+					<table class="table" id="new-fixtures-table"></table>
+					
+					<h4><b>Fixtures To Be Removed</b></h4>
+					<table class="table" id="old-fixtures-table"></table>
+					
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary" type="submit">Confirm New Fixtures</button>
 				</div>
 			</form>
 		</div>
@@ -228,6 +255,99 @@
 
 {% block scripts %}
 <script>
+var fixturesList;
+
+function removeFixture(type, id) {
+	if (type == 'new'){
+		for (x in fixturesList.newfixtures) {
+			if (fixturesList.newfixtures[x].id == id) {
+				fixturesList.newfixtures[x].deleted = 'true';
+			}
+		}
+	} else {
+		for (x in fixturesList.oldfixtures) {
+			if (fixturesList.oldfixtures[x].id == id) {
+				fixturesList.oldfixtures[x].deleted = 'true';
+			}
+		}
+	}
+	showFixtureList(fixturesList.newfixtures, fixturesList.oldfixtures);
+}
+
+function reinstateFixture(type, id) {
+	if (type == 'new'){
+		for (x in fixturesList.newfixtures) {
+			if (fixturesList.newfixtures[x].id == id) {
+				fixturesList.newfixtures[x].deleted = 'false';
+			}
+		}
+	} else {
+		for (x in fixturesList.oldfixtures) {
+			if (fixturesList.oldfixtures[x].id == id) {
+				fixturesList.oldfixtures[x].deleted = 'false';
+			}
+		}
+	}
+	showFixtureList(fixturesList.newfixtures, fixturesList.oldfixtures);
+}
+
+function showFixtureList(newfixtures, oldfixtures) {
+	console.log(newfixtures);
+	console.log(oldfixtures);
+	$("#upload-fixtures").modal('hide');
+	$("#new-fixtures-list").modal('show');
+	
+	$("#new-fixtures-table").html("");
+	for (x in newfixtures) {
+		if (newfixtures[x].deleted == "true") {
+			newfixture = "<tr class=\"strikeout\"><td style=\"width:15%\">" + newfixtures[x].date + "</td><td style=\"width:20%\">" + newfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">-</td><td style=\"text-align:right; width:20%\">" + newfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + newfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"reinstateFixture('new', " + newfixtures[x].id + ")\">Reinstate</a></td></tr>";
+		} else {
+			newfixture = "<tr><td style=\"width:15%\">" + newfixtures[x].date + "</td><td style=\"width:20%\">" + newfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">-</td><td style=\"text-align:right; width:20%\">" + newfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + newfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"removeFixture('new', " + newfixtures[x].id + ")\">Remove</a></td></tr>";
+		}
+		$("#new-fixtures-table").append(newfixture);
+	}
+	
+	$("#old-fixtures-table").html("");
+	for (x in oldfixtures) {
+		if (oldfixtures[x].deleted == "true"){
+			if (oldfixtures[x].entered) {
+				oldfixture = "<tr class=\"strikeout\"><td style=\"width:15%\">" + oldfixtures[x].date + "</td><td style=\"width:20%\">" + oldfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">" + oldfixtures[x].homescore + "-" + oldfixtures[x].awayscore + "</td><td style=\"text-align:right; width:20%\">" + oldfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + oldfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"reinstateFixture('old', " + oldfixtures[x].id + ")\">Reinstate</a></td></tr>";
+			} else {
+				oldfixture = "<tr class=\"strikeout\"><td style=\"width:15%\">" + oldfixtures[x].date + "</td><td style=\"width:20%\">" + oldfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">-</td><td style=\"text-align:right; width:20%\">" + oldfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + oldfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"reinstateFixture('old', " + oldfixtures[x].id + ")\">Reinstate</a></td></tr>";
+			}
+		} else {
+			if (oldfixtures[x].entered) {
+				oldfixture = "<tr><td style=\"width:15%\">" + oldfixtures[x].date + "</td><td style=\"width:20%\">" + oldfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">" + oldfixtures[x].homescore + "-" + oldfixtures[x].awayscore + "</td><td style=\"text-align:right; width:20%\">" + oldfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + oldfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"removeFixture('old', " + oldfixtures[x].id + ")\">Remove</a></td></tr>";
+			} else {
+				oldfixture = "<tr><td style=\"width:15%\">" + oldfixtures[x].date + "</td><td style=\"width:20%\">" + oldfixtures[x].hometeam + "</td><td style=\"text-align:center; width:10%\">-</td><td style=\"text-align:right; width:20%\">" + oldfixtures[x].awayteam + "</td><td style=\"text-align:right; width:20%\">Division " + oldfixtures[x].division + "</td><td class=\"fixture-command\" style=\"text-align:right; width:15%\"><a class=\"admin-a-link\" onclick=\"removeFixture('old', " + oldfixtures[x].id + ")\">Remove</a></td></tr>";
+			}
+		}
+		$("#old-fixtures-table").append(oldfixture);
+	}
+	
+	$("#new-fixtures-added-list").val(JSON.stringify(fixturesList));
+}
+
+function upload_fixtures(event) {
+	event.preventDefault();
+	var data = new FormData($('#upload-fixtures-file-form').get(0));
+    console.log(data);
+	
+	$.ajax({
+		url: "{% url 'PandDDL:fixtureListGenerate' %}",
+		type: "POST",
+		data: data,
+		processData: false,
+	    contentType: false,
+		success: function(json) {
+			console.log(json);
+			fixturesList = json;
+			showFixtureList(json.newfixtures, json.oldfixtures);
+			document.getElementById("new-fixtures-league").value = json.league;
+		}
+	});
+}
+
 function deleteitem(item) {
 	if (confirm("Are you sure you wish to delete this Fixture?")) {
 		window.location.replace("/admin/fixture/delete/"+item);
