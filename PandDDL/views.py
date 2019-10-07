@@ -918,6 +918,12 @@ def FinishSeason(request, lge_id):
     oldleague.save()
     
     leaguename = oldleague.season + " League " + str(oldleague.displayyear)
+    try:
+        oldarchivecheck = ArchiveSeason.objects.filter(display_name=leaguename, year=oldleague.year, season=oldleague.season, gender=oldleague.gender)
+        for o in oldarchivecheck:
+            o.delete()
+    except:
+        pass
     archiveseason = ArchiveSeason(display_name=leaguename, year=oldleague.year, season=oldleague.season, gender=oldleague.gender)
     archiveseason.save()
     

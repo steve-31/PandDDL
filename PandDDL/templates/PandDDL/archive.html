@@ -49,12 +49,12 @@
 					</td>
 					<td>
 						{% for comp in league.comps %}
-							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %}<br>{{ comp.winner2 }}{% endif %}{% if comp.winner3 %}<br>{{ comp.winner3 }}{% endif %}</td>
+							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %} &amp; {{ comp.winner2 }}{% endif %}{% if comp.winner3 %} &amp;{{ comp.winner3 }}{% endif %}<br>
 						{% endfor %}
 					</td>
 					<td>
 						{% for comp in league.comps %}
-							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %}<br>{{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %}<br>{{ comp.runnerup3 }}{% endif %}</td>
+							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %} &amp; {{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %} &amp; {{ comp.runnerup3 }}{% endif %}<br>
 						{% endfor %}
 					</td>
 				</tr>
@@ -106,12 +106,12 @@
 					</td>
 					<td>
 						{% for comp in league.comps %}
-							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %}<br>{{ comp.winner2 }}{% endif %}{% if comp.winner3 %}<br>{{ comp.winner3 }}{% endif %}</td>
+							{% if comp.winner1 %}{{ comp.winner1 }}{% endif %}{% if comp.winner2 %} &amp; {{ comp.winner2 }}{% endif %}{% if comp.winner3 %} &amp;{{ comp.winner3 }}{% endif %}<br>
 						{% endfor %}
 					</td>
 					<td>
 						{% for comp in league.comps %}
-							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %}<br>{{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %}<br>{{ comp.runnerup3 }}{% endif %}</td>
+							{% if comp.runnerup1 %}{{ comp.runnerup1 }}{% endif %}{% if comp.runnerup2 %} &amp; {{ comp.runnerup2 }}{% endif %}{% if comp.runnerup3 %} &amp; {{ comp.runnerup3 }}{% endif %}<br>
 						{% endfor %}
 					</td>
 				</tr>
