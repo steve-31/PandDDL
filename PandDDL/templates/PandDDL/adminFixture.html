@@ -225,8 +225,8 @@
 </div>
 
 
-<div class="modal fade" id="new-fixtures-list" role="dialog">
-	<div class="modal-dialog" style="width:80%; margin:auto; margin-top:5%;">
+<div class="modal fade" id="new-fixtures-list" role="dialog" style="overflow:auto">
+	<div class="modal-dialog modal-dialog-scrollable" style="width:80%; margin:auto; margin-top:5%;">
 		<div class="modal-content">
 			<form id="new-fixtures-form" action="{% url 'PandDDL:fixtureUpload' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
 				<div class="modal-header">
